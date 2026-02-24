@@ -83,6 +83,8 @@ jobs:
           | Video CRF  | ${{ inputs.video_crf }} |
           | Filetype   | `${{ inputs.ext }}` |
 
+          ![Preview](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/preview.${{ inputs.ext }})
+
           [Download artifact]($ARTIFACT_URL)
           BODY
           )" \
