@@ -4,7 +4,7 @@ description: Capture an animated screenshot of a page as GIF, WebP, or MP4.
 inputs:
   width:       { description: "Capture width in pixels",             default: "1152" }
   height:      { description: "Capture height in pixels",            default: "648"  }
-  url:         { description: "URL to capture",                      default: "https://unavailable.kajkowalski.nl" }
+  url:         { description: "URL to capture",                      default: "https://404.kjanat.com" }
   duration:    { description: "Capture duration in seconds",         default: "6"    }
   fps:         { description: "Frames per second",                   default: "12"   }
   quality:     { description: "WebP quality (0-100)",                default: "100"  }
