@@ -9,7 +9,7 @@
  * Usage:
  *   node scripts/capture.mjs [--url https://404.kjanat.com] [--out preview.webp]
  *                             [--width 800] [--height 500] [--duration 6] [--fps 12]
- *                             [--quality 90]
+ *                             [--quality 100]
  */
 
 import { execSync } from 'node:child_process';
@@ -30,7 +30,7 @@ const { values: args } = parseArgs({
 		height: { type: 'string', short: 'h', default: '500' },
 		duration: { type: 'string', short: 'd', default: '6' },
 		fps: { type: 'string', default: '12' },
-		quality: { type: 'string', short: 'q', default: '90' },
+		quality: { type: 'string', short: 'q', default: '100' },
 	},
 });
 
