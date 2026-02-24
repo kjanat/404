@@ -12,7 +12,7 @@
  *                           [--quality 100] [--max-bytes 3145728] [--video-crf 28]
  */
 
-import { execSync } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { dirname, extname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
@@ -135,148 +135,121 @@ console.log(`Captured ${TOTAL_FRAMES} frames into ${TMP}`);
 
 /* ---------- Assemble output with ffmpeg ---------- */
 
-type WebpEncoder = (outPath: string, quality: number, quiet?: boolean) => void;
+const ffmpegPreamble = (): string[] => [
+	'-y',
+	'-framerate',
+	String(FPS),
+	'-i',
+	`${TMP}/frame-%05d.png`,
+];
 
-const runFfmpeg = (parts: string[], quiet = false): void => {
-	execSync(parts.join(' '), { stdio: quiet ? 'ignore' : 'inherit' });
+const runFfmpeg = (args: string[], quiet = false): void => {
+	execFileSync('ffmpeg', args, { stdio: quiet ? 'ignore' : 'inherit' });
 };
 
 const encodeGif = (outPath: string, quiet = false): void => {
-	runFfmpeg(
-		[
-			'ffmpeg -y',
-			`-framerate ${FPS}`,
-			`-i "${TMP}/frame-%05d.png"`,
-			// High-quality palette-based GIF encoding
-			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=floyd_steinberg"`,
-			`"${outPath}"`,
-		],
-		quiet,
-	);
+	runFfmpeg([
+		...ffmpegPreamble(),
+		// High-quality palette-based GIF encoding
+		'-vf',
+		`fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=floyd_steinberg`,
+		outPath,
+	], quiet);
 };
 
-const encodeWebpLossless: WebpEncoder = (outPath, quality, quiet = false) => {
-	runFfmpeg(
-		[
-			'ffmpeg -y',
-			`-framerate ${FPS}`,
-			`-i "${TMP}/frame-%05d.png"`,
-			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=rgba"`,
-			'-c:v libwebp_anim',
-			'-lossless 1',
-			`-q:v ${quality}`,
-			'-compression_level 6',
-			'-loop 0',
-			`"${outPath}"`,
-		],
-		quiet,
-	);
-};
-
-const encodeWebpLossy: WebpEncoder = (outPath, quality, quiet = false) => {
-	runFfmpeg(
-		[
-			'ffmpeg -y',
-			`-framerate ${FPS}`,
-			`-i "${TMP}/frame-%05d.png"`,
-			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=yuva420p"`,
-			'-c:v libwebp_anim',
-			'-lossless 0',
-			`-q:v ${quality}`,
-			'-compression_level 6',
-			'-loop 0',
-			`"${outPath}"`,
-		],
-		quiet,
-	);
+const encodeWebp = (outPath: string, quality: number, lossless: boolean, quiet = false): void => {
+	runFfmpeg([
+		...ffmpegPreamble(),
+		'-vf',
+		`fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=${lossless ? 'rgba' : 'yuva420p'}`,
+		'-c:v',
+		'libwebp_anim',
+		'-lossless',
+		lossless ? '1' : '0',
+		'-q:v',
+		String(quality),
+		'-compression_level',
+		'6',
+		'-loop',
+		'0',
+		outPath,
+	], quiet);
 };
 
 const encodeMp4 = (outPath: string, crf: number, quiet = false): void => {
-	runFfmpeg(
-		[
-			'ffmpeg -y',
-			`-framerate ${FPS}`,
-			`-i "${TMP}/frame-%05d.png"`,
-			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=yuv420p"`,
-			'-c:v libx264',
-			'-preset veryfast',
-			`-crf ${crf}`,
-			'-movflags +faststart',
-			'-an',
-			`"${outPath}"`,
-		],
-		quiet,
-	);
-};
-
-const sweepWebpWithEncoder = (maxBytes: number, encoder: WebpEncoder): { quality: number; size: number } | null => {
-	const tmpOut = `${OUT}.sweep.webp`;
-	let low = 0;
-	let high = 100;
-	let best: { quality: number; size: number } | null = null;
-
-	while (low <= high) {
-		const mid = Math.floor((low + high) / 2);
-		encoder(tmpOut, mid, true);
-		const size = statSync(tmpOut).size;
-		if (size <= maxBytes) {
-			best = { quality: mid, size };
-			low = mid + 1;
-		} else {
-			high = mid - 1;
-		}
-	}
-
-	if (existsSync(tmpOut)) rmSync(tmpOut);
-	return best;
-};
-
-const measureWebpSize = (encoder: WebpEncoder, quality: number): number => {
-	const tmpOut = `${OUT}.sweep.webp`;
-	encoder(tmpOut, quality, true);
-	const size = statSync(tmpOut).size;
-	if (existsSync(tmpOut)) rmSync(tmpOut);
-	return size;
+	runFfmpeg([
+		...ffmpegPreamble(),
+		'-vf',
+		`fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=yuv420p`,
+		'-c:v',
+		'libx264',
+		'-preset',
+		'veryfast',
+		'-crf',
+		String(crf),
+		'-movflags',
+		'+faststart',
+		'-an',
+		outPath,
+	], quiet);
 };
 
 const sweepWebp = (maxBytes: number): void => {
-	const minLosslessSize = measureWebpSize(encodeWebpLossless, 0);
+	const tmpOut = `${OUT}.sweep.webp`;
+
+	const measure = (lossless: boolean, quality: number): number => {
+		encodeWebp(tmpOut, quality, lossless, true);
+		const size = statSync(tmpOut).size;
+		rmSync(tmpOut);
+		return size;
+	};
+
+	const sweep = (lossless: boolean): { quality: number; size: number } | null => {
+		let low = 0, high = 100;
+		let best: { quality: number; size: number } | null = null;
+		while (low <= high) {
+			const mid = Math.floor((low + high) / 2);
+			const size = measure(lossless, mid);
+			if (size <= maxBytes) {
+				best = { quality: mid, size };
+				low = mid + 1;
+			} else high = mid - 1;
+		}
+		return best;
+	};
+
+	const minLosslessSize = measure(true, 0);
 	if (minLosslessSize <= maxBytes) {
-		const bestLossless = sweepWebpWithEncoder(maxBytes, encodeWebpLossless);
-		if (bestLossless !== null) {
-			console.log(
-				`Selected lossless WebP quality ${bestLossless.quality} (${bestLossless.size} bytes)`,
-			);
-			encodeWebpLossless(OUT, bestLossless.quality);
+		const best = sweep(true);
+		if (best !== null) {
+			console.log(`Selected lossless WebP quality ${best.quality} (${best.size} bytes)`);
+			encodeWebp(OUT, best.quality, true);
 			return;
 		}
 	} else {
-		console.log(
-			`Lossless WebP minimum (${minLosslessSize} bytes) exceeds --max-bytes; switching to lossy sweep.`,
-		);
+		console.log(`Lossless WebP minimum (${minLosslessSize} bytes) exceeds --max-bytes; switching to lossy sweep.`);
 	}
 
-	const bestLossy = sweepWebpWithEncoder(maxBytes, encodeWebpLossy);
-	if (bestLossy !== null) {
-		console.log(`Selected lossy WebP quality ${bestLossy.quality} (${bestLossy.size} bytes)`);
-		encodeWebpLossy(OUT, bestLossy.quality);
+	const best = sweep(false);
+	if (best !== null) {
+		console.log(`Selected lossy WebP quality ${best.quality} (${best.size} bytes)`);
+		encodeWebp(OUT, best.quality, false);
 		return;
 	}
 
 	console.log('No WebP quality met --max-bytes; using lossy quality 0.');
-	encodeWebpLossy(OUT, 0);
-
-	if (statSync(OUT).size > maxBytes) {
+	encodeWebp(OUT, 0, false);
+	const finalSize = statSync(OUT).size;
+	if (finalSize > maxBytes) {
 		console.log('Output still exceeds --max-bytes; lower width/height, fps, or duration.');
 	} else {
-		console.log(`Selected lossy WebP quality 0 (${statSync(OUT).size} bytes)`);
+		console.log(`Selected lossy WebP quality 0 (${finalSize} bytes)`);
 	}
 };
 
 const sweepMp4 = (maxBytes: number): void => {
 	const tmpOut = `${OUT}.sweep.mp4`;
-	let low = 0;
-	let high = 51;
+	let low = 0, high = 51;
 	let best: { crf: number; size: number } | null = null;
 
 	while (low <= high) {
@@ -286,9 +259,7 @@ const sweepMp4 = (maxBytes: number): void => {
 		if (size <= maxBytes) {
 			best = { crf: mid, size };
 			high = mid - 1;
-		} else {
-			low = mid + 1;
-		}
+		} else low = mid + 1;
 	}
 
 	if (best === null) {
@@ -305,7 +276,7 @@ const sweepMp4 = (maxBytes: number): void => {
 if (OUT_EXT === '.webp') {
 	console.log('Assembling animated WebP with ffmpeg\u2026');
 	if (MAX_BYTES === null) {
-		encodeWebpLossless(OUT, WEBP_QUALITY);
+		encodeWebp(OUT, WEBP_QUALITY, true);
 	} else {
 		sweepWebp(MAX_BYTES);
 	}
