@@ -22,7 +22,16 @@
     body {
       width: 100%;
       max-width: 100%;
-      overflow-x: hidden;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none;
     }
 
     * {
@@ -31,11 +40,13 @@
 
     body {
       margin: 0;
+      height: 100dvh;
       min-height: 100vh;
       display: grid;
       place-items: center;
       position: relative;
       overflow: hidden;
+      touch-action: none;
       isolation: isolate;
       padding: 24px;
       background: radial-gradient(circle at 12% 10%, rgba(57, 193, 255, 0.2), transparent 40%),
