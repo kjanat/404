@@ -9,6 +9,7 @@
  * Usage:
  *   node scripts/capture.mjs [--url https://404.kjanat.com] [--out preview.webp]
  *                             [--width 800] [--height 500] [--duration 6] [--fps 12]
+ *                             [--quality 82]
  */
 
 import { execSync } from 'node:child_process';
@@ -29,6 +30,7 @@ const { values: args } = parseArgs({
 		height: { type: 'string', short: 'h', default: '500' },
 		duration: { type: 'string', short: 'd', default: '6' },
 		fps: { type: 'string', default: '12' },
+		quality: { type: 'string', short: 'q', default: '82' },
 	},
 });
 
@@ -39,12 +41,18 @@ const WIDTH = Number(args.width);
 const HEIGHT = Number(args.height);
 const DURATION = Number(args.duration); // seconds to record
 const FPS = Number(args.fps);
+const WEBP_QUALITY = Number(args.quality);
 const FRAME_INTERVAL = 1000 / FPS;
 const TOTAL_FRAMES = Math.ceil(DURATION * FPS);
 const TMP = resolve(dirname(OUT), '.capture-frames');
 
 if (OUT_EXT !== '.gif' && OUT_EXT !== '.webp') {
 	console.error('Unsupported output format. Use .gif or .webp');
+	process.exit(1);
+}
+
+if (!Number.isFinite(WEBP_QUALITY) || WEBP_QUALITY < 0 || WEBP_QUALITY > 100) {
+	console.error('Invalid --quality value. Use a number between 0 and 100');
 	process.exit(1);
 }
 
@@ -74,7 +82,8 @@ mkdirSync(TMP, { recursive: true });
 
 // Resolve the target URL — fall back to local 404.html when a remote URL is
 // unreachable (e.g. in sandboxed CI environments without outbound networking).
-async function resolveTarget(browser) {
+/** @type {(browser: import('playwright').Browser) => Promise<import('playwright').Page>} */
+const resolveTarget = async (browser) => {
 	const page = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
 
 	if (/^https?:\/\//.test(URL)) {
@@ -97,7 +106,7 @@ async function resolveTarget(browser) {
 	await fallback.goto(`file://${htmlPath}`, { waitUntil: 'domcontentloaded' });
 	console.log(`Loaded local file: ${htmlPath}`);
 	return fallback;
-}
+};
 
 console.log(
 	`Capturing ${TOTAL_FRAMES} frames (${DURATION}s @ ${FPS} fps) at ${WIDTH}x${HEIGHT}`,
@@ -135,7 +144,7 @@ if (OUT_EXT === '.webp') {
 			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=yuva420p"`,
 			'-c:v libwebp_anim',
 			'-lossless 0',
-			'-q:v 70',
+			`-q:v ${WEBP_QUALITY}`,
 			'-compression_level 6',
 			'-loop 0',
 			`"${OUT}"`,
