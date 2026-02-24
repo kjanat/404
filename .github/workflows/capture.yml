@@ -22,6 +22,10 @@ on:
         description: Frames per second
         required: false
         default: "12"
+      quality:
+        description: WebP quality (0-100)
+        required: false
+        default: "90"
       out:
         description: Output filename (.webp or .gif)
         required: false
@@ -37,6 +41,6 @@ jobs:
       - name: Install Playwright browser
         run: bunx playwright install chromium
       - name: Generate Animation
-        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -o "${{ inputs.out }}"
+        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -q "${{ inputs.quality }}" -o "${{ inputs.out }}"
       - uses: actions/upload-artifact@v6
         with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
