@@ -87,6 +87,54 @@
       animation: region-dim 13s linear infinite;
     }
 
+    .storm-streaks {
+      position: absolute;
+      inset: -16%;
+      pointer-events: none;
+      z-index: 1;
+      mix-blend-mode: screen;
+    }
+
+    .storm-streak {
+      position: absolute;
+      width: 14px;
+      height: 78vh;
+      opacity: 0;
+      filter: drop-shadow(0 0 10px rgba(200, 235, 255, 0.85));
+    }
+
+    .storm-streak::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(228, 246, 255, 0.96) 0%,
+        rgba(172, 226, 255, 0.88) 50%,
+        rgba(122, 198, 255, 0.08) 100%);
+      clip-path: polygon(44% 0, 64% 12%, 47% 31%, 74% 47%, 40% 67%, 63% 84%, 36% 100%, 52% 66%, 30% 46%, 50% 28%, 28% 12%);
+    }
+
+    .storm-streak-a {
+      left: 15%;
+      top: -8%;
+      transform: rotate(11deg);
+      animation: bolt-a 13s linear infinite;
+    }
+
+    .storm-streak-b {
+      left: 69%;
+      top: -11%;
+      transform: rotate(-8deg) scale(0.9);
+      animation: bolt-b 13s linear infinite;
+    }
+
+    .storm-streak-c {
+      left: 50%;
+      top: -14%;
+      transform: rotate(4deg) scale(0.72);
+      animation: bolt-c 13s linear infinite;
+    }
+
     @keyframes storm-shift {
       0% {
         background-position: 0% 0%, 100% 100%, 50% 50%;
@@ -172,17 +220,90 @@
       }
     }
 
+    @keyframes bolt-a {
+      0%, 6.35%, 6.52%, 100% {
+        opacity: 0;
+      }
+      6.41% {
+        opacity: 0.88;
+      }
+      6.47% {
+        opacity: 0.28;
+      }
+      22.45%, 22.59%, 22.69% {
+        opacity: 0;
+      }
+      22.53% {
+        opacity: 0.82;
+      }
+      22.63% {
+        opacity: 0.24;
+      }
+    }
+
+    @keyframes bolt-b {
+      0%, 10.78%, 10.95%, 100% {
+        opacity: 0;
+      }
+      10.84% {
+        opacity: 0.9;
+      }
+      10.92% {
+        opacity: 0.3;
+      }
+      44.63%, 44.78%, 44.9% {
+        opacity: 0;
+      }
+      44.72% {
+        opacity: 0.86;
+      }
+      44.84% {
+        opacity: 0.32;
+      }
+    }
+
+    @keyframes bolt-c {
+      0%, 48.62%, 48.82%, 100% {
+        opacity: 0;
+      }
+      48.72% {
+        opacity: 0.84;
+      }
+      48.79% {
+        opacity: 0.27;
+      }
+    }
+
     @media (prefers-reduced-motion: reduce) {
       body,
       body::before,
       body::after,
       .storm-regions,
+      .storm-streak,
       .edge-icon,
       h1,
       .panel,
+      .panel::after,
       .edge-word::after {
         animation: none !important;
       }
+    }
+
+    body.calm-mode,
+    body.calm-mode::before,
+    body.calm-mode::after,
+    body.calm-mode .storm-regions,
+    body.calm-mode .storm-streak,
+    body.calm-mode .edge-icon,
+    body.calm-mode h1,
+    body.calm-mode .panel,
+    body.calm-mode .panel::after,
+    body.calm-mode .edge-word::after {
+      animation: none !important;
+    }
+
+    body.calm-mode .storm-streak {
+      opacity: 0 !important;
     }
 
     .panel {
@@ -194,8 +315,23 @@
       backdrop-filter: blur(6px);
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
       position: relative;
+      overflow: hidden;
       z-index: 2;
       animation: panel-flicker 13s linear infinite;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: inherit;
+      pointer-events: none;
+      opacity: 0;
+      background:
+        radial-gradient(65% 42% at 22% 4%, rgba(166, 226, 255, 0.85), rgba(166, 226, 255, 0) 66%),
+        radial-gradient(65% 42% at 74% 2%, rgba(124, 199, 255, 0.74), rgba(124, 199, 255, 0) 68%);
+      mix-blend-mode: screen;
+      animation: panel-afterglow 13s linear infinite;
     }
 
     @keyframes panel-flicker {
@@ -209,6 +345,21 @@
       }
       6.9%, 11.1%, 23%, 45%, 49% {
         box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+      }
+    }
+
+    @keyframes panel-afterglow {
+      0%, 6.4%, 10.8%, 22.5%, 44.6%, 48.6%, 100% {
+        opacity: 0;
+      }
+      6.55%, 10.95%, 22.65%, 44.75%, 48.75% {
+        opacity: 0.72;
+      }
+      7.2%, 11.6%, 23.4%, 45.5%, 49.6% {
+        opacity: 0.24;
+      }
+      8.2%, 12.5%, 24.8%, 46.9%, 51.1% {
+        opacity: 0.08;
       }
     }
 
@@ -407,6 +558,11 @@
 </head>
 <body>
   <div class="storm-regions" aria-hidden="true"></div>
+  <div class="storm-streaks" aria-hidden="true">
+    <span class="storm-streak storm-streak-a"></span>
+    <span class="storm-streak storm-streak-b"></span>
+    <span class="storm-streak storm-streak-c"></span>
+  </div>
   <main class="panel">
     <div class="brandline">
       <img class="edge-icon" src="/favicon.svg" alt="Kajkowalski Edge icon" width="28" height="28">
@@ -422,6 +578,11 @@
   </main>
   <script>
     (function () {
+      const calmValue = new URLSearchParams(window.location.search).get("calm");
+      if (calmValue && /^(1|true|yes|on)$/i.test(calmValue)) {
+        document.body.classList.add("calm-mode");
+      }
+
       const host = window.location.hostname;
       if (!host) return;
       const targets = document.querySelectorAll('[data-host]');
