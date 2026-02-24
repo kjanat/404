@@ -614,6 +614,51 @@
         transform: translateX(0) rotate(45deg);
       }
     }
+
+    @media (orientation: landscape) and (max-height: 540px) {
+      body {
+        padding: 10px 14px;
+      }
+
+      .panel {
+        width: min(760px, 96vw);
+        max-height: calc(100dvh - 20px);
+        padding: 16px 18px;
+        border-radius: 14px;
+      }
+
+      .brandline {
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+
+      .edge-icon {
+        width: 22px;
+        height: 22px;
+      }
+
+      .kicker {
+        font-size: 0.68rem;
+        letter-spacing: 0.08em;
+      }
+
+      h1 {
+        font-size: clamp(1.15rem, 3.1vw, 1.55rem);
+        line-height: 1.12;
+      }
+
+      p {
+        margin-top: 9px;
+        font-size: 0.88rem;
+        line-height: 1.4;
+      }
+
+      .edge-word::after {
+        min-width: 170px;
+        max-width: 240px;
+        font-size: 0.66rem;
+      }
+    }
   </style>
 </head>
 <body>
