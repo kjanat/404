@@ -24,10 +24,10 @@ const require = createRequire(import.meta.url);
 const { values: args } = parseArgs({
 	options: {
 		url: { type: 'string', default: 'https://404.kjanat.com' },
-		out: { type: 'string', default: 'preview.gif' },
-		width: { type: 'string', default: '800' },
-		height: { type: 'string', default: '500' },
-		duration: { type: 'string', default: '6' },
+		out: { type: 'string', short: 'o', default: 'preview.gif' },
+		width: { type: 'string', short: 'w', default: '800' },
+		height: { type: 'string', short: 'h', default: '500' },
+		duration: { type: 'string', short: 'd', default: '6' },
 		fps: { type: 'string', default: '12' },
 	},
 });

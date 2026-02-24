@@ -7,7 +7,7 @@
 		"lint:css": "stylelint '**/*.html'",
 		"lint:html": "htmlhint '**/*.html'",
 		"lint:js": "eslint",
-		"screenshot": "bun scripts/capture.mjs"
+		"gif": "bun scripts/capture.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

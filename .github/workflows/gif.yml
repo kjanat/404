@@ -1,0 +1,40 @@
+name: Generate GIF
+on:
+  workflow_dispatch:
+    inputs:
+      width:
+        description: Capture width in pixels
+        required: false
+        default: "1152"
+      height:
+        description: Capture height in pixels
+        required: false
+        default: "648"
+      url:
+        description: URL to capture
+        required: false
+        default: "https://unavailable.kajkowalski.nl"
+      duration:
+        description: Capture duration in seconds
+        required: false
+        default: "6"
+      fps:
+        description: Frames per second
+        required: false
+        default: "12"
+      out:
+        description: Output GIF filename
+        required: false
+        default: "preview.gif"
+permissions: { contents: read }
+jobs:
+  gif:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: oven-sh/setup-bun@v2
+      - run: bun i
+      - name: Generate GIF
+        run: bun gif -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -o "${{ inputs.out }}"
+      - uses: actions/upload-artifact@v4
+        with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
