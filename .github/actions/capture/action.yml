@@ -20,6 +20,20 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Expose inputs as env vars
+      shell: bash
+      run: |
+        cat >> "$GITHUB_ENV" <<EOF
+        INPUT_WIDTH=${{ inputs.width }}
+        INPUT_HEIGHT=${{ inputs.height }}
+        INPUT_URL=${{ inputs.url }}
+        INPUT_DURATION=${{ inputs.duration }}
+        INPUT_FPS=${{ inputs.fps }}
+        INPUT_QUALITY=${{ inputs.quality }}
+        INPUT_MAX_MB=${{ inputs.max_mb }}
+        INPUT_VIDEO_CRF=${{ inputs.video_crf }}
+        INPUT_EXT=${{ inputs.ext }}
+        EOF
     - uses: oven-sh/setup-bun@v2
     - run: bun i
       shell: bash
