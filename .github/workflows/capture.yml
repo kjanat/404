@@ -55,5 +55,18 @@ jobs:
         run: bunx playwright install chromium
       - name: Generate Animation
         run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -q "${{ inputs.quality }}" --max-bytes "$(( ${{ inputs.max_mb }} * 1024 * 1024 ))" --video-crf "${{ inputs.video_crf }}" -o "${{ inputs.out }}"
-      - uses: actions/upload-artifact@v6
+      - id: upload
+        uses: actions/upload-artifact@v6
         with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
+      - name: Capture summary
+        run: |
+          {
+            echo "### Capture complete"
+            echo ""
+            echo "- Output: ${{ inputs.out }}"
+            echo "- [Download artifact](${{ steps.upload.outputs.artifact-url }})"
+            echo ""
+            echo "Attempted inline preview (may be blocked by auth/content-type):"
+            echo ""
+            echo "![Captured output](${{ steps.upload.outputs.artifact-url }})"
+          } >> "$GITHUB_STEP_SUMMARY"
