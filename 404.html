@@ -18,6 +18,13 @@
       --border: rgba(155, 178, 208, 0.3);
     }
 
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
     * {
       box-sizing: border-box;
     }
@@ -366,6 +373,10 @@
       animation: panel-flicker 13s linear infinite;
     }
 
+    .panel > * {
+      max-width: 100%;
+    }
+
     .panel::after {
       content: "";
       position: absolute;
@@ -493,6 +504,7 @@
     .brandline {
       display: flex;
       align-items: center;
+      flex-wrap: wrap;
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -529,6 +541,7 @@
       font-size: clamp(1.7rem, 4.2vw, 2.5rem);
       line-height: 1.15;
       animation: title-flicker 13s linear infinite;
+      overflow-wrap: anywhere;
     }
 
     @keyframes title-flicker {
@@ -551,6 +564,7 @@
       color: var(--muted);
       font-size: 1.04rem;
       line-height: 1.6;
+      overflow-wrap: anywhere;
     }
 
     .host-name {
