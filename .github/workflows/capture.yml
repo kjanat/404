@@ -1,4 +1,4 @@
-name: Capture Animation
+name: Capture animation
 run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.height }}, ${{ inputs.max_mb }}MB)
 on:
   workflow_dispatch:
@@ -9,9 +9,9 @@ on:
       duration:  { description: "Capture duration in seconds",         required: false, default: 6,    type: number }
       fps:       { description: "Frames per second",                   required: false, default: 12,   type: number }
       quality:   { description: "WebP quality (0-100)",                required: false, default: 100,  type: number }
-      max_mb:    { description: "Max output size in MB (integer)",      required: false, default: 3,    type: number }
+      max_mb:    { description: "Max output size in MB (integer)",     required: false, default: 3,    type: number }
       video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28,   type: number }
-      ext:       { description: "Filetype to capture",                  required: false, default: webp, type: choice, options: [webp, gif, mp4] }
+      ext:       { description: "Filetype to capture",                 required: false, default: webp, type: choice, options: [webp, gif, mp4] }
 permissions: { contents: read }
 jobs:
   capture:
