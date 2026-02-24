@@ -1,4 +1,5 @@
 name: Capture Animation
+run-name: Capture ${{ inputs.out }} (${{ inputs.width }}x${{ inputs.height }}, ${{ inputs.max_mb }}MB)
 on:
   workflow_dispatch:
     inputs:
@@ -46,6 +47,10 @@ jobs:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - run: bun i
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Verify ffmpeg
+        run: ffmpeg -version
       - name: Install Playwright browser
         run: bunx playwright install chromium
       - name: Generate Animation
