@@ -1,20 +1,20 @@
 #!/usr/bin/env node
 
 /**
- * Capture an animated GIF of the 404 page.
+ * Capture an animated image of the 404 page.
  *
  * Uses Playwright's bundled Chromium to take sequential screenshots,
- * then stitches them into a GIF with ffmpeg.
+ * then stitches them into a GIF or WebP with ffmpeg.
  *
  * Usage:
- *   node scripts/capture.mjs [--url https://404.kjanat.com] [--out preview.gif]
+ *   node scripts/capture.mjs [--url https://404.kjanat.com] [--out preview.webp]
  *                             [--width 800] [--height 500] [--duration 6] [--fps 12]
  */
 
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, rmSync, statSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, resolve } from 'node:path';
+import { dirname, extname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 const require = createRequire(import.meta.url);
@@ -24,7 +24,7 @@ const require = createRequire(import.meta.url);
 const { values: args } = parseArgs({
 	options: {
 		url: { type: 'string', default: 'https://404.kjanat.com' },
-		out: { type: 'string', short: 'o', default: 'preview.gif' },
+		out: { type: 'string', short: 'o', default: 'preview.webp' },
 		width: { type: 'string', short: 'w', default: '800' },
 		height: { type: 'string', short: 'h', default: '500' },
 		duration: { type: 'string', short: 'd', default: '6' },
@@ -34,6 +34,7 @@ const { values: args } = parseArgs({
 
 const URL = args.url;
 const OUT = resolve(args.out);
+const OUT_EXT = extname(OUT).toLowerCase();
 const WIDTH = Number(args.width);
 const HEIGHT = Number(args.height);
 const DURATION = Number(args.duration); // seconds to record
@@ -41,6 +42,11 @@ const FPS = Number(args.fps);
 const FRAME_INTERVAL = 1000 / FPS;
 const TOTAL_FRAMES = Math.ceil(DURATION * FPS);
 const TMP = resolve(dirname(OUT), '.capture-frames');
+
+if (OUT_EXT !== '.gif' && OUT_EXT !== '.webp') {
+	console.error('Unsupported output format. Use .gif or .webp');
+	process.exit(1);
+}
 
 /* ---------- Locate Playwright ---------- */
 
@@ -117,21 +123,39 @@ for (let i = 0; i < TOTAL_FRAMES; i++) {
 await browser.close();
 console.log(`Captured ${TOTAL_FRAMES} frames into ${TMP}`);
 
-/* ---------- Assemble GIF with ffmpeg ---------- */
+/* ---------- Assemble output with ffmpeg ---------- */
 
-console.log('Assembling GIF with ffmpeg…');
-
-execSync(
-	[
-		'ffmpeg -y',
-		`-framerate ${FPS}`,
-		`-i "${TMP}/frame-%05d.png"`,
-		// High-quality palette-based GIF encoding
-		`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=floyd_steinberg"`,
-		`"${OUT}"`,
-	].join(' '),
-	{ stdio: 'inherit' },
-);
+if (OUT_EXT === '.webp') {
+	console.log('Assembling animated WebP with ffmpeg…');
+	execSync(
+		[
+			'ffmpeg -y',
+			`-framerate ${FPS}`,
+			`-i "${TMP}/frame-%05d.png"`,
+			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=yuva420p"`,
+			'-c:v libwebp_anim',
+			'-lossless 0',
+			'-q:v 70',
+			'-compression_level 6',
+			'-loop 0',
+			`"${OUT}"`,
+		].join(' '),
+		{ stdio: 'inherit' },
+	);
+} else {
+	console.log('Assembling GIF with ffmpeg…');
+	execSync(
+		[
+			'ffmpeg -y',
+			`-framerate ${FPS}`,
+			`-i "${TMP}/frame-%05d.png"`,
+			// High-quality palette-based GIF encoding
+			`-vf "fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=floyd_steinberg"`,
+			`"${OUT}"`,
+		].join(' '),
+		{ stdio: 'inherit' },
+	);
+}
 
 /* ---------- Cleanup ---------- */
 

@@ -1,13 +1,14 @@
 {
 	"private": true,
 	"scripts": {
+		"capture": "bun scripts/capture.mjs",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
+		"gif": "bun scripts/capture.mjs",
 		"lint": "bun lint:html && bun lint:css && bun lint:js",
 		"lint:css": "stylelint '**/*.html'",
 		"lint:html": "htmlhint '**/*.html'",
-		"lint:js": "eslint",
-		"gif": "bun scripts/capture.mjs"
+		"lint:js": "eslint"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

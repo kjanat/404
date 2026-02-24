@@ -1,4 +1,4 @@
-name: Generate GIF
+name: Capture Animation
 on:
   workflow_dispatch:
     inputs:
@@ -23,18 +23,20 @@ on:
         required: false
         default: "12"
       out:
-        description: Output GIF filename
+        description: Output filename (.webp or .gif)
         required: false
-        default: "preview.gif"
+        default: "preview.webp"
 permissions: { contents: read }
 jobs:
-  gif:
+  capture:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - run: bun i
-      - name: Generate GIF
-        run: bun gif -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -o "${{ inputs.out }}"
-      - uses: actions/upload-artifact@v4
+      - name: Install Playwright browser
+        run: bunx playwright install chromium
+      - name: Generate Animation
+        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -o "${{ inputs.out }}"
+      - uses: actions/upload-artifact@v6
         with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
