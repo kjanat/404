@@ -18,7 +18,10 @@ import { dirname, extname, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
 
 import type { Browser, Page } from 'playwright';
-import playwright from 'playwright';
+import { chromium } from 'playwright-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+
+chromium.use(StealthPlugin());
 
 /* ---------- CLI args ---------- */
 
@@ -113,8 +116,8 @@ console.log(
 	`Capturing ${TOTAL_FRAMES} frames (${DURATION}s @ ${FPS} fps) at ${WIDTH}x${HEIGHT}`,
 );
 
-const browser = await playwright.chromium.launch({
-	args: ['--no-sandbox', '--disable-gpu'],
+const browser = await chromium.launch({
+	args: ['--no-sandbox', '--disable-gpu', '--disable-blink-features=AutomationControlled'],
 });
 
 const page = await resolveTarget(browser);
