@@ -26,10 +26,10 @@ on:
         description: WebP quality (0-100)
         required: false
         default: "100"
-      max_bytes:
-        description: Max output size in bytes
+      max_mb:
+        description: Max output size in MB (integer)
         required: false
-        default: "3145728"
+        default: "3"
       video_crf:
         description: MP4 quality (0-51, lower is better)
         required: false
@@ -49,6 +49,6 @@ jobs:
       - name: Install Playwright browser
         run: bunx playwright install chromium
       - name: Generate Animation
-        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -q "${{ inputs.quality }}" --max-bytes "${{ inputs.max_bytes }}" --video-crf "${{ inputs.video_crf }}" -o "${{ inputs.out }}"
+        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -q "${{ inputs.quality }}" --max-bytes "$(( ${{ inputs.max_mb }} * 1024 * 1024 ))" --video-crf "${{ inputs.video_crf }}" -o "${{ inputs.out }}"
       - uses: actions/upload-artifact@v6
         with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
