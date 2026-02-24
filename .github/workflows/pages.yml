@@ -7,9 +7,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - run: mv 404.html index.html
+      - name: Stage deployment files
+        run: |
+          mkdir _site
+          find . -type f \( -name '*.html' -o -name '*.css' -o -name '*.js' -o -name '*.ico' -o -name '*.svg' \) \
+            -not -path './.git/*' -not -path './.github/*' -not -path './node_modules/*' -not -path './_site/*' \
+            | while IFS= read -r f; do
+              dest="_site/${f#./}"
+              mkdir -p "$(dirname "$dest")"
+              cp "$f" "$dest"
+            done
+          mv _site/404.html _site/index.html
       - uses: actions/upload-pages-artifact@v4
-        with: { path: . }
+        with: { path: _site }
   deploy:
     environment: { name: github-pages, url: "${{ steps.deployment.outputs.page_url }}" }
     runs-on: ubuntu-latest
