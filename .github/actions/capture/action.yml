@@ -1,0 +1,62 @@
+name: Capture Animation
+description: Capture an animated screenshot of a page as GIF, WebP, or MP4.
+
+inputs:
+  width:       { description: "Capture width in pixels",             default: "1152" }
+  height:      { description: "Capture height in pixels",            default: "648"  }
+  url:         { description: "URL to capture",                      default: "https://unavailable.kajkowalski.nl" }
+  duration:    { description: "Capture duration in seconds",         default: "6"    }
+  fps:         { description: "Frames per second",                   default: "12"   }
+  quality:     { description: "WebP quality (0-100)",                default: "100"  }
+  max_mb:      { description: "Max output size in MB",               default: "3"    }
+  video_crf:   { description: "MP4 quality (0-51, lower is better)", default: "28"   }
+  ext:         { description: "Filetype to capture (webp, gif, mp4)",default: "webp" }
+
+outputs:
+  artifact-url:
+    description: "URL to the uploaded artifact"
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+runs:
+  using: composite
+  steps:
+    - uses: oven-sh/setup-bun@v2
+    - run: bun i
+      shell: bash
+    - uses: FedericoCarboni/setup-ffmpeg@v3
+    - name: Install Playwright browser
+      shell: bash
+      run: bunx playwright install chromium
+    - name: Generate Animation
+      shell: bash
+      run: |
+        bun capture \
+          -w "$INPUT_WIDTH" -h "$INPUT_HEIGHT" \
+          --url "$INPUT_URL" -d "$INPUT_DURATION" --fps "$INPUT_FPS" \
+          -q "$INPUT_QUALITY" --max-bytes "$(( INPUT_MAX_MB * 1024 * 1024 ))" \
+          --video-crf "$INPUT_VIDEO_CRF" -o "preview.$INPUT_EXT"
+    - id: upload
+      uses: actions/upload-artifact@v6
+      with:
+        name: "preview.${{ inputs.ext }}"
+        path: "preview.${{ inputs.ext }}"
+    - name: Capture summary
+      shell: bash
+      env:
+        ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
+      run: |
+        tee -a "$GITHUB_STEP_SUMMARY" <<EOF
+        ### Capture complete
+
+        | Parameter  | Value                                 |
+        | ---------- | ------------------------------------- |
+        | URL        | \`$INPUT_URL\`                        |
+        | Dimensions | ${INPUT_WIDTH}x${INPUT_HEIGHT}        |
+        | Duration   | ${INPUT_DURATION}s @ ${INPUT_FPS} fps |
+        | Quality    | $INPUT_QUALITY                        |
+        | Max size   | $INPUT_MAX_MB MB                      |
+        | Video CRF  | $INPUT_VIDEO_CRF                      |
+        | Filetype   | \`$INPUT_EXT\`                        |
+
+        [Download artifact]($ARTIFACT_URL)
+        EOF

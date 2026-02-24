@@ -3,60 +3,29 @@ run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.heig
 on:
   workflow_dispatch:
     inputs:
-      width: { description: "Capture width in pixels", required: false, default: 1152, type: number }
-      height: { description: "Capture height in pixels", required: false, default: 648, type: number }
-      url: { description: "URL to capture", required: false, default: https://unavailable.kajkowalski.nl, type: string }
-      duration: { description: "Capture duration in seconds", required: false, default: 6, type: number }
-      fps: { description: "Frames per second", required: false, default: 12, type: number }
-      quality: { description: "WebP quality (0-100)", required: false, default: 100, type: number }
-      max_mb: { description: "Max output size in MB (integer)", required: false, default: 3, type: number }
-      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28, type: number }
-      ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
+      width:     { description: "Capture width in pixels",             required: false, default: 1152, type: number }
+      height:    { description: "Capture height in pixels",            required: false, default: 648,  type: number }
+      url:       { description: "URL to capture",                      required: false, default: "https://unavailable.kajkowalski.nl", type: string }
+      duration:  { description: "Capture duration in seconds",         required: false, default: 6,    type: number }
+      fps:       { description: "Frames per second",                   required: false, default: 12,   type: number }
+      quality:   { description: "WebP quality (0-100)",                required: false, default: 100,  type: number }
+      max_mb:    { description: "Max output size in MB (integer)",      required: false, default: 3,    type: number }
+      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28,   type: number }
+      ext:       { description: "Filetype to capture",                  required: false, default: webp, type: choice, options: [webp, gif, mp4] }
 permissions: { contents: read }
 jobs:
   capture:
     runs-on: ubuntu-latest
-    env:
-      INPUT_WIDTH: ${{ inputs.width }}
-      INPUT_HEIGHT: ${{ inputs.height }}
-      INPUT_URL: ${{ inputs.url }}
-      INPUT_DURATION: ${{ inputs.duration }}
-      INPUT_FPS: ${{ inputs.fps }}
-      INPUT_QUALITY: ${{ inputs.quality }}
-      INPUT_MAX_MB: ${{ inputs.max_mb }}
-      INPUT_VIDEO_CRF: ${{ inputs.video_crf }}
-      INPUT_EXT: ${{ inputs.ext }}
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-      - name: Install Playwright browser
-        run: bunx playwright install chromium
-      - name: Generate Animation
-        run: >-
-          bun capture -w "${INPUT_WIDTH}" -h "${INPUT_HEIGHT}"
-          --url "${INPUT_URL}" -d "${INPUT_DURATION}" --fps "${INPUT_FPS}"
-          -q "${INPUT_QUALITY}" --max-bytes "$(( ${INPUT_MAX_MB} * 1024 * 1024 ))"
-          --video-crf "${INPUT_VIDEO_CRF}" -o "preview.${INPUT_EXT}"
-      - id: upload
-        uses: actions/upload-artifact@v6
-        with: { name: "preview.${{ inputs.ext }}", path: "preview.${{ inputs.ext }}" }
-      - name: Capture summary
-        env: { ARTIFACT_URL: "${{ steps.upload.outputs.artifact-url }}" }
-        run: |
-          tee -a "$GITHUB_STEP_SUMMARY" <<EOF
-          ### Capture complete
-
-          | Parameter  | Value                                 |
-          | ---------- | --------------------------------------|
-          | URL        | \`${INPUT_URL}\`                      |
-          | Dimensions | ${INPUT_WIDTH}x${INPUT_HEIGHT}        |
-          | Duration   | ${INPUT_DURATION}s @ ${INPUT_FPS} fps |
-          | Quality    | ${INPUT_QUALITY}                      |
-          | Max size   | ${INPUT_MAX_MB} MB                    |
-          | Video CRF  | ${INPUT_VIDEO_CRF}                    |
-          | Filetype   | \`${INPUT_EXT}\`                      |
-
-          [Download artifact](${ARTIFACT_URL})
-          EOF
+      - uses: ./.github/actions/capture
+        with:
+          width:     ${{ inputs.width }}
+          height:    ${{ inputs.height }}
+          url:       ${{ inputs.url }}
+          duration:  ${{ inputs.duration }}
+          fps:       ${{ inputs.fps }}
+          quality:   ${{ inputs.quality }}
+          max_mb:    ${{ inputs.max_mb }}
+          video_crf: ${{ inputs.video_crf }}
+          ext:       ${{ inputs.ext }}
