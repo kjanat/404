@@ -3,22 +3,26 @@ run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.heig
 on:
   workflow_dispatch:
     inputs:
-      width:     { description: "Capture width in pixels",             required: false, default: 1152, type: number }
-      height:    { description: "Capture height in pixels",            required: false, default: 648,  type: number }
+      width:     { description: "Capture width in pixels",             required: false, default: 1152,  type: number }
+      height:    { description: "Capture height in pixels",            required: false, default: 648,   type: number }
       url:       { description: "URL to capture",                      required: false, default: "https://404.kjanat.com", type: string }
-      duration:  { description: "Capture duration in seconds",         required: false, default: 6,    type: number }
-      fps:       { description: "Frames per second",                   required: false, default: 12,   type: number }
-      quality:   { description: "WebP quality (0-100)",                required: false, default: 100,  type: number }
-      max_mb:    { description: "Max output size in MB (integer)",     required: false, default: 3,    type: number }
-      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28,   type: number }
-      ext:       { description: "Filetype to capture",                 required: false, default: webp, type: choice, options: [webp, gif, mp4] }
-permissions: { contents: read }
+      duration:  { description: "Capture duration in seconds",         required: false, default: 6,     type: number }
+      fps:       { description: "Frames per second",                   required: false, default: 12,    type: number }
+      quality:   { description: "WebP quality (0-100)",                required: false, default: 100,   type: number }
+      max_mb:    { description: "Max output size in MB (integer)",     required: false, default: 3,     type: number }
+      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28,    type: number }
+      ext:       { description: "Filetype to capture",                 required: false, default: webp,  type: choice, options: [webp, gif, mp4] }
+      create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 jobs:
   capture:
     runs-on: ubuntu-latest
+    permissions: { contents: read }
+    outputs:
+      artifact-url: ${{ steps.capture.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/capture
+      - id: capture
+        uses: ./.github/actions/capture
         with:
           width:     ${{ inputs.width }}
           height:    ${{ inputs.height }}
@@ -29,3 +33,58 @@ jobs:
           max_mb:    ${{ inputs.max_mb }}
           video_crf: ${{ inputs.video_crf }}
           ext:       ${{ inputs.ext }}
+
+  pr:
+    if: ${{ inputs.create_pr }}
+    needs: capture
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v7
+        with:
+          name: "preview.${{ inputs.ext }}"
+          path: "."
+      - name: Create PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_URL: ${{ needs.capture.outputs.artifact-url }}
+        run: |
+          BRANCH="capture/preview-${{ inputs.ext }}-$(date +%Y%m%d-%H%M%S)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+
+          # Remove all previous preview files, add the new one
+          git rm --ignore-unmatch preview.gif preview.webp preview.mp4
+          git add "preview.${{ inputs.ext }}"
+
+          # Update README image link if the extension changed
+          sed -i 's|preview\.[a-zA-Z0-9]*|preview.${{ inputs.ext }}|g' README.md
+          git add README.md
+
+          git commit -m "chore: update preview screenshot to preview.${{ inputs.ext }}"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Update preview screenshot (preview.${{ inputs.ext }})" \
+            --body "$(cat <<BODY
+          Captured with the following settings:
+
+          | Parameter  | Value |
+          | ---------- | ----- |
+          | URL        | `${{ inputs.url }}` |
+          | Dimensions | ${{ inputs.width }}x${{ inputs.height }} |
+          | Duration   | ${{ inputs.duration }}s @ ${{ inputs.fps }} fps |
+          | Quality    | ${{ inputs.quality }} |
+          | Max size   | ${{ inputs.max_mb }} MB |
+          | Video CRF  | ${{ inputs.video_crf }} |
+          | Filetype   | `${{ inputs.ext }}` |
+
+          [Download artifact]($ARTIFACT_URL)
+          BODY
+          )" \
+            --base master \
+            --head "$BRANCH"
