@@ -1,44 +1,17 @@
 name: Capture Animation
-run-name: Capture ${{ inputs.out }} (${{ inputs.width }}x${{ inputs.height }}, ${{ inputs.max_mb }}MB)
+run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.height }}, ${{ inputs.max_mb }}MB)
 on:
   workflow_dispatch:
     inputs:
-      width:
-        description: Capture width in pixels
-        required: false
-        default: "1152"
-      height:
-        description: Capture height in pixels
-        required: false
-        default: "648"
-      url:
-        description: URL to capture
-        required: false
-        default: "https://unavailable.kajkowalski.nl"
-      duration:
-        description: Capture duration in seconds
-        required: false
-        default: "6"
-      fps:
-        description: Frames per second
-        required: false
-        default: "12"
-      quality:
-        description: WebP quality (0-100)
-        required: false
-        default: "100"
-      max_mb:
-        description: Max output size in MB (integer)
-        required: false
-        default: "3"
-      video_crf:
-        description: MP4 quality (0-51, lower is better)
-        required: false
-        default: "28"
-      out:
-        description: Output filename (.webp, .gif, or .mp4)
-        required: false
-        default: "preview.webp"
+      width: { description: "Capture width in pixels", required: false, default: 1152, type: number }
+      height: { description: "Capture height in pixels", required: false, default: 648, type: number }
+      url: { description: "URL to capture", required: false, default: https://unavailable.kajkowalski.nl, type: string }
+      duration: { description: "Capture duration in seconds", required: false, default: 6, type: number }
+      fps: { description: "Frames per second", required: false, default: 12, type: number }
+      quality: { description: "WebP quality (0-100)", required: false, default: 100, type: number }
+      max_mb: { description: "Max output size in MB (integer)", required: false, default: 3, type: number }
+      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28, type: number }
+      ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
 permissions: { contents: read }
 jobs:
   capture:
@@ -48,25 +21,33 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun i
       - name: Install ffmpeg
-        run: sudo apt-get update && sudo apt-get install -y ffmpeg
-      - name: Verify ffmpeg
-        run: ffmpeg -version
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg; ffmpeg -version
       - name: Install Playwright browser
         run: bunx playwright install chromium
       - name: Generate Animation
-        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -q "${{ inputs.quality }}" --max-bytes "$(( ${{ inputs.max_mb }} * 1024 * 1024 ))" --video-crf "${{ inputs.video_crf }}" -o "${{ inputs.out }}"
+        run: >-
+          bun capture -w "${INPUT_WIDTH}" -h "${INPUT_HEIGHT}"
+          --url "${INPUT_URL}" -d "${INPUT_DURATION}" --fps "${INPUT_FPS}"
+          -q "${INPUT_QUALITY}" --max-bytes "$(( ${INPUT_MAX_MB} * 1024 * 1024 ))"
+          --video-crf "${INPUT_VIDEO_CRF}" -o "preview.${INPUT_EXT}"
       - id: upload
         uses: actions/upload-artifact@v6
-        with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
+        with: { name: "preview.${{ inputs.ext }}", path: "preview.${{ inputs.ext }}" }
       - name: Capture summary
+        env: { ARTIFACT_URL: "${{ steps.upload.outputs.artifact-url }}" }
         run: |
-          {
-            echo "### Capture complete"
-            echo ""
-            echo "- Output: ${{ inputs.out }}"
-            echo "- [Download artifact](${{ steps.upload.outputs.artifact-url }})"
-            echo ""
-            echo "Attempted inline preview (may be blocked by auth/content-type):"
-            echo ""
-            echo "![Captured output](${{ steps.upload.outputs.artifact-url }})"
-          } >> "$GITHUB_STEP_SUMMARY"
+          tee -a "$GITHUB_STEP_SUMMARY" <<EOF
+          ### Capture complete
+
+          | Parameter  | Value                                 |
+          | ---------- | --------------------------------------|
+          | URL        | \`${INPUT_URL}\`                      |
+          | Dimensions | ${INPUT_WIDTH}x${INPUT_HEIGHT}        |
+          | Duration   | ${INPUT_DURATION}s @ ${INPUT_FPS} fps |
+          | Quality    | ${INPUT_QUALITY}                      |
+          | Max size   | ${INPUT_MAX_MB} MB                    |
+          | Video CRF  | ${INPUT_VIDEO_CRF}                    |
+          | Filetype   | \`${INPUT_EXT}\`                      |
+
+          [Download artifact](${ARTIFACT_URL})
+          EOF

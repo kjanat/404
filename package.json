@@ -1,10 +1,10 @@
 {
 	"private": true,
 	"scripts": {
-		"capture": "bun scripts/capture.mjs",
+		"capture": "bun scripts/capture.ts",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
-		"gif": "bun scripts/capture.mjs",
+		"gif": "bun capture",
 		"lint": "bun lint:html && bun lint:css && bun lint:js",
 		"lint:css": "stylelint '**/*.html'",
 		"lint:html": "htmlhint '**/*.html'",
