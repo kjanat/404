@@ -160,7 +160,13 @@ const encodeGif = (outPath: string, quiet = false): void => {
 	], quiet);
 };
 
-const encodeWebp = (outPath: string, quality: number, lossless: boolean, quiet = false): void => {
+const encodeWebp = (
+	outPath: string,
+	quality: number,
+	lossless: boolean,
+	quiet = false,
+	compressionLevel = 6,
+): void => {
 	runFfmpeg([
 		...ffmpegPreamble(),
 		'-vf',
@@ -172,7 +178,7 @@ const encodeWebp = (outPath: string, quality: number, lossless: boolean, quiet =
 		'-q:v',
 		String(quality),
 		'-compression_level',
-		'6',
+		String(compressionLevel),
 		'-loop',
 		'0',
 		outPath,
@@ -200,8 +206,10 @@ const encodeMp4 = (outPath: string, crf: number, quiet = false): void => {
 const sweepWebp = (maxBytes: number): void => {
 	const tmpOut = `${OUT}.sweep.webp`;
 
+	// Use compression_level=0 for probes — same quality ordering as level 6
+	// but ~33× faster. The final encode re-runs at level 6 for best compression.
 	const measure = (lossless: boolean, quality: number): number => {
-		encodeWebp(tmpOut, quality, lossless, true);
+		encodeWebp(tmpOut, quality, lossless, /* quiet */ true, /* compressionLevel */ 0);
 		const size = statSync(tmpOut).size;
 		rmSync(tmpOut);
 		return size;
