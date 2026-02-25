@@ -57,8 +57,8 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
 
-          # Remove all previous preview files, add the new one
-          git rm -f --ignore-unmatch preview.gif preview.webp preview.mp4
+          # Remove all previous preview files from index (keep downloaded artifact on disk)
+          git rm --cached -f --ignore-unmatch preview.gif preview.webp preview.mp4
           git add "preview.${{ inputs.ext }}"
 
           # Update README image link if the extension changed
