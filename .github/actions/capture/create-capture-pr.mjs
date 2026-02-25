@@ -104,11 +104,13 @@ export default async function run({ github, context, core, exec }) {
 
 	await core.summary
 		.addHeading('Preview PR created', 2)
-		.addRaw(`- PR: [${pr.data.html_url}](${pr.data.html_url})`, true)
-		.addRaw(`- Branch: <code>${branch}</code>`, true)
-		.addRaw(`- Commit: <code>${commitSha}</code>`, true)
-		.addRaw(`- Preview: [preview.${normalizedExt}](${rawBase}/${commitSha}/preview.${normalizedExt})`, true)
-		.addRaw(`- Artifact: [Download artifact](${artifactUrl})`, true)
+		.addList([
+			`PR: <a href="${pr.data.html_url}">${pr.data.html_url}</a>`,
+			`Branch: <code>${branch}</code>`,
+			`Commit: <code>${commitSha}</code>`,
+			`Preview: <a href="${rawBase}/${commitSha}/preview.${normalizedExt}">preview.${normalizedExt}</a>`,
+			`Artifact: <a href="${artifactUrl}">Download artifact</a>`,
+		])
 		.write();
 
 	core.info(`PR created: ${pr.data.html_url}`);
