@@ -4,7 +4,9 @@
 	"formatter": [{ "external": { "command": "dprint", "arguments": ["fmt", "--stdin", "{buffer_path}"] } }],
 	"prettier": { "allowed": false },
 	"languages": {
-		"TypeScript": { "language_servers": ["tsgo", "vtsls", "eslint"] },
-		"JavaScript": { "language_servers": ["tsgo", "vtsls", "eslint"] }
-	}
+		"TypeScript": { "language_servers": ["tsgo", "vtsls", "eslint", "!tailwindcss-intellisense-css"] },
+		"JavaScript": { "language_servers": ["tsgo", "vtsls", "eslint"] },
+		"CSS": { "language_servers": ["tailwindcss-intellisense-css"] }
+	},
+	"lsp": {}
 }
