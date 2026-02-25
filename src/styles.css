@@ -1,4 +1,5 @@
-@import url("animations.css");
+@import "./animations.css";
+@import "tailwindcss";
 
 :root {
 	--bg-top: #060a14;
@@ -321,6 +322,14 @@ body.calm-mode h1 {
 	animation: panel-afterglow 13s linear infinite;
 }
 
+.brandline {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
 .kicker {
 	font-size: 0.8rem;
 	letter-spacing: 0.11em;
@@ -329,6 +338,7 @@ body.calm-mode h1 {
 	margin: 0;
 }
 
+/* Non-animation .edge-icon properties; animation declared in animations.css */
 .edge-icon {
 	user-select: none;
 }

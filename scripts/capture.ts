@@ -69,7 +69,7 @@ if (!isSupportedExtension(OUT_EXT)) {
 	process.exit(1);
 }
 
-const numericCaptureArgs: Array<[flag: string, value: number]> = [
+const numericCaptureArgs: [flag: string, value: number][] = [
 	['--width', WIDTH],
 	['--height', HEIGHT],
 	['--duration', DURATION],

@@ -1,15 +1,11 @@
-import js from '@eslint/js';
-// @ts-ignore
-import html from 'eslint-plugin-html';
-import globals from 'globals';
+// @ts-check
 
-export default [
-	{
-		files: ['**/*.html'],
-		plugins: { html },
-		rules: js.configs.recommended.rules,
-		languageOptions: {
-			globals: globals.browser,
-		},
-	},
-];
+import eslint from '@eslint/js';
+import { defineConfig } from 'eslint/config';
+import tseslint from 'typescript-eslint';
+
+export default defineConfig(
+	eslint.configs.recommended,
+	tseslint.configs.strict,
+	tseslint.configs.stylistic,
+);
