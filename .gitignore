@@ -1,3 +1,5 @@
 node_modules/
 .capture-frames/
 .bench/
+dist
+tooltip-validation.png

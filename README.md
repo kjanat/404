@@ -1,4 +1,4 @@
-# 404
+# 404 - This host is not configured
 
 Custom 404 error page for [Kajkowalski Edge](https://404.kjanat.com).
 

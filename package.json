@@ -1,15 +1,17 @@
 {
 	"private": true,
 	"scripts": {
-		"capture": "bun scripts/capture.ts",
+		"bd": "rm -rf dist; bun build src/index.html --outdir dist --minify --sourcemap",
+		"dev": "bun --hot src/index.html",
+		"preview": "bun bd && bun --watch dist/index.html",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
-		"gif": "bun capture",
+		"typecheck": "tsc --noEmit",
 		"lint": "bun lint:html && bun lint:css && bun lint:js",
-		"lint:css": "stylelint '**/*.html'",
+		"lint:css": "stylelint '**/*.css'",
 		"lint:html": "htmlhint '**/*.html'",
 		"lint:js": "eslint",
-		"typecheck": "tsc --noEmit"
+		"capture": "bun scripts/capture.ts"
 	},
 	"devDependencies": {
 		"@actions/artifact": "^6.1.0",
