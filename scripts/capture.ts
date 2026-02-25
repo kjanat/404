@@ -155,9 +155,14 @@ await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);
 
 for (let i = 0; i < TOTAL_FRAMES; i++) {
 	const padded = String(i).padStart(5, '0');
+	const captureStartedAt = Date.now();
 	await page.screenshot({ path: `${TMP}/frame-${padded}.png` });
 	if (i < TOTAL_FRAMES - 1) {
-		await page.waitForTimeout(FRAME_INTERVAL);
+		const captureDurationMs = Date.now() - captureStartedAt;
+		const remainingInterval = FRAME_INTERVAL - captureDurationMs;
+		if (remainingInterval > 0) {
+			await page.waitForTimeout(remainingInterval);
+		}
 	}
 }
 
@@ -199,10 +204,11 @@ const encodeWebp = (
 	quiet = false,
 	compressionLevel = 6,
 ): void => {
+	const scaleHeight = lossless ? -1 : -2;
 	runFfmpeg([
 		...ffmpegPreamble(),
 		'-vf',
-		`fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=${lossless ? 'rgba' : 'yuva420p'}`,
+		`fps=${FPS},scale=${WIDTH}:${scaleHeight}:flags=lanczos,format=${lossless ? 'rgba' : 'yuva420p'}`,
 		'-c:v',
 		'libwebp_anim',
 		'-lossless',
@@ -222,7 +228,7 @@ const encodeMp4 = (outPath: string, crf: number, quiet = false): void => {
 	runFfmpeg([
 		...ffmpegPreamble(),
 		'-vf',
-		`fps=${FPS},scale=${WIDTH}:-1:flags=lanczos,format=yuv420p`,
+		`fps=${FPS},scale=${WIDTH}:-2:flags=lanczos,format=yuv420p`,
 		'-c:v',
 		'libx264',
 		'-preset',

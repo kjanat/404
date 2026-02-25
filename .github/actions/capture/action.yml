@@ -107,6 +107,7 @@ runs:
       with:
         name: "preview.${{ inputs.ext }}"
         path: "preview.${{ inputs.ext }}"
+        if-no-files-found: error
     - name: Publish capture summary
       uses: ./.github/actions/capture/summary
       with:
