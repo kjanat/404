@@ -286,9 +286,20 @@ const sweepWebp = (maxBytes: number): void => {
 	const best = sweep(false);
 	if (best !== null) {
 		console.log(`Selected lossy WebP quality ${best.quality} (${best.size} bytes)`);
+		encodeWebp(OUT, best.quality, false);
+		const directFinalSize = statSync(OUT).size;
+		if (directFinalSize <= maxBytes) {
+			console.log(`Final lossy output quality ${best.quality} (${directFinalSize} bytes)`);
+			return;
+		}
 
+		// Rare fallback: probe compression and final compression diverged enough
+		// to exceed the target. Only then perform an additional binary search.
+		console.log(
+			`Final lossy encode (${directFinalSize} bytes) exceeds --max-bytes; running fallback search.`,
+		);
 		let low = 0;
-		let high = best.quality;
+		let high = Math.max(0, best.quality - 1);
 		let finalBest: { quality: number; size: number } | null = null;
 
 		while (low <= high) {
@@ -306,7 +317,7 @@ const sweepWebp = (maxBytes: number): void => {
 		if (finalBest !== null) {
 			encodeWebp(OUT, finalBest.quality, false);
 			const finalSize = statSync(OUT).size;
-			console.log(`Final lossy output quality ${finalBest.quality} (${finalSize} bytes)`);
+			console.log(`Fallback lossy output quality ${finalBest.quality} (${finalSize} bytes)`);
 			return;
 		}
 
