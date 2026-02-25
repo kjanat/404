@@ -1,46 +1,62 @@
-name: Capture Animation
+name: Capture animation
+run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.height }}, ${{ inputs.max_mb }}MB)
 on:
   workflow_dispatch:
     inputs:
-      width:
-        description: Capture width in pixels
-        required: false
-        default: "1152"
-      height:
-        description: Capture height in pixels
-        required: false
-        default: "648"
-      url:
-        description: URL to capture
-        required: false
-        default: "https://unavailable.kajkowalski.nl"
-      duration:
-        description: Capture duration in seconds
-        required: false
-        default: "6"
-      fps:
-        description: Frames per second
-        required: false
-        default: "12"
-      quality:
-        description: WebP quality (0-100)
-        required: false
-        default: "100"
-      out:
-        description: Output filename (.webp or .gif)
-        required: false
-        default: "preview.webp"
-permissions: { contents: read }
+      width: { description: "Capture width in pixels", required: false, default: 1152, type: number }
+      height: { description: "Capture height in pixels", required: false, default: 648, type: number }
+      url: { description: "URL to capture", required: false, default: "https://404.kjanat.com", type: string }
+      duration: { description: "Capture duration in seconds", required: false, default: 6, type: number }
+      fps: { description: "Frames per second", required: false, default: 12, type: number }
+      quality: { description: "WebP quality (0-100)", required: false, default: 100, type: number }
+      max_mb: { description: "Max output size in MB (integer)", required: false, default: 3, type: number }
+      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28, type: number }
+      ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
+      create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 jobs:
   capture:
+    name: Capture media artifact
     runs-on: ubuntu-latest
+    permissions: { contents: read }
+    outputs:
+      artifact-url: ${{ steps.capture.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
-      - name: Install Playwright browser
-        run: bunx playwright install chromium
-      - name: Generate Animation
-        run: bun capture -w "${{ inputs.width }}" -h "${{ inputs.height }}" --url "${{ inputs.url }}" -d "${{ inputs.duration }}" --fps "${{ inputs.fps }}" -q "${{ inputs.quality }}" -o "${{ inputs.out }}"
-      - uses: actions/upload-artifact@v6
-        with: { name: "${{ inputs.out }}", path: "${{ inputs.out }}" }
+      - id: capture
+        uses: ./.github/actions/capture
+        with:
+          width: ${{ inputs.width }}
+          height: ${{ inputs.height }}
+          url: ${{ inputs.url }}
+          duration: ${{ inputs.duration }}
+          fps: ${{ inputs.fps }}
+          quality: ${{ inputs.quality }}
+          max_mb: ${{ inputs.max_mb }}
+          video_crf: ${{ inputs.video_crf }}
+          ext: ${{ inputs.ext }}
+
+  pr:
+    if: ${{ inputs.create_pr }}
+    needs: capture
+    name: Create preview pull request
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - id: create_pr
+        uses: ./.github/actions/capture/create-pr
+        with:
+          ext: ${{ inputs.ext }}
+      - name: PR summary
+        shell: bash
+        env:
+          PR_URL: ${{ steps.create_pr.outputs.pr-url }}
+          ARTIFACT_URL: ${{ needs.capture.outputs.artifact-url }}
+        run: |
+          {
+            echo "### Preview pull request"
+            echo "- URL: $PR_URL"
+            echo "- Capture artifact: $ARTIFACT_URL"
+          } >> "$GITHUB_STEP_SUMMARY"

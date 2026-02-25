@@ -1,0 +1,114 @@
+name: Capture Animation
+description: Capture preview media and upload it as an artifact.
+
+inputs:
+  width:       { description: "Capture width in pixels",             default: "1152" }
+  height:      { description: "Capture height in pixels",            default: "648"  }
+  url:         { description: "URL to capture",                      default: "https://404.kjanat.com" }
+  duration:    { description: "Capture duration in seconds",         default: "6"    }
+  fps:         { description: "Frames per second",                   default: "12"   }
+  quality:     { description: "WebP quality (0-100)",                default: "100"  }
+  max_mb:      { description: "Max output size in MB",               default: "3"    }
+  video_crf:   { description: "MP4 quality (0-51, lower is better)", default: "28"   }
+  ext:         { description: "Filetype to capture (webp, gif, mp4)",default: "webp" }
+
+outputs:
+  artifact-url:
+    description: "URL to the uploaded artifact"
+    value: ${{ steps.upload.outputs.artifact-url }}
+
+runs:
+  using: composite
+  steps:
+    - name: Expose inputs as env vars
+      shell: bash
+      env:
+        _WIDTH: ${{ inputs.width }}
+        _HEIGHT: ${{ inputs.height }}
+        _URL: ${{ inputs.url }}
+        _DURATION: ${{ inputs.duration }}
+        _FPS: ${{ inputs.fps }}
+        _QUALITY: ${{ inputs.quality }}
+        _MAX_MB: ${{ inputs.max_mb }}
+        _VIDEO_CRF: ${{ inputs.video_crf }}
+        _EXT: ${{ inputs.ext }}
+      run: |
+        append_env() {
+          local key="$1"
+          local value="$2"
+          local delimiter="EOF_$(date +%s%N)_$RANDOM"
+          {
+            printf '%s<<%s\n' "$key" "$delimiter"
+            printf '%s\n' "$value"
+            printf '%s\n' "$delimiter"
+          } >> "$GITHUB_ENV"
+        }
+
+        append_env "INPUT_WIDTH" "$_WIDTH"
+        append_env "INPUT_HEIGHT" "$_HEIGHT"
+        append_env "INPUT_URL" "$_URL"
+        append_env "INPUT_DURATION" "$_DURATION"
+        append_env "INPUT_FPS" "$_FPS"
+        append_env "INPUT_QUALITY" "$_QUALITY"
+        append_env "INPUT_MAX_MB" "$_MAX_MB"
+        append_env "INPUT_VIDEO_CRF" "$_VIDEO_CRF"
+        append_env "INPUT_EXT" "$_EXT"
+    - name: Validate capture extension
+      shell: bash
+      run: |
+        case "$INPUT_EXT" in
+          webp|gif|mp4) ;;
+          *)
+            echo "Invalid INPUT_EXT value: $INPUT_EXT (allowed: webp, gif, mp4)" >&2
+            exit 1
+            ;;
+        esac
+    - name: Setup JS toolchain
+      uses: ./.github/actions/setup-node-bun
+      with:
+        install: "true"
+        frozen-lockfile: "true"
+    - uses: FedericoCarboni/setup-ffmpeg@v3
+    - name: Install Playwright browser
+      shell: bash
+      run: bunx playwright install chromium
+    - name: Build capture script for Node execution
+      shell: bash
+      run: |
+        mkdir -p .capture-dist
+        # Keep third-party packages external to avoid bundler/runtime mismatches
+        # in Node 20 for playwright-extra + stealth plugin internals.
+        bun build scripts/capture.ts --target node --packages external --outfile .capture-dist/capture.mjs
+    - name: Generate animation
+      shell: bash
+      run: |
+        max_bytes="$(
+          awk -v mb="$INPUT_MAX_MB" '
+            BEGIN {
+              if (mb ~ /^[0-9]+([.][0-9]+)?$/) {
+                printf "%.0f", mb * 1024 * 1024;
+                exit 0;
+              }
+              exit 1;
+            }
+          '
+        )" || {
+          echo "Invalid INPUT_MAX_MB value: $INPUT_MAX_MB" >&2
+          exit 1
+        }
+
+        node .capture-dist/capture.mjs \
+          -w "$INPUT_WIDTH" -h "$INPUT_HEIGHT" \
+          --url "$INPUT_URL" -d "$INPUT_DURATION" --fps "$INPUT_FPS" \
+          -q "$INPUT_QUALITY" --max-bytes "$max_bytes" \
+          --video-crf "$INPUT_VIDEO_CRF" -o "preview.$INPUT_EXT"
+    - id: upload
+      uses: actions/upload-artifact@v6
+      with:
+        name: "preview.${{ inputs.ext }}"
+        path: "preview.${{ inputs.ext }}"
+        if-no-files-found: error
+    - name: Publish capture summary
+      uses: ./.github/actions/capture/summary
+      with:
+        artifact-url: ${{ steps.upload.outputs.artifact-url }}
