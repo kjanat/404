@@ -6,10 +6,22 @@ import tseslint from 'typescript-eslint';
 export default defineConfig(
 	globalIgnores(['dist/**']),
 	eslint.configs.recommended,
-	tseslint.configs.strict,
-	tseslint.configs.stylistic,
+	tseslint.configs.strictTypeChecked,
+	tseslint.configs.stylisticTypeChecked,
 	{
-		files: ['.github/**/*.mjs', 'scripts/**/*.mjs'],
+		languageOptions: {
+			parserOptions: {
+				projectService: {
+					allowDefaultProject: ['.github/actions/capture/*.mjs'],
+				},
+			},
+		},
+		rules: {
+			'@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+		},
+	},
+	{
+		files: ['.github/**/*.mjs'],
 		languageOptions: { globals: globals.node },
 	},
 );

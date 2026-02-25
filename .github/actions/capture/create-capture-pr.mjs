@@ -8,6 +8,10 @@ import { readFile, writeFile } from 'node:fs/promises';
  * @param {import('@actions/github-script').AsyncFunctionArguments} args
  */
 export default async function run({ github, context, core, exec }) {
+	/** @type {Record<string, string | undefined>} */
+	// Workflow dispatch inputs are untyped in the webhook payload — no escape from any here.
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+	const inputs = context.payload.inputs ?? {};
 	const {
 		url = '',
 		width = '',
@@ -18,8 +22,8 @@ export default async function run({ github, context, core, exec }) {
 		max_mb: maxMb = '',
 		video_crf: videoCrf = '',
 		ext = 'webp',
-	} = context.payload.inputs ?? {};
-	const normalizedExt = String(ext).trim().toLowerCase();
+	} = inputs;
+	const normalizedExt = ext.trim().toLowerCase();
 	const allowedExts = new Set(['gif', 'webp', 'mp4']);
 	if (!allowedExts.has(normalizedExt)) {
 		core.setFailed(`Unsupported extension "${ext}". Allowed: ${Array.from(allowedExts).join(', ')}`);
@@ -28,7 +32,7 @@ export default async function run({ github, context, core, exec }) {
 
 	/** Format a numeric timestamp segment with a 2-digit width. @param {number} n */
 	const pad = n => String(n).padStart(2, '0');
-	/** Escape table cell content so Markdown/HTML stays well-formed. @param {string} value */
+	/** Escape table cell content so Markdown/HTML stays well-formed. @param {unknown} value */
 	const escapeTableCell = value =>
 		String(value)
 			.replaceAll('&', '&amp;')
@@ -90,9 +94,11 @@ export default async function run({ github, context, core, exec }) {
 		`[Download artifact](${artifactUrl})`,
 	].join('\n');
 
-	const defaultBranch = context.payload.repository?.default_branch
-		?? context.payload.repository?.defaultBranch
-		?? 'master';
+	const defaultBranch = String(
+		context.payload.repository?.default_branch
+			?? context.payload.repository?.defaultBranch
+			?? 'master',
+	);
 	const pr = await github.rest.pulls.create({
 		owner,
 		repo,

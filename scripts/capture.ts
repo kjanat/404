@@ -50,8 +50,8 @@ const { values: args } = parseArgs({
 	},
 });
 
-const TARGET_URL = args.url ?? 'https://404.kjanat.com';
-const OUT = resolve(args.out ?? 'preview.webp');
+const TARGET_URL = args.url;
+const OUT = resolve(args.out);
 const OUT_EXT = extname(OUT).toLowerCase();
 const WIDTH = Number(args.width);
 const HEIGHT = Number(args.height);

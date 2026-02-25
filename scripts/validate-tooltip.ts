@@ -61,14 +61,14 @@ let passed = true;
 if (tooltipInfo.opacity === '1') {
 	console.log('\n✓ PASS: Tooltip opacity is 1 (visible)');
 } else {
-	console.log(`\n✗ FAIL: Tooltip opacity is ${tooltipInfo.opacity} (expected 1)`);
+	console.log(`\n✗ FAIL: Tooltip opacity is ${tooltipInfo.opacity ?? 'unknown'} (expected 1)`);
 	passed = false;
 }
 
 if (tooltipInfo.panelOverflow === 'visible') {
 	console.log('✓ PASS: Panel overflow is "visible" (not clipping)');
 } else {
-	console.log(`✗ FAIL: Panel overflow is "${tooltipInfo.panelOverflow}" (expected "visible")`);
+	console.log(`✗ FAIL: Panel overflow is "${tooltipInfo.panelOverflow ?? 'null'}" (expected "visible")`);
 	passed = false;
 }
 
