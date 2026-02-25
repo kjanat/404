@@ -4,9 +4,9 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>404 | Kajkowalski Edge</title>
-		<link rel="icon" href="kk-edge.svg" type="image/svg+xml">
+		<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 		<link rel="alternate icon" href="/favicon.ico">
-		<link rel="stylesheet" href="./styles.css">
+		<link rel="stylesheet" href="src/styles.css">
 	</head>
 
 	<body>
@@ -20,7 +20,7 @@
 			<div class="brandline">
 				<img
 					class="edge-icon"
-					src="./kk-edge.svg"
+					src="/favicon.svg"
 					alt="KajKowalski Edge icon"
 					width="28"
 					height="28"
@@ -35,11 +35,12 @@
 			</div>
 			<h1>404 - This host is not configured.</h1>
 			<p>
-				<span class="host-name" data-host>this hostname</span>
+				<span class="font-bold break-all text-accent-2" data-host
+				>this hostname</span>
 				isn't set up yet, so there's nothing to show here right now.<br>
 				If you expected something here, check the address and try again.
 			</p>
 		</main>
-		<script src="./index.ts"></script>
+		<script type="module" src="src/index.ts"></script>
 	</body>
 </html>

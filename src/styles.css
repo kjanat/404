@@ -1,15 +1,15 @@
-@import "./animations.css";
 @import "tailwindcss";
+@import "./animations.css";
 
-:root {
-	--bg-top: #060a14;
-	--bg-bottom: #10203a;
-	--card: rgba(10, 20, 35, 0.78);
-	--text: #e8f1ff;
-	--muted: #9bb2d0;
-	--accent: #39c1ff;
-	--accent-2: #57e2a8;
-	--border: rgba(155, 178, 208, 0.3);
+@theme {
+	--color-bg-top: #060a14;
+	--color-bg-bottom: #10203a;
+	--color-card: rgba(10, 20, 35, 0.78);
+	--color-text: #e8f1ff;
+	--color-muted: #9bb2d0;
+	--color-accent: #39c1ff;
+	--color-accent-2: #57e2a8;
+	--color-border: rgba(155, 178, 208, 0.3);
 }
 
 html,
@@ -54,10 +54,10 @@ body {
 		rgba(87, 226, 168, 0.15),
 		transparent 45%
 	),
-		linear-gradient(160deg, var(--bg-top), var(--bg-bottom));
+		linear-gradient(160deg, var(--color-bg-top), var(--color-bg-bottom));
 	background-size: 150% 150%, 150% 150%, 110% 110%;
 	background-position: 0% 0%, 100% 100%, 50% 50%;
-	color: var(--text);
+	color: var(--color-text);
 	font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
 	animation: storm-shift 24s ease-in-out infinite alternate;
 }
@@ -285,9 +285,9 @@ body.calm-mode h1 {
 .panel {
 	width: min(680px, 100%);
 	padding: 28px;
-	border: 1px solid var(--border);
+	border: 1px solid var(--color-border);
 	border-radius: 20px;
-	background: var(--card);
+	background: var(--color-card);
 	backdrop-filter: blur(6px);
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 	position: relative;
@@ -334,7 +334,7 @@ body.calm-mode h1 {
 	font-size: 0.8rem;
 	letter-spacing: 0.11em;
 	text-transform: uppercase;
-	color: var(--accent);
+	color: var(--color-accent);
 	margin: 0;
 }
 
@@ -364,7 +364,7 @@ body.calm-mode h1 {
 	border-radius: 10px;
 	border: 1px solid rgba(155, 178, 208, 0.45);
 	background: rgba(11, 16, 32, 0.95);
-	color: var(--text);
+	color: var(--color-text);
 	font-size: 0.72rem;
 	font-weight: 600;
 	letter-spacing: 0.01em;
@@ -408,16 +408,10 @@ body.calm-mode h1 {
 
 p {
 	margin: 14px 0 0;
-	color: var(--muted);
+	color: var(--color-muted);
 	font-size: 1.04rem;
 	line-height: 1.6;
 	overflow-wrap: anywhere;
-}
-
-.host-name {
-	color: var(--accent-2);
-	font-weight: 700;
-	word-break: break-all;
 }
 
 @media (max-width: 768px) {
