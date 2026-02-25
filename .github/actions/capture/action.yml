@@ -76,7 +76,9 @@ runs:
       shell: bash
       run: |
         mkdir -p .capture-dist
-        bun build scripts/capture.ts --target node --outfile .capture-dist/capture.mjs
+        # Keep third-party packages external to avoid bundler/runtime mismatches
+        # in Node 20 for playwright-extra + stealth plugin internals.
+        bun build scripts/capture.ts --target node --packages external --outfile .capture-dist/capture.mjs
     - name: Generate animation
       shell: bash
       run: |
