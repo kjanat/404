@@ -2,7 +2,7 @@
 	"private": true,
 	"scripts": {
 		"bd": "rm -rf dist; bun build ./src/*.html --target=browser --outdir dist --production",
-		"dev": "bun --watch src/index.html",
+		"dev": "bun --hot src/*.html",
 		"preview": "bun bd && bun --watch dist/index.html",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
