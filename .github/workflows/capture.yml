@@ -75,13 +75,13 @@ jobs:
 
           | Parameter  | Value |
           | ---------- | ----- |
-          | URL        | `${{ inputs.url }}` |
+          | URL        | \`${{ inputs.url }}\` |
           | Dimensions | ${{ inputs.width }}x${{ inputs.height }} |
           | Duration   | ${{ inputs.duration }}s @ ${{ inputs.fps }} fps |
           | Quality    | ${{ inputs.quality }} |
           | Max size   | ${{ inputs.max_mb }} MB |
           | Video CRF  | ${{ inputs.video_crf }} |
-          | Filetype   | `${{ inputs.ext }}` |
+          | Filetype   | \`${{ inputs.ext }}\` |
 
           ![Preview](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/preview.${{ inputs.ext }})
 
