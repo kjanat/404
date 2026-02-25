@@ -15,8 +15,11 @@ on:
       create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 jobs:
   capture:
+    name: Capture media artifact
     runs-on: ubuntu-latest
     permissions: { contents: read }
+    outputs:
+      artifact-url: ${{ steps.capture.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v6
       - id: capture
@@ -35,12 +38,22 @@ jobs:
   pr:
     if: ${{ inputs.create_pr }}
     needs: capture
+    name: Create preview pull request
     runs-on: ubuntu-latest
     permissions:
       contents: write
       pull-requests: write
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/capture/create-pr
+      - id: create_pr
+        uses: ./.github/actions/capture/create-pr
         with:
           ext: ${{ inputs.ext }}
+      - name: PR summary
+        shell: bash
+        run: |
+          {
+            echo "### Preview pull request"
+            echo "- URL: ${{ steps.create_pr.outputs.pr-url }}"
+            echo "- Capture artifact: ${{ needs.capture.outputs.artifact-url }}"
+          } >> "$GITHUB_STEP_SUMMARY"

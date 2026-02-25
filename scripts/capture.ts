@@ -1,15 +1,18 @@
-#!/usr/bin/env bun
-
 /**
  * Capture an animated image of the 404 page.
  *
  * Uses Playwright's bundled Chromium to take sequential screenshots,
  * then stitches them into a GIF, WebP, or MP4 with ffmpeg.
  *
- * Usage:
+ * Local usage (Bun tooling):
  *   bun scripts/capture.ts [--url https://404.kjanat.com] [--out preview.webp]
  *                           [--width 800] [--height 500] [--duration 6] [--fps 12]
  *                           [--quality 100] [--max-bytes 3145728] [--video-crf 28]
+ *
+ * CI usage (generated Node artifact):
+ *   node .capture-dist/capture.mjs [--url https://404.kjanat.com] [--out preview.webp]
+ *                                  [--width 800] [--height 500] [--duration 6] [--fps 12]
+ *                                  [--quality 100] [--max-bytes 3145728] [--video-crf 28]
  */
 
 import { execFileSync } from 'node:child_process';

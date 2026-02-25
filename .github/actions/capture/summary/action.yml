@@ -1,0 +1,19 @@
+name: Capture Summary
+description: Publish capture settings and artifact link to the job summary.
+
+inputs:
+  artifact-url:
+    description: "URL of the uploaded capture artifact"
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Write capture summary
+      uses: actions/github-script@v8
+      env:
+        ARTIFACT_URL: ${{ inputs.artifact-url }}
+      with:
+        script: |
+          const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/capture-summary.mjs`)
+          await run({ context, core })

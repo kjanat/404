@@ -11,6 +11,18 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Validate artifact extension
+      shell: bash
+      env:
+        INPUT_EXT: ${{ inputs.ext }}
+      run: |
+        case "$INPUT_EXT" in
+          webp|gif|mp4) ;;
+          *)
+            echo "Invalid ext input: $INPUT_EXT (allowed: webp, gif, mp4)" >&2
+            exit 1
+            ;;
+        esac
     - uses: actions/download-artifact@v5
       with:
         name: preview.${{ inputs.ext }}

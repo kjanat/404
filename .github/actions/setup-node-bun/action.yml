@@ -1,0 +1,29 @@
+name: Setup JS Toolchain
+description: Set up Bun and optionally install project dependencies.
+
+inputs:
+  install:
+    description: "Install project dependencies with Bun"
+    required: false
+    default: "true"
+  frozen-lockfile:
+    description: "Use --frozen-lockfile during dependency install"
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+    - name: Install dependencies
+      if: ${{ inputs.install == 'true' }}
+      shell: bash
+      env:
+        _FROZEN_LOCKFILE: ${{ inputs['frozen-lockfile'] }}
+      run: |
+        if [[ "$_FROZEN_LOCKFILE" == "true" ]]; then
+          bun i --frozen-lockfile
+        else
+          bun i
+        fi

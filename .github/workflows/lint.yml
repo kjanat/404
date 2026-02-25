@@ -1,8 +1,8 @@
 name: Lint
 run-name: "Lint \"${{ github.event.pull_request.title || github.event.head_commit.message }}\" by @${{ github.actor }}"
 on:
-  push: { branches: [master], paths: ["**.html", "**.css", "**.js"] }
-  pull_request: { branches: [master], paths: ["**.html", "**.css", "**.js"] }
+  push: { branches: [master], paths: ["**/*.html", "**/*.css", "**/*.js"] }
+  pull_request: { branches: [master], paths: ["**/*.html", "**/*.css", "**/*.js"] }
 permissions: { contents: read }
 jobs:
   lint:
@@ -10,8 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-      - run: bun i
+      - uses: ./.github/actions/setup-node-bun
+        with:
+          install: "true"
+          frozen-lockfile: "true"
       - name: HTMLHint
         run: bun lint:html
       - name: Stylelint

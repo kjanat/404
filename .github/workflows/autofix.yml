@@ -5,15 +5,17 @@ on:
   pull_request:
   workflow_call:
   workflow_dispatch:
-permissions: { contents: read }
+permissions: { contents: write }
 jobs:
   autofix:
+    name: Format and autofix
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: oven-sh/setup-bun@v2
-
-      - run: bun i; bun fmt --allow-no-files --diff --excludes ".github"
-      - run: bun run dprint config update
-
+      - uses: ./.github/actions/setup-node-bun
+        with:
+          install: "true"
+          frozen-lockfile: "true"
+      - name: Format sources
+        run: bun fmt --allow-no-files --diff --excludes ".github"
       - uses: autofix-ci/action@v1
