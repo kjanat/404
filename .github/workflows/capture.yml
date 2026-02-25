@@ -58,7 +58,7 @@ jobs:
           git checkout -b "$BRANCH"
 
           # Remove all previous preview files, add the new one
-          git rm --ignore-unmatch preview.gif preview.webp preview.mp4
+          git rm -f --ignore-unmatch preview.gif preview.webp preview.mp4
           git add "preview.${{ inputs.ext }}"
 
           # Update README image link if the extension changed
