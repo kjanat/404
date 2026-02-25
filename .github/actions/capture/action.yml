@@ -55,22 +55,11 @@ runs:
         name: "preview.${{ inputs.ext }}"
         path: "preview.${{ inputs.ext }}"
     - name: Capture summary
-      shell: bash
+      uses: actions/github-script@v8
       env:
+        ACTION_PATH:  ${{ github.action_path }}
         ARTIFACT_URL: ${{ steps.upload.outputs.artifact-url }}
-      run: |
-        tee -a "$GITHUB_STEP_SUMMARY" <<EOF
-        ### Capture complete
-
-        | Parameter  | Value                                 |
-        | ---------- | ------------------------------------- |
-        | URL        | \`$INPUT_URL\`                        |
-        | Dimensions | ${INPUT_WIDTH}x${INPUT_HEIGHT}        |
-        | Duration   | ${INPUT_DURATION}s @ ${INPUT_FPS} fps |
-        | Quality    | $INPUT_QUALITY                        |
-        | Max size   | $INPUT_MAX_MB MB                      |
-        | Video CRF  | $INPUT_VIDEO_CRF                      |
-        | Filetype   | \`$INPUT_EXT\`                        |
-
-        [Download artifact]($ARTIFACT_URL)
-        EOF
+      with:
+        script: |
+          const { default: run } = await import(`${process.env.ACTION_PATH}/capture-summary.mjs`)
+          await run({ github, context, core, exec, glob, io })

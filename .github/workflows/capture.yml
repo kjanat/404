@@ -17,8 +17,6 @@ jobs:
   capture:
     runs-on: ubuntu-latest
     permissions: { contents: read }
-    outputs:
-      artifact-url: ${{ steps.capture.outputs.artifact-url }}
     steps:
       - uses: actions/checkout@v6
       - id: capture
@@ -43,50 +41,12 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/download-artifact@v7
+      - uses: oven-sh/setup-bun@v2
+      - run: bun i --frozen-lockfile
+      - id: create-pr
+        name: Commit, push and create PR
+        uses: actions/github-script@v8
         with:
-          name: "preview.${{ inputs.ext }}"
-          path: "."
-      - name: Create PR
-        env:
-          GH_TOKEN: ${{ github.token }}
-          ARTIFACT_URL: ${{ needs.capture.outputs.artifact-url }}
-        run: |
-          BRANCH="capture/preview-${{ inputs.ext }}-$(date +%Y%m%d-%H%M%S)"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "$BRANCH"
-
-          # Remove all previous preview files from index (keep downloaded artifact on disk)
-          git rm --cached -f --ignore-unmatch preview.gif preview.webp preview.mp4
-          git add "preview.${{ inputs.ext }}"
-
-          # Update README image link if the extension changed
-          sed -i 's|preview\.[a-zA-Z0-9]*|preview.${{ inputs.ext }}|g' README.md
-          git add README.md
-
-          git commit -m "chore: update preview screenshot to preview.${{ inputs.ext }}"
-          git push origin "$BRANCH"
-
-          gh pr create \
-            --title "Update preview screenshot (preview.${{ inputs.ext }})" \
-            --body "$(cat <<BODY
-          Captured with the following settings:
-
-          | Parameter  | Value |
-          | ---------- | ----- |
-          | URL        | \`${{ inputs.url }}\` |
-          | Dimensions | ${{ inputs.width }}x${{ inputs.height }} |
-          | Duration   | ${{ inputs.duration }}s @ ${{ inputs.fps }} fps |
-          | Quality    | ${{ inputs.quality }} |
-          | Max size   | ${{ inputs.max_mb }} MB |
-          | Video CRF  | ${{ inputs.video_crf }} |
-          | Filetype   | \`${{ inputs.ext }}\` |
-
-          ![Preview](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/preview.${{ inputs.ext }})
-
-          [Download artifact]($ARTIFACT_URL)
-          BODY
-          )" \
-            --base master \
-            --head "$BRANCH"
+          script: |
+            const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/create-capture-pr.mjs`)
+            await run({ github, context, core, exec, glob, io })
