@@ -47,6 +47,9 @@ export default async function run({ github, context, core, exec }) {
 		.then(() => exec.exec('git', ['commit', '-m', `chore: update preview screenshot to preview.${ext}`]))
 		.then(() => exec.exec('git', ['push', 'origin', branch]));
 
+	const { stdout: commitShaStdout } = await exec.getExecOutput('git', ['rev-parse', 'HEAD']);
+	const commitSha = commitShaStdout.trim();
+
 	const { owner, repo } = context.repo;
 	const rawBase = `https://raw.githubusercontent.com/${owner}/${repo}`;
 	const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}/artifacts/${artifact.id}`;
@@ -54,17 +57,17 @@ export default async function run({ github, context, core, exec }) {
 	const body = [
 		'Captured with the following settings:',
 		'',
-		'| Parameter  | Value                     |',
-		'| ---------- | ------------------------- |',
-		`| URL        | \`${url}\`                |`,
-		`| Dimensions | ${width}x${height}        |`,
+		'| Parameter  | Value |',
+		'| ---------- | ----- |',
+		`| URL        | <code>${url}</code> |`,
+		`| Dimensions | ${width}x${height} |`,
 		`| Duration   | ${duration}s @ ${fps} fps |`,
-		`| Quality    | ${quality}                |`,
-		`| Max size   | ${maxMb} MB               |`,
-		`| Video CRF  | ${videoCrf}               |`,
-		`| Filetype   | \`${ext}\`                |`,
+		`| Quality    | ${quality} |`,
+		`| Max size   | ${maxMb} MB |`,
+		`| Video CRF  | ${videoCrf} |`,
+		`| Filetype   | <code>${ext}</code> |`,
 		'',
-		`![Preview](${rawBase}/${branch}/preview.${ext})`,
+		`![Preview](${rawBase}/${commitSha}/preview.${ext})`,
 		'',
 		`[Download artifact](${artifactUrl})`,
 	].join('\n');
@@ -77,6 +80,15 @@ export default async function run({ github, context, core, exec }) {
 		base: 'master',
 		head: branch,
 	});
+
+	await core.summary
+		.addHeading('Preview PR created', 2)
+		.addRaw(`- PR: [${pr.data.html_url}](${pr.data.html_url})`, true)
+		.addRaw(`- Branch: <code>${branch}</code>`, true)
+		.addRaw(`- Commit: <code>${commitSha}</code>`, true)
+		.addRaw(`- Preview: [preview.${ext}](${rawBase}/${commitSha}/preview.${ext})`, true)
+		.addRaw(`- Artifact: [Download artifact](${artifactUrl})`, true)
+		.write();
 
 	core.info(`PR created: ${pr.data.html_url}`);
 	core.setOutput('pr-url', pr.data.html_url);

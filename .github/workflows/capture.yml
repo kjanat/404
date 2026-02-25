@@ -3,15 +3,15 @@ run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.heig
 on:
   workflow_dispatch:
     inputs:
-      width:     { description: "Capture width in pixels",             required: false, default: 1152,  type: number }
-      height:    { description: "Capture height in pixels",            required: false, default: 648,   type: number }
-      url:       { description: "URL to capture",                      required: false, default: "https://404.kjanat.com", type: string }
-      duration:  { description: "Capture duration in seconds",         required: false, default: 6,     type: number }
-      fps:       { description: "Frames per second",                   required: false, default: 12,    type: number }
-      quality:   { description: "WebP quality (0-100)",                required: false, default: 100,   type: number }
-      max_mb:    { description: "Max output size in MB (integer)",     required: false, default: 3,     type: number }
-      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28,    type: number }
-      ext:       { description: "Filetype to capture",                 required: false, default: webp,  type: choice, options: [webp, gif, mp4] }
+      width: { description: "Capture width in pixels", required: false, default: 1152, type: number }
+      height: { description: "Capture height in pixels", required: false, default: 648, type: number }
+      url: { description: "URL to capture", required: false, default: "https://404.kjanat.com", type: string }
+      duration: { description: "Capture duration in seconds", required: false, default: 6, type: number }
+      fps: { description: "Frames per second", required: false, default: 12, type: number }
+      quality: { description: "WebP quality (0-100)", required: false, default: 100, type: number }
+      max_mb: { description: "Max output size in MB (integer)", required: false, default: 3, type: number }
+      video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28, type: number }
+      ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
       create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 jobs:
   capture:
@@ -22,20 +22,22 @@ jobs:
       - id: capture
         uses: ./.github/actions/capture
         with:
-          width:     ${{ inputs.width }}
-          height:    ${{ inputs.height }}
-          url:       ${{ inputs.url }}
-          duration:  ${{ inputs.duration }}
-          fps:       ${{ inputs.fps }}
-          quality:   ${{ inputs.quality }}
-          max_mb:    ${{ inputs.max_mb }}
+          width: ${{ inputs.width }}
+          height: ${{ inputs.height }}
+          url: ${{ inputs.url }}
+          duration: ${{ inputs.duration }}
+          fps: ${{ inputs.fps }}
+          quality: ${{ inputs.quality }}
+          max_mb: ${{ inputs.max_mb }}
           video_crf: ${{ inputs.video_crf }}
-          ext:       ${{ inputs.ext }}
+          ext: ${{ inputs.ext }}
 
   pr:
     if: ${{ inputs.create_pr }}
     needs: capture
     runs-on: ubuntu-latest
+    env:
+      GH_PR_TOKEN_SET: ${{ secrets.GH_PR_TOKEN != '' }}
     permissions:
       contents: write
       pull-requests: write
@@ -47,6 +49,14 @@ jobs:
         name: Commit, push and create PR
         uses: actions/github-script@v8
         with:
+          github-token: ${{ secrets.GH_PR_TOKEN != '' && secrets.GH_PR_TOKEN || github.token }}
           script: |
             const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/create-capture-pr.mjs`)
             await run({ github, context, core, exec, glob, io })
+      - name: Explain missing PR permission
+        if: failure() && env.GH_PR_TOKEN_SET != 'true'
+        run: |
+          echo "PR creation failed with the default GitHub token."
+          echo "Enable 'Allow GitHub Actions to create and approve pull requests' in repository settings"
+          echo "or add a fine-grained PAT in GH_PR_TOKEN (repo: contents+pull requests write)."
+          exit 1
