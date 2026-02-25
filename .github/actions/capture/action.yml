@@ -60,6 +60,11 @@ runs:
     - name: Install Playwright browser
       shell: bash
       run: bunx playwright install chromium
+    - name: Build capture script for Node runtime
+      shell: bash
+      run: |
+        mkdir -p .capture-dist
+        bun build scripts/capture.ts --target node --outfile .capture-dist/capture.mjs
     - name: Generate Animation
       shell: bash
       run: |
@@ -78,7 +83,7 @@ runs:
           exit 1
         }
 
-        bun capture \
+        node .capture-dist/capture.mjs \
           -w "$INPUT_WIDTH" -h "$INPUT_HEIGHT" \
           --url "$INPUT_URL" -d "$INPUT_DURATION" --fps "$INPUT_FPS" \
           -q "$INPUT_QUALITY" --max-bytes "$max_bytes" \
@@ -96,4 +101,4 @@ runs:
       with:
         script: |
           const { default: run } = await import(`${process.env.ACTION_PATH}/capture-summary.mjs`)
-          await run({ github, context, core, exec, glob, io })
+          await run({ context, core })
