@@ -15,6 +15,12 @@ export default async function run({ github, context, core, exec }) {
 		video_crf: videoCrf = '',
 		ext = 'webp',
 	} = context.payload.inputs ?? {};
+	const normalizedExt = String(ext).trim().toLowerCase();
+	const allowedExts = new Set(['gif', 'webp', 'mp4']);
+	if (!allowedExts.has(normalizedExt)) {
+		core.setFailed(`Unsupported extension "${ext}". Allowed: ${Array.from(allowedExts).join(', ')}`);
+		return;
+	}
 
 	/** @param {number} n */
 	const pad = n => String(n).padStart(2, '0');
@@ -22,29 +28,28 @@ export default async function run({ github, context, core, exec }) {
 	const ts = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${
 		pad(now.getMinutes())
 	}${pad(now.getSeconds())}`;
-	const branch = `capture/preview-${ext}-${ts}`;
+	const branch = `capture/preview-${normalizedExt}-${ts}`;
 
 	const artifactClient = new DefaultArtifactClient();
-	const { artifact } = await artifactClient.getArtifact(`preview.${ext}`);
+	const { artifact } = await artifactClient.getArtifact(`preview.${normalizedExt}`);
 	await artifactClient.downloadArtifact(artifact.id);
 
 	await Promise.all([
 		// config.lock: chain user.name → user.email
 		exec.exec('git', ['config', 'user.name', 'github-actions[bot]'])
 			.then(() => exec.exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com'])),
-		// index.lock: chain checkout → rm (rm needs the new branch)
-		exec.exec('git', ['checkout', '-b', branch])
-			.then(() =>
-				exec.exec('git', ['rm', '--cached', '-f', '--ignore-unmatch', 'preview.gif', 'preview.webp', 'preview.mp4'])
-			),
-		// pure FS: fully independent
-		readFile('README.md', 'utf8').then(content =>
-			writeFile('README.md', content.replace(/preview\.[a-zA-Z0-9]*/g, `preview.${ext}`))
-		),
+		exec.exec('git', ['checkout', '-b', branch]),
 	]);
+	await exec.exec('git', ['rm', '--cached', '-f', '--ignore-unmatch', 'preview.gif', 'preview.webp', 'preview.mp4']);
 
-	await exec.exec('git', ['add', `preview.${ext}`, 'README.md'])
-		.then(() => exec.exec('git', ['commit', '-m', `chore: update preview screenshot to preview.${ext}`]))
+	const readmeContent = await readFile('README.md', 'utf8');
+	await writeFile(
+		'README.md',
+		readmeContent.replace(/preview\.(?:gif|webp|mp4)\b/g, `preview.${normalizedExt}`),
+	);
+
+	await exec.exec('git', ['add', `preview.${normalizedExt}`, 'README.md'])
+		.then(() => exec.exec('git', ['commit', '-m', `chore: update preview screenshot to preview.${normalizedExt}`]))
 		.then(() => exec.exec('git', ['push', 'origin', branch]));
 
 	const { stdout: commitShaStdout } = await exec.getExecOutput('git', ['rev-parse', 'HEAD']);
@@ -65,9 +70,9 @@ export default async function run({ github, context, core, exec }) {
 		`| Quality    | ${quality} |`,
 		`| Max size   | ${maxMb} MB |`,
 		`| Video CRF  | ${videoCrf} |`,
-		`| Filetype   | <code>${ext}</code> |`,
+		`| Filetype   | <code>${normalizedExt}</code> |`,
 		'',
-		`![Preview](${rawBase}/${commitSha}/preview.${ext})`,
+		`![Preview](${rawBase}/${commitSha}/preview.${normalizedExt})`,
 		'',
 		`[Download artifact](${artifactUrl})`,
 	].join('\n');
@@ -75,7 +80,7 @@ export default async function run({ github, context, core, exec }) {
 	const pr = await github.rest.pulls.create({
 		owner,
 		repo,
-		title: `Update preview screenshot (preview.${ext})`,
+		title: `Update preview screenshot (preview.${normalizedExt})`,
 		body,
 		base: 'master',
 		head: branch,
@@ -86,7 +91,7 @@ export default async function run({ github, context, core, exec }) {
 		.addRaw(`- PR: [${pr.data.html_url}](${pr.data.html_url})`, true)
 		.addRaw(`- Branch: <code>${branch}</code>`, true)
 		.addRaw(`- Commit: <code>${commitSha}</code>`, true)
-		.addRaw(`- Preview: [preview.${ext}](${rawBase}/${commitSha}/preview.${ext})`, true)
+		.addRaw(`- Preview: [preview.${normalizedExt}](${rawBase}/${commitSha}/preview.${normalizedExt})`, true)
 		.addRaw(`- Artifact: [Download artifact](${artifactUrl})`, true)
 		.write();
 

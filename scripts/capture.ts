@@ -56,14 +56,28 @@ const FPS = Number(args.fps);
 const WEBP_QUALITY = Number(args.quality);
 const MAX_BYTES = args['max-bytes'] === undefined ? null : Number(args['max-bytes']);
 const VIDEO_CRF = Number(args['video-crf']);
-const FRAME_INTERVAL = 1000 / FPS;
-const TOTAL_FRAMES = Math.ceil(DURATION * FPS);
 const TMP = resolve(dirname(OUT), '.capture-frames');
 
 if (!isSupportedExtension(OUT_EXT)) {
 	console.error('Unsupported output format. Use .gif, .webp, or .mp4');
 	process.exit(1);
 }
+
+const numericCaptureArgs: Array<[flag: string, value: number]> = [
+	['--width', WIDTH],
+	['--height', HEIGHT],
+	['--duration', DURATION],
+	['--fps', FPS],
+];
+for (const [flag, value] of numericCaptureArgs) {
+	if (!Number.isFinite(value) || value <= 0) {
+		console.error(`Invalid ${flag} value. Use a number greater than 0.`);
+		process.exit(1);
+	}
+}
+
+const FRAME_INTERVAL = 1000 / FPS;
+const TOTAL_FRAMES = Math.ceil(DURATION * FPS);
 
 if (OUT_EXT === '.webp' && (!Number.isFinite(WEBP_QUALITY) || WEBP_QUALITY < 0 || WEBP_QUALITY > 100)) {
 	console.error('Invalid --quality value. Use a number between 0 and 100');
@@ -77,6 +91,13 @@ if (MAX_BYTES !== null && (!Number.isFinite(MAX_BYTES) || MAX_BYTES <= 0)) {
 
 if (OUT_EXT === '.mp4' && (!Number.isFinite(VIDEO_CRF) || VIDEO_CRF < 0 || VIDEO_CRF > 51)) {
 	console.error('Invalid --video-crf value. Use a number between 0 and 51');
+	process.exit(1);
+}
+
+try {
+	execFileSync('ffmpeg', ['-version'], { stdio: 'ignore' });
+} catch {
+	console.error('ffmpeg not found in PATH. Install ffmpeg first.');
 	process.exit(1);
 }
 
@@ -146,8 +167,8 @@ const ffmpegPreamble = (): string[] => [
 	`${TMP}/frame-%05d.png`,
 ];
 
-const runFfmpeg = (args: string[], quiet = false): void => {
-	execFileSync('ffmpeg', args, { stdio: quiet ? 'ignore' : 'inherit' });
+const runFfmpeg = (ffmpegArgs: string[], quiet = false): void => {
+	execFileSync('ffmpeg', ffmpegArgs, { stdio: quiet ? 'ignore' : 'inherit' });
 };
 
 const encodeGif = (outPath: string, quiet = false): void => {
@@ -235,7 +256,13 @@ const sweepWebp = (maxBytes: number): void => {
 		if (best !== null) {
 			console.log(`Selected lossless WebP quality ${best.quality} (${best.size} bytes)`);
 			encodeWebp(OUT, best.quality, true);
-			return;
+			const finalSize = statSync(OUT).size;
+			if (finalSize <= maxBytes) {
+				console.log(`Final lossless output size: ${finalSize} bytes`);
+				return;
+			}
+			console.log(`Final lossless encode (${finalSize} bytes) exceeds --max-bytes; falling back to lossy sweep.`);
+			rmSync(OUT);
 		}
 	} else {
 		console.log(`Lossless WebP minimum (${minLosslessSize} bytes) exceeds --max-bytes; switching to lossy sweep.`);
@@ -244,7 +271,16 @@ const sweepWebp = (maxBytes: number): void => {
 	const best = sweep(false);
 	if (best !== null) {
 		console.log(`Selected lossy WebP quality ${best.quality} (${best.size} bytes)`);
-		encodeWebp(OUT, best.quality, false);
+		for (let quality = best.quality; quality >= 0; quality--) {
+			encodeWebp(OUT, quality, false);
+			const finalSize = statSync(OUT).size;
+			if (finalSize <= maxBytes) {
+				console.log(`Final lossy output quality ${quality} (${finalSize} bytes)`);
+				return;
+			}
+		}
+		const minFinalLossySize = statSync(OUT).size;
+		console.log(`Lossy quality 0 still exceeds --max-bytes (${minFinalLossySize} bytes).`);
 		return;
 	}
 
@@ -299,6 +335,9 @@ if (OUT_EXT === '.webp') {
 		sweepMp4(MAX_BYTES);
 	}
 } else {
+	if (MAX_BYTES !== null) {
+		console.log('Warning: --max-bytes is not supported for GIF output; ignoring.');
+	}
 	console.log('Assembling GIF with ffmpeg\u2026');
 	encodeGif(OUT);
 }

@@ -22,20 +22,39 @@ runs:
   steps:
     - name: Expose inputs as env vars
       shell: bash
+      env:
+        _WIDTH: ${{ inputs.width }}
+        _HEIGHT: ${{ inputs.height }}
+        _URL: ${{ inputs.url }}
+        _DURATION: ${{ inputs.duration }}
+        _FPS: ${{ inputs.fps }}
+        _QUALITY: ${{ inputs.quality }}
+        _MAX_MB: ${{ inputs.max_mb }}
+        _VIDEO_CRF: ${{ inputs.video_crf }}
+        _EXT: ${{ inputs.ext }}
       run: |
-        cat >> "$GITHUB_ENV" <<EOF
-        INPUT_WIDTH=${{ inputs.width }}
-        INPUT_HEIGHT=${{ inputs.height }}
-        INPUT_URL=${{ inputs.url }}
-        INPUT_DURATION=${{ inputs.duration }}
-        INPUT_FPS=${{ inputs.fps }}
-        INPUT_QUALITY=${{ inputs.quality }}
-        INPUT_MAX_MB=${{ inputs.max_mb }}
-        INPUT_VIDEO_CRF=${{ inputs.video_crf }}
-        INPUT_EXT=${{ inputs.ext }}
-        EOF
+        append_env() {
+          local key="$1"
+          local value="$2"
+          local delimiter="EOF_$(date +%s%N)_$RANDOM"
+          {
+            printf '%s<<%s\n' "$key" "$delimiter"
+            printf '%s\n' "$value"
+            printf '%s\n' "$delimiter"
+          } >> "$GITHUB_ENV"
+        }
+
+        append_env "INPUT_WIDTH" "$_WIDTH"
+        append_env "INPUT_HEIGHT" "$_HEIGHT"
+        append_env "INPUT_URL" "$_URL"
+        append_env "INPUT_DURATION" "$_DURATION"
+        append_env "INPUT_FPS" "$_FPS"
+        append_env "INPUT_QUALITY" "$_QUALITY"
+        append_env "INPUT_MAX_MB" "$_MAX_MB"
+        append_env "INPUT_VIDEO_CRF" "$_VIDEO_CRF"
+        append_env "INPUT_EXT" "$_EXT"
     - uses: oven-sh/setup-bun@v2
-    - run: bun i
+    - run: bun i --frozen-lockfile
       shell: bash
     - uses: FedericoCarboni/setup-ffmpeg@v3
     - name: Install Playwright browser

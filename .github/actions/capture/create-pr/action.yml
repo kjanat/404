@@ -1,0 +1,14 @@
+name: Create Capture PR
+description: Commit preview artifact and create a pull request.
+runs:
+  using: composite
+  steps:
+    - uses: oven-sh/setup-bun@v2
+    - run: bun i --frozen-lockfile
+      shell: bash
+    - name: Commit, push and create PR
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/create-capture-pr.mjs`)
+          await run({ github, context, core, exec, glob, io })
