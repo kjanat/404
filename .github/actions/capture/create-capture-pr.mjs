@@ -105,7 +105,7 @@ export default async function run({ github, context, core, exec }) {
 	await core.summary
 		.addHeading('Preview PR created', 2)
 		.addList([
-			`PR: <a href="${pr.data.html_url}">${pr.data.html_url}</a>`,
+			`PR: ${pr.data.html_url}`,
 			`Branch: <code>${branch}</code>`,
 			`Commit: <code>${commitSha}</code>`,
 			`Preview: <a href="${rawBase}/${commitSha}/preview.${normalizedExt}">preview.${normalizedExt}</a>`,
