@@ -58,7 +58,7 @@ jobs:
           {
             echo "<h3>Preview pull request</h3>"
             echo "<ul>"
-            echo "<li>URL: $PR_URL</li>"
+            echo "<li>URL: <a href=\"$PR_URL\">$PR_URL</a></li>"
             echo "<li>Capture artifact: <a href=\"$ARTIFACT_URL\">$ARTIFACT_URL</a></li>"
             echo "</ul>"
           } >> "$GITHUB_STEP_SUMMARY"
