@@ -332,6 +332,7 @@
 h1 {
 	margin: 0;
 	font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+	font-weight: bold;
 	line-height: 1.15;
 	animation: title-flicker 13s linear infinite;
 	overflow-wrap: anywhere;
