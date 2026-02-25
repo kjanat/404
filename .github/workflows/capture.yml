@@ -56,7 +56,9 @@ jobs:
           ARTIFACT_URL: ${{ needs.capture.outputs.artifact-url }}
         run: |
           {
-            echo "### Preview pull request"
-            echo "- URL: $PR_URL"
-            echo "- Capture artifact: $ARTIFACT_URL"
+            echo "<h3>Preview pull request</h3>"
+            echo "<ul>"
+            echo "<li>URL: <a href=\"$PR_URL\">$PR_URL</a></li>"
+            echo "<li>Capture artifact: <a href=\"$ARTIFACT_URL\">$ARTIFACT_URL</a></li>"
+            echo "</ul>"
           } >> "$GITHUB_STEP_SUMMARY"
