@@ -63,10 +63,25 @@ runs:
     - name: Generate Animation
       shell: bash
       run: |
+        max_bytes="$(
+          awk -v mb="$INPUT_MAX_MB" '
+            BEGIN {
+              if (mb ~ /^[0-9]+([.][0-9]+)?$/) {
+                printf "%.0f", mb * 1024 * 1024;
+                exit 0;
+              }
+              exit 1;
+            }
+          '
+        )" || {
+          echo "Invalid INPUT_MAX_MB value: $INPUT_MAX_MB" >&2
+          exit 1
+        }
+
         bun capture \
           -w "$INPUT_WIDTH" -h "$INPUT_HEIGHT" \
           --url "$INPUT_URL" -d "$INPUT_DURATION" --fps "$INPUT_FPS" \
-          -q "$INPUT_QUALITY" --max-bytes "$(( INPUT_MAX_MB * 1024 * 1024 ))" \
+          -q "$INPUT_QUALITY" --max-bytes "$max_bytes" \
           --video-crf "$INPUT_VIDEO_CRF" -o "preview.$INPUT_EXT"
     - id: upload
       uses: actions/upload-artifact@v6

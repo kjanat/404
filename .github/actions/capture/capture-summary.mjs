@@ -1,5 +1,9 @@
 // @ts-check
-/** @param {import('@actions/github-script').AsyncFunctionArguments} args */
+/**
+ * Publish a capture summary table to the GitHub Actions job summary.
+ *
+ * @param {import('@actions/github-script').AsyncFunctionArguments} args
+ */
 export default async function run({ context, core }) {
 	const {
 		url = '',

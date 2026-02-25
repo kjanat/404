@@ -28,6 +28,7 @@ chromium.use(StealthPlugin());
 const SUPPORTED_EXTENSIONS = ['.gif', '.webp', '.mp4'] as const;
 type OutputExtension = (typeof SUPPORTED_EXTENSIONS)[number];
 
+/** Return true when the output extension is supported by the encoder pipeline. */
 function isSupportedExtension(ext: string): ext is OutputExtension {
 	return SUPPORTED_EXTENSIONS.some(e => e === ext);
 }
@@ -57,6 +58,8 @@ const WEBP_QUALITY = Number(args.quality);
 const MAX_BYTES = args['max-bytes'] === undefined ? null : Number(args['max-bytes']);
 const VIDEO_CRF = Number(args['video-crf']);
 const TMP = resolve(dirname(OUT), '.capture-frames');
+const NAVIGATION_TIMEOUT_MS = 10_000;
+const FIRST_PAINT_SETTLE_MS = 300;
 
 if (!isSupportedExtension(OUT_EXT)) {
 	console.error('Unsupported output format. Use .gif, .webp, or .mp4');
@@ -108,12 +111,13 @@ mkdirSync(TMP, { recursive: true });
 
 // Resolve the target URL — fall back to local 404.html when a remote URL is
 // unreachable (e.g. in sandboxed CI environments without outbound networking).
+/** Open the remote URL or fall back to local 404.html in the same viewport. */
 const resolveTarget = async (browser: Browser): Promise<Page> => {
 	const page = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
 
 	if (/^https?:\/\//.test(TARGET_URL)) {
 		try {
-			await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: 10_000 });
+			await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
 			console.log(`Loaded remote URL: ${TARGET_URL}`);
 			return page;
 		} catch {
@@ -128,7 +132,7 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 		process.exit(1);
 	}
 	const fallback = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
-	await fallback.goto(`file://${htmlPath}`, { waitUntil: 'domcontentloaded' });
+	await fallback.goto(`file://${htmlPath}`, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
 	console.log(`Loaded local file: ${htmlPath}`);
 	return fallback;
 };
@@ -144,7 +148,7 @@ const browser = await chromium.launch({
 const page = await resolveTarget(browser);
 
 // Let the first paint settle
-await page.waitForTimeout(300);
+await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);
 
 for (let i = 0; i < TOTAL_FRAMES; i++) {
 	const padded = String(i).padStart(5, '0');
@@ -159,6 +163,7 @@ console.log(`Captured ${TOTAL_FRAMES} frames into ${TMP}`);
 
 /* ---------- Assemble output with ffmpeg ---------- */
 
+/** Shared ffmpeg input arguments for the frame sequence. */
 const ffmpegPreamble = (): string[] => [
 	'-y',
 	'-framerate',
@@ -167,10 +172,12 @@ const ffmpegPreamble = (): string[] => [
 	`${TMP}/frame-%05d.png`,
 ];
 
+/** Execute ffmpeg with optional quiet output mode. */
 const runFfmpeg = (ffmpegArgs: string[], quiet = false): void => {
 	execFileSync('ffmpeg', ffmpegArgs, { stdio: quiet ? 'ignore' : 'inherit' });
 };
 
+/** Encode the captured frames as an optimized animated GIF. */
 const encodeGif = (outPath: string, quiet = false): void => {
 	runFfmpeg([
 		...ffmpegPreamble(),
@@ -181,6 +188,7 @@ const encodeGif = (outPath: string, quiet = false): void => {
 	], quiet);
 };
 
+/** Encode the captured frames as an animated WebP. */
 const encodeWebp = (
 	outPath: string,
 	quality: number,
@@ -206,6 +214,7 @@ const encodeWebp = (
 	], quiet);
 };
 
+/** Encode the captured frames as an MP4 using H.264. */
 const encodeMp4 = (outPath: string, crf: number, quiet = false): void => {
 	runFfmpeg([
 		...ffmpegPreamble(),
@@ -224,11 +233,13 @@ const encodeMp4 = (outPath: string, crf: number, quiet = false): void => {
 	], quiet);
 };
 
+/** Find the highest quality WebP that fits under the requested byte budget. */
 const sweepWebp = (maxBytes: number): void => {
 	const tmpOut = `${OUT}.sweep.webp`;
 
 	// Use compression_level=0 for probes — same quality ordering as level 6
 	// but ~33× faster. The final encode re-runs at level 6 for best compression.
+	/** Measure encoded size for a probe configuration. */
 	const measure = (lossless: boolean, quality: number): number => {
 		encodeWebp(tmpOut, quality, lossless, /* quiet */ true, /* compressionLevel */ 0);
 		const size = statSync(tmpOut).size;
@@ -236,6 +247,7 @@ const sweepWebp = (maxBytes: number): void => {
 		return size;
 	};
 
+	/** Binary search for the best probe quality under the byte limit. */
 	const sweep = (lossless: boolean): { quality: number; size: number } | null => {
 		let low = 0, high = 100;
 		let best: { quality: number; size: number } | null = null;
@@ -271,14 +283,31 @@ const sweepWebp = (maxBytes: number): void => {
 	const best = sweep(false);
 	if (best !== null) {
 		console.log(`Selected lossy WebP quality ${best.quality} (${best.size} bytes)`);
-		for (let quality = best.quality; quality >= 0; quality--) {
-			encodeWebp(OUT, quality, false);
+
+		let low = 0;
+		let high = best.quality;
+		let finalBest: { quality: number; size: number } | null = null;
+
+		while (low <= high) {
+			const mid = Math.floor((low + high) / 2);
+			encodeWebp(OUT, mid, false);
 			const finalSize = statSync(OUT).size;
 			if (finalSize <= maxBytes) {
-				console.log(`Final lossy output quality ${quality} (${finalSize} bytes)`);
-				return;
+				finalBest = { quality: mid, size: finalSize };
+				low = mid + 1;
+			} else {
+				high = mid - 1;
 			}
 		}
+
+		if (finalBest !== null) {
+			encodeWebp(OUT, finalBest.quality, false);
+			const finalSize = statSync(OUT).size;
+			console.log(`Final lossy output quality ${finalBest.quality} (${finalSize} bytes)`);
+			return;
+		}
+
+		encodeWebp(OUT, 0, false);
 		const minFinalLossySize = statSync(OUT).size;
 		console.log(`Lossy quality 0 still exceeds --max-bytes (${minFinalLossySize} bytes).`);
 		return;
@@ -294,6 +323,7 @@ const sweepWebp = (maxBytes: number): void => {
 	}
 };
 
+/** Find the lowest CRF MP4 that fits under the requested byte budget. */
 const sweepMp4 = (maxBytes: number): void => {
 	const tmpOut = `${OUT}.sweep.mp4`;
 	let low = 0, high = 51;
