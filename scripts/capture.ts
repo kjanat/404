@@ -129,9 +129,9 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 		}
 	}
 
-	const htmlPath = resolve('404.html');
+	const htmlPath = resolve('dist/index.html');
 	if (!existsSync(htmlPath)) {
-		console.error('404.html not found in the current directory.');
+		console.error('dist/index.html not found — run `bun run build` first.');
 		process.exit(1);
 	}
 	const fallback = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
