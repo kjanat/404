@@ -3,7 +3,7 @@ import { defineConfig } from 'vite';
 import svgToIco from 'vite-svg-to-ico';
 
 export default defineConfig({
-	base: './',
+	base: '/',
 	plugins: [
 		tailwindcss(),
 		svgToIco({
