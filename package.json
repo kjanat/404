@@ -2,29 +2,23 @@
 	"name": "@kjanat/404-page",
 	"version": "1.0.3",
 	"description": "Custom 404 error page for KajKowalski Edge.",
-	"author": "Kaj Kowalski <info@kajkowalski.nl>",
-	"license": "SEE LICENSE IN LICENSE",
+	"homepage": "https://404.kjanat.com",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/kjanat/404.git"
 	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": "Kaj Kowalski <info@kajkowalski.nl>",
 	"type": "module",
 	"files": [
 		"dist"
 	],
-	"publishConfig": {
-		"access": "public",
-		"registry": "https://registry.npmjs.org/"
-	},
 	"scripts": {
-		"prepublishOnly": "bun run build",
 		"bd": "bun --bun run build",
 		"build": "vite build",
 		"dev": "vite",
-		"preview": "vite preview",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
-		"typecheck": "tsgo --noEmit",
 		"lint": "eslint",
 		"capture": "bun scripts/capture.ts"
 	},
@@ -51,10 +45,14 @@
 		"vite-svg-to-ico": "^2.0.0"
 	},
 	"packageManager": "bun@1.3.9",
-	"catalog": {
-		"typescript": "^5.9.3"
-	},
 	"volta": {
 		"node": "25.7.0"
+	},
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"catalog": {
+		"typescript": "^5.9.3"
 	}
 }
