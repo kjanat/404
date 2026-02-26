@@ -47,10 +47,10 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v6
+        with: {ref: master}
       - id: create_pr
         uses: ./.github/actions/capture/create-pr
-        with:
-          ext: ${{ inputs.ext }}
+        with: { ext: "${{ inputs.ext }}" }
       - name: PR summary
         shell: bash
         env:
