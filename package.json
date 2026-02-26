@@ -1,7 +1,23 @@
 {
-	"private": true,
+	"name": "@kjanat/404",
+	"version": "1.0.0",
+	"description": "Custom 404 error page for KajKowalski Edge.",
+	"author": "Kaj Kowalski <info@kajkowalski.nl>",
+	"license": "SEE LICENSE IN LICENSE",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/kjanat/404.git"
+	},
 	"type": "module",
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
 	"scripts": {
+		"prepublishOnly": "bun run build",
 		"bd": "bun --bun run build",
 		"build": "vite build",
 		"dev": "vite",
