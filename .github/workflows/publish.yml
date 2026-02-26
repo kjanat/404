@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
 ---
 name: Publish to npm
-run-name: "Publish v${{ github.event.release.tag_name || github.ref_name }} to npm"
+run-name: "Publish ${{ github.event.release.tag_name || github.ref_name }} to npm"
 on:
   release:
     types: [published]
