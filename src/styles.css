@@ -11,6 +11,15 @@
 	--color-accent-2: #57e2a8;
 	--color-border: rgba(155, 178, 208, 0.3);
 	--storm-cycle: 13s;
+
+	--color-bg-top--light: #dceefb;
+	--color-bg-bottom--light: #f4f8fc;
+	--color-card--light: rgba(255, 255, 255, 0.82);
+	--color-text--light: #1a2744;
+	--color-muted--light: #4a6382;
+	--color-accent--light: #0b7ec2;
+	--color-accent-2--light: #1a9d6b;
+	--color-border--light: rgba(74, 99, 130, 0.22);
 }
 
 html,
@@ -201,6 +210,140 @@ body::after {
 	animation: bolt-c var(--storm-cycle) linear infinite;
 }
 
+@media (prefers-color-scheme: light) {
+	body {
+		background:
+			radial-gradient(
+				circle at 20% 20%,
+				rgba(11, 126, 194, 0.12),
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 80% 70%,
+				rgba(26, 157, 107, 0.1),
+				transparent 50%
+			),
+			linear-gradient(160deg, var(--color-bg-top--light), var(--color-bg-bottom--light));
+		color: var(--color-text--light);
+	}
+
+	body::before {
+		background:
+			radial-gradient(
+				circle at 30% 20%,
+				rgba(255, 255, 255, 0.6),
+				transparent 40%
+			),
+			radial-gradient(
+				circle at 70% 60%,
+				rgba(255, 255, 255, 0.4),
+				transparent 45%
+			);
+		mix-blend-mode: normal;
+		opacity: 0;
+	}
+
+	body::after {
+		background:
+			radial-gradient(
+				circle at 25% 70%,
+				rgba(220, 238, 251, 0.6),
+				transparent 50%
+			),
+			radial-gradient(
+				circle at 75% 30%,
+				rgba(220, 238, 251, 0.5),
+				transparent 45%
+			);
+		filter: blur(24px);
+		opacity: 0.5;
+	}
+
+	.storm-regions {
+		background:
+			radial-gradient(
+				50% 50% at 20% 30%,
+				rgba(255, 255, 255, 0.5),
+				transparent 60%
+			),
+			radial-gradient(
+				50% 50% at 70% 60%,
+				rgba(255, 255, 255, 0.4),
+				transparent 60%
+			);
+		mix-blend-mode: normal;
+		opacity: 0.3;
+	}
+
+	.storm-streak::before {
+		background: linear-gradient(
+			to bottom,
+			rgba(11, 126, 194, 0.7) 0%,
+			rgba(11, 126, 194, 0.4) 50%,
+			rgba(11, 126, 194, 0.05) 100%
+		);
+	}
+
+	.panel {
+		border-color: var(--color-border--light);
+		background: var(--color-card--light);
+		box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+	}
+
+	.panel::after {
+		background:
+			radial-gradient(
+				65% 42% at 22% 4%,
+				rgba(11, 126, 194, 0.25),
+				transparent 66%
+			),
+			radial-gradient(
+				65% 42% at 74% 2%,
+				rgba(26, 157, 107, 0.2),
+				transparent 68%
+			);
+		mix-blend-mode: normal;
+	}
+
+	.kicker {
+		color: var(--color-accent--light);
+	}
+
+	.edge-icon {
+		box-shadow: 0 0 0 1px rgba(74, 99, 130, 0.25), 0 4px 12px rgba(0, 0, 0, 0.1);
+	}
+
+	.edge-word {
+		text-decoration-color: rgba(11, 126, 194, 0.45);
+	}
+
+	.edge-word::after {
+		border-color: var(--color-border--light);
+		background: rgba(255, 255, 255, 0.97);
+		color: var(--color-text--light);
+		box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
+	}
+
+	.edge-word::before {
+		border-color: var(--color-border--light);
+		background: rgba(255, 255, 255, 0.97);
+	}
+
+	p {
+		color: var(--color-muted--light);
+	}
+
+	.text-accent-2 {
+		color: var(--color-accent-2--light);
+	}
+}
+
+@media (prefers-color-scheme: light) and (max-width: 768px) {
+	.panel {
+		background: rgba(255, 255, 255, 0.95);
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	body,
 	body::before,
@@ -243,6 +386,13 @@ body::after {
 	}
 }
 
+@media (prefers-reduced-motion: reduce) and (prefers-color-scheme: light) {
+	.panel {
+		border-color: var(--color-border--light);
+		box-shadow: 0 18px 36px rgba(0, 0, 0, 0.06);
+	}
+}
+
 body.calm-mode,
 body.calm-mode::before,
 body.calm-mode::after,
@@ -281,6 +431,13 @@ body.calm-mode .panel {
 
 body.calm-mode h1 {
 	text-shadow: none;
+}
+
+@media (prefers-color-scheme: light) {
+	body.calm-mode .panel {
+		border-color: var(--color-border--light);
+		box-shadow: 0 18px 36px rgba(0, 0, 0, 0.06);
+	}
 }
 
 .panel {
