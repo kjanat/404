@@ -3,10 +3,16 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="author" content="Kaj Kowalski">
+		<meta name="source" content="https://github.com/kjanat/404.git">
+		<meta name="description" content="A custom 404 page for KajKowalski Edge.">
+		<meta name="keywords" content="404, not found, error, page, kajkowalski, edge">
+		<meta name="robots" content="noindex, nofollow">
 		<title>404 | Kajkowalski Edge</title>
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-		<link rel="alternate icon" href="/favicon.ico">
-		<link rel="stylesheet" href="src/styles.css">
+		<link rel="alternate icon" href="/favicon.ico" type="image/x-icon">
+		<link rel="stylesheet" href="/src/styles.css">
+		<script type="module" src="/src/index.ts"></script>
 	</head>
 
 	<body>
@@ -20,7 +26,7 @@
 			<div class="brandline">
 				<img
 					class="edge-icon"
-					src="/favicon.svg"
+					src="/src/icon.svg?inline=true"
 					alt="KajKowalski Edge icon"
 					width="28"
 					height="28"
@@ -35,12 +41,10 @@
 			</div>
 			<h1>404 - This host is not configured.</h1>
 			<p>
-				<span class="font-bold break-all text-accent-2" data-host
-				>this hostname</span>
+				<span class="font-bold break-all text-accent-2" data-host>this hostname</span>
 				isn't set up yet, so there's nothing to show here right now.<br>
 				If you expected something here, check the address and try again.
 			</p>
 		</main>
-		<script type="module" src="src/index.ts"></script>
 	</body>
 </html>

@@ -1,30 +1,69 @@
-/** Checks if calm mode should be enabled based on URL params and user prefs. */
-function checkCalmMode(): void {
-	const calmValue: string | null = new URLSearchParams(window.location.search).get('calm');
-	const explicitCalm: boolean = calmValue !== null && /^(1|true|yes|on)$/i.test(calmValue);
-	const reduceMotionQuery: MediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
-	const highContrastQuery: MediaQueryList = window.matchMedia('(prefers-contrast: more)');
-	const forcedColorsQuery: MediaQueryList = window.matchMedia('(forced-colors: active)');
-	const accessibilityCalm: boolean = reduceMotionQuery.matches || highContrastQuery.matches
-		|| forcedColorsQuery.matches;
+const CALM_PARAM = 'calm';
+const CALM_CLASS = 'calm-mode';
 
-	if (explicitCalm || accessibilityCalm) {
-		document.body.classList.add('calm-mode');
-	}
+const CALM_ON_RE = /^(1|true|yes|on)$/i;
+const CALM_OFF_RE = /^(0|false|no|off)$/i;
+
+const mediaQueryDefs = {
+	reduceMotion: '(prefers-reduced-motion: reduce)',
+	moreContrast: '(prefers-contrast: more)',
+	forcedColors: '(forced-colors: active)',
+} as const;
+
+type CalmSignal = keyof typeof mediaQueryDefs;
+
+const mediaQueries: Record<CalmSignal, MediaQueryList> = Object.fromEntries(
+	Object.entries(mediaQueryDefs).map(([key, query]) => [key, window.matchMedia(query)]),
+) as Record<CalmSignal, MediaQueryList>;
+
+function getCalmOverride(): boolean | null {
+	const raw = new URLSearchParams(window.location.search).get(CALM_PARAM);
+	if (raw === null) return null;
+	if (CALM_ON_RE.test(raw)) return true;
+	if (CALM_OFF_RE.test(raw)) return false;
+	return null;
 }
 
-/** Sets the page title and updates `[data-host]` elements with the current hostname. */
+function getAccessibilityCalm(): boolean {
+	return Object.values(mediaQueries).some((mq) => mq.matches);
+}
+
+function applyCalmMode(): void {
+	const shouldCalm = getCalmOverride() ?? getAccessibilityCalm();
+	document.documentElement.classList.toggle(CALM_CLASS, shouldCalm);
+	document.body.classList.toggle(CALM_CLASS, shouldCalm);
+}
+
+function subscribeCalmSignals(onChange: () => void): () => void {
+	const cleanup: Array<() => void> = [];
+
+	for (const mq of Object.values(mediaQueries)) {
+		const handler = (): void => onChange();
+
+		if (typeof mq.addEventListener === 'function') {
+			mq.addEventListener('change', handler);
+			cleanup.push((): void => mq.removeEventListener('change', handler));
+		}
+	}
+
+	return (): void => {
+		for (const fn of cleanup) fn();
+	};
+}
+
 function initializePage(): void {
-	const host: string = window.location.hostname;
+	const host = window.location.hostname;
 	if (!host) return;
 
-	for (const target of document.querySelectorAll('[data-host]')) {
+	for (const target of document.querySelectorAll<HTMLElement>('[data-host]')) {
 		target.textContent = host;
 	}
+
 	document.title = `404 | ${host}`;
 }
 
-(function(): void {
-	checkCalmMode();
+((): void => {
+	applyCalmMode();
+	subscribeCalmSignals(applyCalmMode);
 	initializePage();
 })();

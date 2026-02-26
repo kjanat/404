@@ -3,3 +3,4 @@ node_modules/
 .bench/
 dist
 tooltip-validation.png
+*.zip

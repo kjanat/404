@@ -26,6 +26,8 @@
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
 		"noPropertyAccessFromIndexSignature": false
+		// // Custom conditions for module resolution
+		// "customConditions": ["bun"]
 	},
-	"exclude": ["node_modules", "dist"]
+	"exclude": ["dist", "plugins"]
 }

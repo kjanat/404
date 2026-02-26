@@ -215,10 +215,12 @@ body::after {
 	.panel,
 	.panel::after,
 	.edge-word::after {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		animation: none !important;
 	}
 
 	.storm-streak {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		opacity: 0 !important;
 	}
 
@@ -254,10 +256,12 @@ body.calm-mode h1,
 body.calm-mode .panel,
 body.calm-mode .panel::after,
 body.calm-mode .edge-word::after {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
 	animation: none !important;
 }
 
 body.calm-mode .storm-streak {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
 	opacity: 0 !important;
 }
 

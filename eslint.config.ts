@@ -10,12 +10,10 @@ export default defineConfig(
 	eslint.configs.recommended,
 	tseslint.configs.strictTypeChecked,
 	tseslint.configs.stylisticTypeChecked,
-	tailwind.configs['flat/recommended'],
+	...tailwind.configs['flat/recommended'],
 	{
 		settings: {
-			tailwindcss: {
-				config: resolve(import.meta.dirname, 'src/styles.css'),
-			},
+			tailwindcss: { config: resolve(import.meta.dirname, 'src/styles.css') },
 		},
 	},
 	{
