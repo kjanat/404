@@ -1,23 +1,36 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
 name: Publish to npm
-run-name: "Publish v${{ github.event.release.tag_name }} to npm"
+run-name: "Publish v${{ github.event.release.tag_name || github.ref_name }} to npm"
 on:
   release:
     types: [published]
+  workflow_dispatch:
+
 permissions:
   contents: read
   id-token: write
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: ${{ steps.version.outputs.npm_url }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
-          registry-url: https://registry.npmjs.org
-      - uses: ./.github/actions/setup-node-bun
-        with: { install: "true", frozen-lockfile: "true" }
+        with: { node-version: lts/*, registry-url: https://registry.npmjs.org }
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - id: version
+        run: |
+          VERSION=$(jq -r .version package.json)
+          NAME=$(jq -r .name package.json)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "npm_url=https://www.npmjs.com/package/${NAME}/v/${VERSION}" |& tee -a "$GITHUB_OUTPUT"
       - run: bun bd
-      - run: npm publish --provenance --access public
+      # bun publish lacks --provenance; use npm for signed provenance
+      - run: npm i -g npm && npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
