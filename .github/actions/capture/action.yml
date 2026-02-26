@@ -56,13 +56,20 @@ runs:
         append_env "INPUT_VIDEO_CRF" "$_VIDEO_CRF"
         append_env "INPUT_EXT" "$_EXT"
         append_env "INPUT_COLOR_SCHEME" "$_COLOR_SCHEME"
-    - name: Validate capture extension
+    - name: Validate inputs
       shell: bash
       run: |
         case "$INPUT_EXT" in
           webp|gif|mp4) ;;
           *)
             echo "Invalid INPUT_EXT value: $INPUT_EXT (allowed: webp, gif, mp4)" >&2
+            exit 1
+            ;;
+        esac
+        case "$INPUT_COLOR_SCHEME" in
+          light|dark) ;;
+          *)
+            echo "Invalid INPUT_COLOR_SCHEME value: $INPUT_COLOR_SCHEME (allowed: light, dark)" >&2
             exit 1
             ;;
         esac
@@ -106,14 +113,15 @@ runs:
           -q "$INPUT_QUALITY" --max-bytes "$max_bytes" \
           --video-crf "$INPUT_VIDEO_CRF" \
           --color-scheme "$INPUT_COLOR_SCHEME" \
-          -o "preview.$INPUT_EXT"
+          -o "preview-$INPUT_COLOR_SCHEME.$INPUT_EXT"
     - id: upload
       uses: actions/upload-artifact@v7
       with:
-        name: "preview.${{ inputs.ext }}"
-        path: "preview.${{ inputs.ext }}"
+        name: "preview-${{ inputs.color_scheme }}.${{ inputs.ext }}"
+        path: "preview-${{ inputs.color_scheme }}.${{ inputs.ext }}"
         if-no-files-found: error
     - name: Publish capture summary
       uses: ./.github/actions/capture/summary
       with:
         artifact-url: ${{ steps.upload.outputs.artifact-url }}
+        color-scheme: ${{ inputs.color_scheme }}

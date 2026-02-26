@@ -1,5 +1,5 @@
 name: Capture animation
-run-name: Capture preview.${{ inputs.ext }} (${{ inputs.width }}x${{ inputs.height }}, ${{ inputs.max_mb }}MB${{ inputs.color_scheme && format(', {0}', inputs.color_scheme) }})
+run-name: "Capture preview (${{ inputs.color_scheme }}, ${{ inputs.ext }}, ${{ inputs.width }}x${{ inputs.height }})"
 on:
   workflow_dispatch:
     inputs:
@@ -12,15 +12,31 @@ on:
       max_mb: { description: "Max output size in MB (integer)", required: false, default: 3, type: number }
       video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28, type: number }
       ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
-      color_scheme: { description: "Browser color scheme", required: false, default: dark, type: choice, options: [dark, light] }
+      color_scheme: { description: "Color scheme (both = dark+light in parallel)", required: false, default: both, type: choice, options: [both, dark, light] }
       create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    outputs:
+      schemes: ${{ steps.schemes.outputs.json }}
+    steps:
+      - id: schemes
+        shell: bash
+        env:
+          SCHEME: ${{ inputs.color_scheme }}
+        run: |
+          case "$SCHEME" in
+            both) echo 'json=["dark","light"]' ;;
+            *)    echo "json=[\"$SCHEME\"]" ;;
+          esac >> "$GITHUB_OUTPUT"
+
   capture:
-    name: Capture media artifact
+    needs: resolve
+    name: "Capture ${{ matrix.color_scheme }}"
     runs-on: ubuntu-latest
     permissions: { contents: read }
-    outputs:
-      artifact-url: ${{ steps.capture.outputs.artifact-url }}
+    strategy:
+      matrix: { color_scheme: "${{ fromJSON(needs.resolve.outputs.schemes) }}" }
     steps:
       - uses: actions/checkout@v6
       - id: capture
@@ -35,7 +51,7 @@ jobs:
           max_mb: ${{ inputs.max_mb }}
           video_crf: ${{ inputs.video_crf }}
           ext: ${{ inputs.ext }}
-          color_scheme: ${{ inputs.color_scheme }}
+          color_scheme: ${{ matrix.color_scheme }}
 
   pr:
     if: ${{ inputs.create_pr }}
@@ -47,20 +63,20 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v6
-        with: {ref: master}
+        with: { ref: master }
       - id: create_pr
         uses: ./.github/actions/capture/create-pr
-        with: { ext: "${{ inputs.ext }}" }
+        with:
+          ext: "${{ inputs.ext }}"
+          color_scheme: "${{ inputs.color_scheme }}"
       - name: PR summary
         shell: bash
         env:
           PR_URL: ${{ steps.create_pr.outputs.pr-url }}
-          ARTIFACT_URL: ${{ needs.capture.outputs.artifact-url }}
         run: |
           {
             echo "<h3>Preview pull request</h3>"
             echo "<ul>"
             echo "<li>URL: <a href=\"$PR_URL\">$PR_URL</a></li>"
-            echo "<li>Capture artifact: <a href=\"$ARTIFACT_URL\">$ARTIFACT_URL</a></li>"
             echo "</ul>"
           } >> "$GITHUB_STEP_SUMMARY"
