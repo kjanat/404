@@ -8,11 +8,13 @@
  *   bun scripts/capture.ts [--url https://404.kjanat.com] [--out preview.webp]
  *                           [--width 800] [--height 500] [--duration 6] [--fps 12]
  *                           [--quality 100] [--max-bytes 3145728] [--video-crf 28]
+ *                           [--color-scheme light|dark]
  *
  * CI usage (generated Node artifact):
  *   node .capture-dist/capture.mjs [--url https://404.kjanat.com] [--out preview.webp]
  *                                  [--width 800] [--height 500] [--duration 6] [--fps 12]
  *                                  [--quality 100] [--max-bytes 3145728] [--video-crf 28]
+ *                                  [--color-scheme light|dark]
  */
 
 import { execFileSync } from 'node:child_process';
@@ -47,6 +49,7 @@ const { values: args } = parseArgs({
 		quality: { type: 'string', short: 'q', default: '100' },
 		'max-bytes': { type: 'string' },
 		'video-crf': { type: 'string', default: '28' },
+		'color-scheme': { type: 'string', default: '' },
 	},
 });
 
@@ -60,12 +63,18 @@ const FPS = Number(args.fps);
 const WEBP_QUALITY = Number(args.quality);
 const MAX_BYTES = args['max-bytes'] === undefined ? null : Number(args['max-bytes']);
 const VIDEO_CRF = Number(args['video-crf']);
+const COLOR_SCHEME = args['color-scheme'] || '';
 const TMP = resolve(dirname(OUT), '.capture-frames');
 const NAVIGATION_TIMEOUT_MS = 10_000;
 const FIRST_PAINT_SETTLE_MS = 300;
 
 if (!isSupportedExtension(OUT_EXT)) {
 	console.error('Unsupported output format. Use .gif, .webp, or .mp4');
+	process.exit(1);
+}
+
+if (COLOR_SCHEME && COLOR_SCHEME !== 'light' && COLOR_SCHEME !== 'dark') {
+	console.error('Invalid --color-scheme value. Use "light" or "dark".');
 	process.exit(1);
 }
 
@@ -149,6 +158,12 @@ const browser = await chromium.launch({
 });
 
 const page = await resolveTarget(browser);
+
+// Emulate color scheme if requested
+if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
+	await page.emulateMedia({ colorScheme: COLOR_SCHEME });
+	console.log(`Emulating prefers-color-scheme: ${COLOR_SCHEME}`);
+}
 
 // Let the first paint settle
 await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);

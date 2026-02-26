@@ -11,6 +11,7 @@ inputs:
   max_mb:      { description: "Max output size in MB",               default: "3"    }
   video_crf:   { description: "MP4 quality (0-51, lower is better)", default: "28"   }
   ext:         { description: "Filetype to capture (webp, gif, mp4)",default: "webp" }
+  color_scheme:{ description: "Browser color scheme (light, dark)", default: ""     }
 
 outputs:
   artifact-url:
@@ -32,6 +33,7 @@ runs:
         _MAX_MB: ${{ inputs.max_mb }}
         _VIDEO_CRF: ${{ inputs.video_crf }}
         _EXT: ${{ inputs.ext }}
+        _COLOR_SCHEME: ${{ inputs.color_scheme }}
       run: |
         append_env() {
           local key="$1"
@@ -53,6 +55,7 @@ runs:
         append_env "INPUT_MAX_MB" "$_MAX_MB"
         append_env "INPUT_VIDEO_CRF" "$_VIDEO_CRF"
         append_env "INPUT_EXT" "$_EXT"
+        append_env "INPUT_COLOR_SCHEME" "$_COLOR_SCHEME"
     - name: Validate capture extension
       shell: bash
       run: |
@@ -97,11 +100,17 @@ runs:
           exit 1
         }
 
+        color_scheme_flag=()
+        if [[ -n "$INPUT_COLOR_SCHEME" ]]; then
+          color_scheme_flag=(--color-scheme "$INPUT_COLOR_SCHEME")
+        fi
+
         node .capture-dist/capture.mjs \
           -w "$INPUT_WIDTH" -h "$INPUT_HEIGHT" \
           --url "$INPUT_URL" -d "$INPUT_DURATION" --fps "$INPUT_FPS" \
           -q "$INPUT_QUALITY" --max-bytes "$max_bytes" \
-          --video-crf "$INPUT_VIDEO_CRF" -o "preview.$INPUT_EXT"
+          --video-crf "$INPUT_VIDEO_CRF" "${color_scheme_flag[@]}" \
+          -o "preview.$INPUT_EXT"
     - id: upload
       uses: actions/upload-artifact@v6
       with:
