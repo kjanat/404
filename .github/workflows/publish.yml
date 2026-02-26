@@ -1,0 +1,18 @@
+name: Publish to npm
+run-name: "Publish v${{ github.event.release.tag_name }} to npm"
+on:
+  release:
+    types: [published]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-node-bun
+        with: { install: "true", frozen-lockfile: "true" }
+      - run: bun publish --access public
+        env:
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
