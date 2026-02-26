@@ -23,7 +23,7 @@ runs:
             exit 1
             ;;
         esac
-    - uses: actions/download-artifact@v5
+    - uses: actions/download-artifact@v7
       with:
         name: preview.${{ inputs.ext }}
         path: .

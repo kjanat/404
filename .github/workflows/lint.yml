@@ -1,8 +1,8 @@
 name: Lint
 run-name: "Lint \"${{ github.event.pull_request.title || github.event.head_commit.message }}\" by @${{ github.actor }}"
 on:
-  push: { branches: [master], paths: ["**/*.html", "**/*.css", "**/*.js"] }
-  pull_request: { branches: [master], paths: ["**/*.html", "**/*.css", "**/*.js"] }
+  push: { branches: [master], paths-ignore: ["**/*.md", "LICENSE"] }
+  pull_request: { branches: [master], paths-ignore: ["**/*.md", "LICENSE"] }
 permissions: { contents: read }
 jobs:
   lint:
@@ -10,13 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-node-bun
-        with:
-          install: "true"
-          frozen-lockfile: "true"
-      - name: HTMLHint
-        run: bun lint:html
-      - name: Stylelint
-        run: bun lint:css
-      - name: ESLint
-        run: bun lint:js
+      - { uses: ./.github/actions/setup-node-bun, with: { install: "true", frozen-lockfile: "true" } }
+      - run: bun typecheck
+      - run: bun lint
+      - run: bun fmt:check --list-different

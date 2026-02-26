@@ -1,0 +1,23 @@
+Copyright (c) 2026 Kaj Kowalski. All rights reserved.
+
+This software and associated files (the "Software") may not be copied,
+modified, merged, published, distributed, sublicensed, sold, or otherwise
+transferred, in whole or in part, without the prior written permission of
+the copyright holder, except as expressly permitted below.
+
+The Software is provided "as is", without warranty of any kind, express or
+implied. In no event shall the copyright holder be liable for any claim,
+damages, or other liability arising from the use of or inability to use
+the Software.
+
+Permission is hereby granted, free of charge, to:
+
+1. Use the Software solely for personal, non-commercial viewing as served
+   by infrastructure operated by the copyright holder or via public CDN
+   mirrors (e.g., npm, jsDelivr) distributing the unmodified package.
+
+2. Cache and serve the unmodified package through package registries and
+   content delivery networks as part of their normal operations.
+
+No other rights are granted. Derivative works, modifications, and
+commercial use require prior written permission from the copyright holder.

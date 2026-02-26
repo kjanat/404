@@ -5,6 +5,10 @@
  * @param {import('@actions/github-script').AsyncFunctionArguments} args
  */
 export default async function run({ context, core }) {
+	/** @type {Record<string, string | undefined>} */
+	// Workflow dispatch inputs are untyped in the webhook payload — no escape from any here.
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+	const inputs = context.payload.inputs ?? {};
 	const {
 		url = '',
 		width = '',
@@ -15,10 +19,10 @@ export default async function run({ context, core }) {
 		max_mb: maxMb = '',
 		video_crf: videoCrf = '',
 		ext = 'webp',
-	} = context.payload.inputs ?? {};
+	} = inputs;
 	const artifactUrl = process.env.ARTIFACT_URL ?? '';
 
-	/** Escape HTML special characters for safe inclusion in table cells. @param {string} value */
+	/** Escape HTML special characters for safe inclusion in table cells. @param {unknown} value */
 	const esc = value =>
 		String(value)
 			.replaceAll('&', '&amp;')

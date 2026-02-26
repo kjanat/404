@@ -9,12 +9,9 @@ jobs:
     environment: { name: github-pages, url: "${{ steps.deployment.outputs.page_url }}" }
     steps:
       - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-node-bun
+        with: { install: "true", frozen-lockfile: "true" }
       - uses: actions/configure-pages@v5
-      - run: |
-          test -f favicon.svg || { echo "Missing required asset: favicon.svg" >&2; exit 1; }
-          test -f 404.html || { echo "Missing required page: 404.html" >&2; exit 1; }
-          mkdir -p pages
-          cp favicon.svg pages/
-          cp 404.html pages/index.html
-      - { uses: actions/upload-pages-artifact@v4, with: { path: pages } }
+      - run: bun bd
+      - { uses: actions/upload-pages-artifact@v4, with: { path: dist } }
       - { uses: actions/deploy-pages@v4, id: deployment }

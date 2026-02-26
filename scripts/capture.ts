@@ -50,8 +50,8 @@ const { values: args } = parseArgs({
 	},
 });
 
-const TARGET_URL = args.url ?? 'https://404.kjanat.com';
-const OUT = resolve(args.out ?? 'preview.webp');
+const TARGET_URL = args.url;
+const OUT = resolve(args.out);
 const OUT_EXT = extname(OUT).toLowerCase();
 const WIDTH = Number(args.width);
 const HEIGHT = Number(args.height);
@@ -69,7 +69,7 @@ if (!isSupportedExtension(OUT_EXT)) {
 	process.exit(1);
 }
 
-const numericCaptureArgs: Array<[flag: string, value: number]> = [
+const numericCaptureArgs: [flag: string, value: number][] = [
 	['--width', WIDTH],
 	['--height', HEIGHT],
 	['--duration', DURATION],
@@ -129,9 +129,9 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 		}
 	}
 
-	const htmlPath = resolve('404.html');
+	const htmlPath = resolve('dist/index.html');
 	if (!existsSync(htmlPath)) {
-		console.error('404.html not found in the current directory.');
+		console.error('dist/index.html not found — run `bun run build` first.');
 		process.exit(1);
 	}
 	const fallback = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
