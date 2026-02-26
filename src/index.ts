@@ -38,11 +38,15 @@ function subscribeCalmSignals(onChange: () => void): () => void {
 	const cleanup: (() => void)[] = [];
 
 	for (const mq of Object.values(mediaQueries)) {
-		const handler = (): void => { onChange(); };
+		const handler = (): void => {
+			onChange();
+		};
 
 		if (typeof mq.addEventListener === 'function') {
 			mq.addEventListener('change', handler);
-			cleanup.push((): void => { mq.removeEventListener('change', handler); });
+			cleanup.push((): void => {
+				mq.removeEventListener('change', handler);
+			});
 		}
 	}
 
