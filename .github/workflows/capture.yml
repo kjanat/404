@@ -12,7 +12,7 @@ on:
       max_mb: { description: "Max output size in MB (integer)", required: false, default: 3, type: number }
       video_crf: { description: "MP4 quality (0-51, lower is better)", required: false, default: 28, type: number }
       ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
-      color_scheme: { description: "Browser color scheme", required: false, default: "", type: choice, options: ["", light, dark] }
+      color_scheme: { description: "Browser color scheme", required: false, default: dark, type: choice, options: [dark, light] }
       create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 jobs:
   capture:
