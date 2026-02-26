@@ -1,21 +1,35 @@
 /**
  * Validate that the Edge tooltip is not clipped by the panel container.
+ * Builds the project first, then tests against the dist output.
  * Run: bun scripts/validate-tooltip.ts
  */
 
+import { execSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 chromium.use(StealthPlugin());
 
-const htmlPath = resolve('404.html');
+const distHtml = resolve('dist/index.html');
+
+if (!existsSync(distHtml)) {
+	console.log('Building project...');
+	execSync('bun run build', { stdio: 'inherit' });
+}
+
+if (!existsSync(distHtml)) {
+	console.error('Build failed: dist/index.html not found');
+	process.exit(1);
+}
+
 const browser = await chromium.launch({
 	args: ['--no-sandbox', '--disable-gpu'],
 });
 
 const page = await browser.newPage({ viewport: { width: 1152, height: 648 } });
-await page.goto(`file://${htmlPath}`, { waitUntil: 'domcontentloaded' });
+await page.goto(`file://${distHtml}`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(500);
 
 // Hover over the "Edge" word to trigger the tooltip

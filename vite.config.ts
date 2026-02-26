@@ -10,7 +10,6 @@ export default defineConfig({
 			emit: { source: { name: 'favicon.svg' } },
 		}),
 	],
-	dev: { sourcemap: true },
 	build: { sourcemap: true },
 	server: {
 		open: true,
