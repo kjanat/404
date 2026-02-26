@@ -219,10 +219,10 @@ body::after {
 				transparent 50%
 			),
 			radial-gradient(
-				circle at 80% 70%,
-				rgba(26, 157, 107, 0.1),
-				transparent 50%
-			),
+			circle at 80% 70%,
+			rgba(26, 157, 107, 0.1),
+			transparent 50%
+		),
 			linear-gradient(160deg, var(--color-bg-top--light), var(--color-bg-bottom--light));
 		color: var(--color-text--light);
 	}
@@ -235,10 +235,10 @@ body::after {
 				transparent 40%
 			),
 			radial-gradient(
-				circle at 70% 60%,
-				rgba(255, 255, 255, 0.4),
-				transparent 45%
-			);
+			circle at 70% 60%,
+			rgba(255, 255, 255, 0.4),
+			transparent 45%
+		);
 		mix-blend-mode: normal;
 		opacity: 0;
 	}
@@ -251,10 +251,10 @@ body::after {
 				transparent 50%
 			),
 			radial-gradient(
-				circle at 75% 30%,
-				rgba(220, 238, 251, 0.5),
-				transparent 45%
-			);
+			circle at 75% 30%,
+			rgba(220, 238, 251, 0.5),
+			transparent 45%
+		);
 		filter: blur(24px);
 		opacity: 0.5;
 	}
@@ -267,10 +267,10 @@ body::after {
 				transparent 60%
 			),
 			radial-gradient(
-				50% 50% at 70% 60%,
-				rgba(255, 255, 255, 0.4),
-				transparent 60%
-			);
+			50% 50% at 70% 60%,
+			rgba(255, 255, 255, 0.4),
+			transparent 60%
+		);
 		mix-blend-mode: normal;
 		opacity: 0.3;
 	}
@@ -298,10 +298,10 @@ body::after {
 				transparent 66%
 			),
 			radial-gradient(
-				65% 42% at 74% 2%,
-				rgba(26, 157, 107, 0.2),
-				transparent 68%
-			);
+			65% 42% at 74% 2%,
+			rgba(26, 157, 107, 0.2),
+			transparent 68%
+		);
 		mix-blend-mode: normal;
 	}
 
