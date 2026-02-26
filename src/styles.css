@@ -342,9 +342,7 @@ body.calm-mode h1 {
 	width: 28px;
 	height: 28px;
 	border-radius: 999px;
-	box-shadow:
-		0 0 0 1px rgba(155, 178, 208, 0.4),
-		0 8px 20px rgba(0, 0, 0, 0.35);
+	box-shadow: 0 0 0 1px rgba(155, 178, 208, 0.4), 0 8px 20px rgba(0, 0, 0, 0.35);
 	user-select: none;
 }
 
