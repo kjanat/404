@@ -7,6 +7,10 @@ on:
     types: [published]
   workflow_dispatch:
 
+concurrency:
+  group: publish-npm
+  cancel-in-progress: false
+
 permissions:
   contents: read
   id-token: write
