@@ -20,7 +20,8 @@
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
 		"lint": "eslint",
-		"capture": "bun scripts/capture.ts"
+		"capture": "bun scripts/capture.ts",
+		"typecheck": "tsgo --noEmit"
 	},
 	"devDependencies": {
 		"@actions/artifact": "^6.2.0",
