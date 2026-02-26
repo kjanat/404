@@ -10,6 +10,7 @@
 	--color-accent: #39c1ff;
 	--color-accent-2: #57e2a8;
 	--color-border: rgba(155, 178, 208, 0.3);
+	--storm-cycle: 13s;
 }
 
 html,
@@ -26,10 +27,6 @@ body {
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
 	display: none;
-}
-
-* {
-	box-sizing: border-box;
 }
 
 body {
@@ -90,7 +87,7 @@ body::before {
 	mix-blend-mode: screen;
 	opacity: 0;
 	z-index: 0;
-	animation: lightning-flash 13s linear infinite;
+	animation: lightning-flash var(--storm-cycle) linear infinite;
 }
 
 body::after {
@@ -139,7 +136,7 @@ body::after {
 	);
 	mix-blend-mode: multiply;
 	opacity: 0.42;
-	animation: region-dim 13s linear infinite;
+	animation: region-dim var(--storm-cycle) linear infinite;
 }
 
 .storm-streaks {
@@ -187,21 +184,21 @@ body::after {
 	left: 15%;
 	top: -8%;
 	transform: rotate(11deg);
-	animation: bolt-a 13s linear infinite;
+	animation: bolt-a var(--storm-cycle) linear infinite;
 }
 
 .storm-streak-b {
 	left: 69%;
 	top: -11%;
 	transform: rotate(-8deg) scale(0.9);
-	animation: bolt-b 13s linear infinite;
+	animation: bolt-b var(--storm-cycle) linear infinite;
 }
 
 .storm-streak-c {
 	left: 50%;
 	top: -14%;
 	transform: rotate(4deg) scale(0.72);
-	animation: bolt-c 13s linear infinite;
+	animation: bolt-c var(--storm-cycle) linear infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -296,8 +293,7 @@ body.calm-mode h1 {
 	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
 	position: relative;
 	z-index: 2;
-	will-change: transform;
-	animation: panel-flicker 13s linear infinite;
+	animation: panel-flicker var(--storm-cycle) linear infinite;
 }
 
 .panel > * {
@@ -323,7 +319,7 @@ body.calm-mode h1 {
 		rgba(124, 199, 255, 0) 68%
 	);
 	mix-blend-mode: screen;
-	animation: panel-afterglow 13s linear infinite;
+	animation: panel-afterglow var(--storm-cycle) linear infinite;
 }
 
 .brandline {
@@ -342,8 +338,13 @@ body.calm-mode h1 {
 	margin: 0;
 }
 
-/* Non-animation .edge-icon properties; animation declared in animations.css */
 .edge-icon {
+	width: 28px;
+	height: 28px;
+	border-radius: 999px;
+	box-shadow:
+		0 0 0 1px rgba(155, 178, 208, 0.4),
+		0 8px 20px rgba(0, 0, 0, 0.35);
 	user-select: none;
 }
 
@@ -408,6 +409,14 @@ body.calm-mode h1 {
 .edge-word:focus-visible::before {
 	opacity: 1;
 	transform: translateX(-50%) rotate(45deg);
+}
+
+h1 {
+	margin: 0;
+	font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+	font-weight: bold;
+	line-height: 1.15;
+	overflow-wrap: anywhere;
 }
 
 p {

@@ -279,13 +279,7 @@
 }
 
 .edge-icon {
-	width: 28px;
-	height: 28px;
-	border-radius: 999px;
-	box-shadow:
-		0 0 0 1px rgba(155, 178, 208, 0.4),
-		0 8px 20px rgba(0, 0, 0, 0.35);
-	animation: icon-blink 13s linear infinite;
+	animation: icon-blink var(--storm-cycle) linear infinite;
 }
 
 @keyframes icon-blink {
@@ -330,12 +324,7 @@
 }
 
 h1 {
-	margin: 0;
-	font-size: clamp(1.7rem, 4.2vw, 2.5rem);
-	font-weight: bold;
-	line-height: 1.15;
-	animation: title-flicker 13s linear infinite;
-	overflow-wrap: anywhere;
+	animation: title-flicker var(--storm-cycle) linear infinite;
 }
 
 @keyframes title-flicker {
