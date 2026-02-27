@@ -135,6 +135,31 @@ function readThemeOverride(): { hasParam: boolean; preference: ThemePreference |
 	};
 }
 
+function formatThemeSummary(preference: ThemePreference, resolvedTheme: ThemeName): string {
+	if (preference === 'system') {
+		return `auto (${resolvedTheme})`;
+	}
+
+	return preference;
+}
+
+function updateThemeSummary(
+	summaryElement: HTMLElement | null,
+	dockToggle: HTMLButtonElement | null,
+	preference: ThemePreference,
+	resolvedTheme: ThemeName,
+): void {
+	const summary = formatThemeSummary(preference, resolvedTheme);
+	if (summaryElement) {
+		summaryElement.textContent = summary;
+	}
+
+	if (dockToggle) {
+		dockToggle.setAttribute('aria-label', `Scene settings, ${summary}`);
+		dockToggle.setAttribute('title', `Scene settings: ${summary}`);
+	}
+}
+
 function updateThemeSwitch(
 	options: readonly HTMLButtonElement[],
 	preference: ThemePreference,
@@ -189,20 +214,45 @@ function initializeThemeControls(): void {
 	const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]'));
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
 	const themeDock = document.querySelector<HTMLElement>('.theme-dock');
+	const themeDockToggle = document.querySelector<HTMLButtonElement>('[data-theme-dock-toggle]');
+	const themeDrawer = document.querySelector<HTMLElement>('[data-theme-drawer]');
+	const themeSummary = document.querySelector<HTMLElement>('[data-theme-summary]');
 	const themeOverride = readThemeOverride();
+
+	const setThemeDrawerOpen = (open: boolean): void => {
+		if (themeDrawer) {
+			themeDrawer.hidden = !open;
+		}
+
+		if (themeDockToggle) {
+			themeDockToggle.setAttribute('aria-expanded', String(open));
+		}
+	};
+
 	if (themeOverride.hasParam) {
 		document.documentElement.setAttribute(THEME_LOCKED_ATTR, 'true');
 		document.body.setAttribute(THEME_LOCKED_ATTR, 'true');
 		if (themeDock) themeDock.hidden = true;
+		setThemeDrawerOpen(false);
 	}
 
 	let preference = themeOverride.preference ?? (themeOverride.hasParam ? 'system' : readThemePreference());
 
 	const syncTheme = (animate: boolean): void => {
-		applyTheme(resolveTheme(preference), preference, options, animate);
+		const resolvedTheme = resolveTheme(preference);
+		applyTheme(resolvedTheme, preference, options, animate);
+		updateThemeSummary(themeSummary, themeDockToggle, preference, resolvedTheme);
 	};
 
 	if (!themeOverride.hasParam) {
+		setThemeDrawerOpen(false);
+
+		if (themeDockToggle && themeDrawer) {
+			themeDockToggle.addEventListener('click', () => {
+				setThemeDrawerOpen(themeDrawer.hasAttribute('hidden'));
+			});
+		}
+
 		for (const optionButton of options) {
 			const option = parseThemeOption(optionButton.dataset.themeOption);
 			if (option === null) continue;
@@ -217,6 +267,14 @@ function initializeThemeControls(): void {
 
 	if (!themeOverride.hasParam && switchRoot && options.length > 0) {
 		switchRoot.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				setThemeDrawerOpen(false);
+				if (themeDockToggle) {
+					themeDockToggle.focus();
+				}
+				return;
+			}
+
 			if (
 				event.key !== 'ArrowRight'
 				&& event.key !== 'ArrowLeft'

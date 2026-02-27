@@ -94,17 +94,30 @@
 				and try again.
 			</p>
 			<div class="theme-dock" data-reveal="4">
-				<span class="theme-dock__label">Scene mode</span>
-				<div class="theme-switch" data-theme-switch role="radiogroup" aria-label="Theme mode">
-					<button class="theme-option" type="button" role="radio" data-theme-option="system" aria-checked="true">
-						auto
-					</button>
-					<button class="theme-option" type="button" role="radio" data-theme-option="dark" aria-checked="false">
-						dark
-					</button>
-					<button class="theme-option" type="button" role="radio" data-theme-option="light" aria-checked="false">
-						light
-					</button>
+				<button
+					class="theme-dock-toggle"
+					type="button"
+					data-theme-dock-toggle
+					aria-expanded="false"
+					aria-controls="theme-drawer"
+				>
+					<span class="theme-dock-toggle__text">Scene settings</span>
+					<span class="theme-dock__summary" data-theme-summary>auto</span>
+					<span class="theme-dock__chevron" aria-hidden="true"></span>
+				</button>
+				<div class="theme-drawer" id="theme-drawer" data-theme-drawer hidden>
+					<span class="theme-dock__label">Scene mode</span>
+					<div class="theme-switch" data-theme-switch role="radiogroup" aria-label="Theme mode">
+						<button class="theme-option" type="button" role="radio" data-theme-option="system" aria-checked="true">
+							auto
+						</button>
+						<button class="theme-option" type="button" role="radio" data-theme-option="dark" aria-checked="false">
+							dark
+						</button>
+						<button class="theme-option" type="button" role="radio" data-theme-option="light" aria-checked="false">
+							light
+						</button>
+					</div>
 				</div>
 			</div>
 		</main>
