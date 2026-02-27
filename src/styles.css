@@ -10,7 +10,8 @@
 	--color-accent: #39c1ff;
 	--color-accent-2: #57e2a8;
 	--color-border: rgba(155, 178, 208, 0.3);
-	--storm-cycle: 13s;
+	/* --storm-cycle removed: flash timing now procedural via StormEngine */
+	/* Custom properties driven by JS: --flash, --bolt-a, --bolt-b, --bolt-c, --region-dim */
 
 	--color-bg-top--light: #c5d8ec;
 	--color-bg-bottom--light: #e8f0f8;
@@ -94,9 +95,8 @@ body::before {
 		rgba(140, 210, 255, 0) 28%
 	);
 	mix-blend-mode: screen;
-	opacity: 0;
+	opacity: var(--flash, 0);
 	z-index: 0;
-	animation: lightning-flash var(--storm-cycle) linear infinite;
 }
 
 body::after {
@@ -144,8 +144,7 @@ body::after {
 		transparent 60%
 	);
 	mix-blend-mode: multiply;
-	opacity: 0.42;
-	animation: region-dim var(--storm-cycle) linear infinite;
+	opacity: var(--region-dim, 0.42);
 }
 
 .storm-streaks {
@@ -193,21 +192,21 @@ body::after {
 	left: 15%;
 	top: -8%;
 	transform: rotate(11deg);
-	animation: bolt-a var(--storm-cycle) linear infinite;
+	opacity: var(--bolt-a, 0);
 }
 
 .storm-streak-b {
 	left: 69%;
 	top: -11%;
 	transform: rotate(-8deg) scale(0.9);
-	animation: bolt-b var(--storm-cycle) linear infinite;
+	opacity: var(--bolt-b, 0);
 }
 
 .storm-streak-c {
 	left: 50%;
 	top: -14%;
 	transform: rotate(4deg) scale(0.72);
-	animation: bolt-c var(--storm-cycle) linear infinite;
+	opacity: var(--bolt-c, 0);
 }
 
 @media (prefers-color-scheme: light) {
@@ -245,7 +244,7 @@ body::after {
 			transparent 32%
 		);
 		mix-blend-mode: multiply;
-		opacity: 0;
+		opacity: var(--flash, 0);
 	}
 
 	body::after {
@@ -287,7 +286,8 @@ body::after {
 			transparent 60%
 		);
 		mix-blend-mode: multiply;
-		opacity: 0.5;
+		/* Driven by StormEngine --region-dim; light mode baseline slightly higher */
+		opacity: var(--region-dim, 0.5);
 	}
 
 	.storm-streaks {
@@ -309,27 +309,26 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+	/* Ambient CSS keyframes — still need animation: none */
 	body,
-	body::before,
 	body::after,
-	.storm-regions,
-	.storm-streak,
-	.edge-icon,
-	h1,
-	.panel,
-	.panel::after,
 	.edge-word::after {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		animation: none !important;
 	}
 
+	/*
+	 * Flash-driven elements: StormEngine is stopped via JS when reduced-motion
+	 * is detected, but we also hardcode neutral fallbacks here as defense-in-depth.
+	 */
 	.storm-streak {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		opacity: 0 !important;
 	}
 
 	body::before {
-		opacity: 0.06;
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0.06 !important;
 	}
 
 	body::after {
@@ -337,7 +336,8 @@ body::after {
 	}
 
 	.storm-regions {
-		opacity: 0.16;
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0.16 !important;
 	}
 
 	.panel {
@@ -345,8 +345,19 @@ body::after {
 		box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
 	}
 
+	.panel::after {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0 !important;
+	}
+
 	h1 {
-		text-shadow: none;
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		text-shadow: none !important;
+	}
+
+	.edge-icon {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		filter: none !important;
 	}
 }
 
@@ -357,27 +368,26 @@ body::after {
 	}
 }
 
+/* Ambient CSS keyframes — still need animation: none in calm mode */
 body.calm-mode,
-body.calm-mode::before,
 body.calm-mode::after,
-body.calm-mode .storm-regions,
-body.calm-mode .storm-streak,
-body.calm-mode .edge-icon,
-body.calm-mode h1,
-body.calm-mode .panel,
-body.calm-mode .panel::after,
 body.calm-mode .edge-word::after {
 	/* biome-ignore lint/complexity/noImportantStyles: a11y */
 	animation: none !important;
 }
 
+/*
+ * Flash-driven elements: StormEngine.stop() is called in JS for calm-mode,
+ * which resets all custom properties to neutral. These rules are defense-in-depth.
+ */
 body.calm-mode .storm-streak {
 	/* biome-ignore lint/complexity/noImportantStyles: a11y */
 	opacity: 0 !important;
 }
 
 body.calm-mode::before {
-	opacity: 0.06;
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0.06 !important;
 }
 
 body.calm-mode::after {
@@ -385,7 +395,8 @@ body.calm-mode::after {
 }
 
 body.calm-mode .storm-regions {
-	opacity: 0.16;
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0.16 !important;
 }
 
 body.calm-mode .panel {
@@ -393,8 +404,19 @@ body.calm-mode .panel {
 	box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
 }
 
+body.calm-mode .panel::after {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0 !important;
+}
+
 body.calm-mode h1 {
-	text-shadow: none;
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	text-shadow: none !important;
+}
+
+body.calm-mode .edge-icon {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	filter: none !important;
 }
 
 @media (prefers-color-scheme: light) {
@@ -411,10 +433,16 @@ body.calm-mode h1 {
 	border-radius: 20px;
 	background: var(--color-card);
 	backdrop-filter: blur(6px);
-	box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+	box-shadow:
+		0 20px 50px rgba(0, 0, 0, 0.35),
+		0 0 calc(var(--flash, 0) * 60px) rgba(166, 226, 255, calc(var(--flash, 0) * 0.3));
+	border-color: color-mix(
+		in srgb,
+		var(--color-border) calc(100% - var(--flash, 0) * 100%),
+		rgba(166, 226, 255, 0.6) calc(var(--flash, 0) * 100%)
+	);
 	position: relative;
 	z-index: 2;
-	animation: panel-flicker var(--storm-cycle) linear infinite;
 }
 
 .panel > * {
@@ -440,7 +468,7 @@ body.calm-mode h1 {
 		rgba(124, 199, 255, 0) 68%
 	);
 	mix-blend-mode: screen;
-	animation: panel-afterglow var(--storm-cycle) linear infinite;
+	opacity: var(--flash, 0);
 }
 
 .brandline {
@@ -465,6 +493,7 @@ body.calm-mode h1 {
 	border-radius: 999px;
 	box-shadow: 0 0 0 1px rgba(155, 178, 208, 0.4), 0 8px 20px rgba(0, 0, 0, 0.35);
 	user-select: none;
+	filter: brightness(calc(1 + var(--flash, 0) * 0.6));
 }
 
 .edge-word {
@@ -536,6 +565,9 @@ h1 {
 	font-weight: bold;
 	line-height: 1.15;
 	overflow-wrap: anywhere;
+	text-shadow:
+		0 0 calc(var(--flash, 0) * 18px) rgba(200, 235, 255, var(--flash, 0)),
+		0 0 calc(var(--flash, 0) * 40px) rgba(140, 210, 255, calc(var(--flash, 0) * 0.5));
 }
 
 p {
