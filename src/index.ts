@@ -31,6 +31,10 @@ const THEME_PREFERENCE_ATTR = 'data-theme-preference';
 const THEME_LOCKED_ATTR = 'data-theme-locked';
 const THEME_PARAM_NAMES = ['theme', 'mode'] as const;
 const PAGE_READY_CLASS = 'page-ready';
+const PANEL_PRESS_SPAM_WINDOW_MS = 1300;
+const PANEL_PRESS_SPAM_LIMIT = 4;
+const PANEL_PRESS_COOLDOWN_MS = 2400;
+const PANEL_PRESS_LOCK_CLASS = 'panel-press-locked';
 
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: light)');
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -334,13 +338,52 @@ function initializeThemeControls(): void {
 function initializePanelInteractivity(): void {
 	const panel = document.querySelector<HTMLElement>('.panel');
 	if (!panel) return;
+	let pressLockUntilMs = 0;
+	let pressSamples: number[] = [];
+	let pressLockTimerId: number | null = null;
+
+	const clearPressLockTimer = (): void => {
+		if (pressLockTimerId === null) return;
+		window.clearTimeout(pressLockTimerId);
+		pressLockTimerId = null;
+	};
+
+	const unlockPanelPress = (): void => {
+		pressLockUntilMs = 0;
+		panel.classList.remove(PANEL_PRESS_LOCK_CLASS);
+		clearPressLockTimer();
+	};
+
+	const lockPanelPress = (nowMs: number): void => {
+		pressLockUntilMs = nowMs + PANEL_PRESS_COOLDOWN_MS;
+		panel.classList.add(PANEL_PRESS_LOCK_CLASS);
+		clearPressLockTimer();
+		pressLockTimerId = window.setTimeout(() => {
+			unlockPanelPress();
+		}, PANEL_PRESS_COOLDOWN_MS);
+	};
+
+	const clearPressDepth = (): void => {
+		panel.style.setProperty('--panel-press-depth', '0');
+	};
+
+	const registerPanelPress = (nowMs: number): void => {
+		pressSamples = pressSamples.filter((sample) => nowMs - sample <= PANEL_PRESS_SPAM_WINDOW_MS);
+		pressSamples.push(nowMs);
+
+		if (pressSamples.length >= PANEL_PRESS_SPAM_LIMIT) {
+			pressSamples = [];
+			clearPressDepth();
+			lockPanelPress(nowMs);
+		}
+	};
 
 	const resetPanelStyle = (): void => {
 		panel.style.setProperty('--panel-tilt-x', '0');
 		panel.style.setProperty('--panel-tilt-y', '0');
 		panel.style.setProperty('--panel-glint-x', '20%');
 		panel.style.setProperty('--panel-glint-y', '0%');
-		panel.style.setProperty('--panel-press-depth', '0');
+		clearPressDepth();
 	};
 
 	resetPanelStyle();
@@ -367,12 +410,22 @@ function initializePanelInteractivity(): void {
 
 	panel.addEventListener('pointerdown', () => {
 		if (reduceMotionQuery.matches) return;
+
+		const nowMs = window.performance.now();
+		if (pressLockUntilMs > 0 && nowMs >= pressLockUntilMs) {
+			unlockPanelPress();
+		}
+
+		if (nowMs < pressLockUntilMs) {
+			clearPressDepth();
+			return;
+		}
+
+		registerPanelPress(nowMs);
+		if (nowMs < pressLockUntilMs) return;
+
 		panel.style.setProperty('--panel-press-depth', '1');
 	});
-
-	const clearPressDepth = (): void => {
-		panel.style.setProperty('--panel-press-depth', '0');
-	};
 
 	panel.addEventListener('pointerup', clearPressDepth);
 	panel.addEventListener('pointercancel', clearPressDepth);
@@ -380,6 +433,8 @@ function initializePanelInteractivity(): void {
 	if (typeof reduceMotionQuery.addEventListener === 'function') {
 		reduceMotionQuery.addEventListener('change', () => {
 			if (reduceMotionQuery.matches) {
+				unlockPanelPress();
+				pressSamples = [];
 				resetPanelStyle();
 			}
 		});

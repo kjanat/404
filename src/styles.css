@@ -368,6 +368,11 @@ body::after {
 	box-shadow: inset 0 0 160px var(--theme-vignette);
 	mix-blend-mode: multiply;
 	opacity: 0.9;
+	background:
+		linear-gradient(to right, var(--theme-matte-edge), transparent) left center / clamp(14px, 3.2vw, 44px) 100%
+		no-repeat,
+		linear-gradient(to left, var(--theme-matte-edge), transparent) right center / clamp(14px, 3.2vw, 44px) 100%
+		no-repeat;
 }
 
 .cinema-matte::before,
@@ -637,6 +642,12 @@ body.calm-mode .edge-icon {
 }
 
 .panel:active {
+	--panel-lift: 0px;
+}
+
+.panel.panel-press-locked,
+.panel.panel-press-locked:hover,
+.panel.panel-press-locked:active {
 	--panel-lift: 0px;
 }
 
@@ -990,6 +1001,10 @@ p {
 	.cinema-matte::before,
 	.cinema-matte::after {
 		height: 22px;
+	}
+
+	.cinema-matte {
+		background: none;
 	}
 
 	.theme-dock {
