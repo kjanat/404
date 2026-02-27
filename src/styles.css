@@ -12,8 +12,8 @@
 	--color-border: rgba(155, 178, 208, 0.3);
 	--storm-cycle: 13s;
 
-	--color-bg-top--light: #dceefb;
-	--color-bg-bottom--light: #f4f8fc;
+	--color-bg-top--light: #c5d8ec;
+	--color-bg-bottom--light: #e8f0f8;
 	--color-card--light: rgba(255, 255, 255, 0.82);
 	--color-text--light: #1a2744;
 	--color-muted--light: #4a6382;
@@ -231,18 +231,18 @@ body::after {
 		background:
 			radial-gradient(
 				circle at 12% 22%,
-				rgba(11, 126, 194, 0.4),
-				transparent 32%
+				rgba(11, 90, 160, 0.6),
+				transparent 34%
 			),
 			radial-gradient(
 			circle at 78% 18%,
-			rgba(26, 157, 107, 0.32),
-			transparent 34%
+			rgba(18, 120, 80, 0.48),
+			transparent 36%
 		),
 			radial-gradient(
 			circle at 64% 75%,
-			rgba(11, 126, 194, 0.28),
-			transparent 30%
+			rgba(11, 90, 160, 0.42),
+			transparent 32%
 		);
 		mix-blend-mode: multiply;
 		opacity: 0;
@@ -252,42 +252,42 @@ body::after {
 		background:
 			radial-gradient(
 				circle at 12% 78%,
-				rgba(74, 99, 130, 0.18),
+				rgba(55, 80, 115, 0.3),
 				transparent 45%
 			),
 			radial-gradient(
 			circle at 88% 26%,
-			rgba(74, 99, 130, 0.15),
+			rgba(55, 80, 115, 0.25),
 			transparent 40%
 		),
 			repeating-linear-gradient(
 			120deg,
-			rgba(74, 99, 130, 0.03) 0 14px,
-			rgba(74, 99, 130, 0.008) 14px 28px
+			rgba(55, 80, 115, 0.04) 0 14px,
+			rgba(55, 80, 115, 0.01) 14px 28px
 		);
 		filter: blur(20px);
-		opacity: 0.55;
+		opacity: 0.6;
 	}
 
 	.storm-regions {
 		background:
 			radial-gradient(
 				45% 45% at 16% 22%,
-				rgba(74, 99, 130, 0.22),
+				rgba(55, 80, 115, 0.38),
 				transparent 62%
 			),
 			radial-gradient(
 			42% 42% at 82% 24%,
-			rgba(74, 99, 130, 0.18),
+			rgba(55, 80, 115, 0.32),
 			transparent 64%
 		),
 			radial-gradient(
 			46% 46% at 64% 82%,
-			rgba(74, 99, 130, 0.25),
+			rgba(55, 80, 115, 0.42),
 			transparent 60%
 		);
 		mix-blend-mode: multiply;
-		opacity: 0.4;
+		opacity: 0.5;
 	}
 
 	.storm-streaks {
