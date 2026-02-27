@@ -1,5 +1,7 @@
 # 404 - This host is not configured
 
+[![NPM Version](https://img.shields.io/npm/v/@kjanat/404-page?logo=npm&labelColor=CB3837&color=black)](https://www.npmjs.com/package/@kjanat/404-page)
+
 Custom 404 error page for [Kajkowalski Edge](https://404.kjanat.com).
 
 [![Preview of the 404 page][preview]][404]
