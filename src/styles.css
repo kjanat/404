@@ -693,6 +693,11 @@ body.calm-mode .edge-icon {
 	gap: 14px;
 }
 
+:root[data-theme-locked="true"] .theme-dock,
+.theme-dock[hidden] {
+	display: none;
+}
+
 .theme-dock__label {
 	font-family: var(--font-display);
 	font-size: 0.62rem;

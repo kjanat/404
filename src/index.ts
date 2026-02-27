@@ -3,8 +3,10 @@
  *
  * Detects accessibility preferences (`prefers-reduced-motion`, `prefers-contrast`,
  * `forced-colors`) and an explicit `?calm=` URL override to toggle calm mode.
- * When calm, the {@linkcode StormEngine} is stopped and the `calm-mode` CSS class
- * is applied; otherwise lightning animations run procedurally.
+ * Also supports URL theme override params (`?theme=`/`?mode=`) for locked
+ * light/dark/system rendering. When calm, the {@linkcode StormEngine} is
+ * stopped and the `calm-mode` CSS class is applied; otherwise lightning
+ * animations run procedurally.
  *
  * @module
  */
@@ -26,6 +28,8 @@ const CALM_OFF_RE = /^(0|false|no|off)$/i;
 const THEME_STORAGE_KEY = 'kjanat-theme-preference';
 const THEME_ATTR = 'data-theme';
 const THEME_PREFERENCE_ATTR = 'data-theme-preference';
+const THEME_LOCKED_ATTR = 'data-theme-locked';
+const THEME_PARAM_NAMES = ['theme', 'mode'] as const;
 const PAGE_READY_CLASS = 'page-ready';
 
 const systemThemeQuery = window.matchMedia('(prefers-color-scheme: light)');
@@ -97,6 +101,40 @@ function parseThemeOption(raw: string | undefined): ThemePreference | null {
 	return null;
 }
 
+function parseThemeOverride(raw: string | null): ThemePreference | null {
+	if (raw === null) return null;
+
+	const normalized = raw.trim().toLowerCase();
+	if (normalized === 'light' || normalized === 'dark' || normalized === 'system') {
+		return normalized;
+	}
+
+	if (normalized === 'auto') {
+		return 'system';
+	}
+
+	return null;
+}
+
+function readThemeOverride(): { hasParam: boolean; preference: ThemePreference | null } {
+	const params = new URLSearchParams(window.location.search);
+
+	for (const paramName of THEME_PARAM_NAMES) {
+		const raw = params.get(paramName);
+		if (raw === null) continue;
+
+		return {
+			hasParam: true,
+			preference: parseThemeOverride(raw),
+		};
+	}
+
+	return {
+		hasParam: false,
+		preference: null,
+	};
+}
+
 function updateThemeSwitch(
 	options: readonly HTMLButtonElement[],
 	preference: ThemePreference,
@@ -150,24 +188,34 @@ function applyTheme(
 function initializeThemeControls(): void {
 	const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]'));
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
-	let preference = readThemePreference();
+	const themeDock = document.querySelector<HTMLElement>('.theme-dock');
+	const themeOverride = readThemeOverride();
+	if (themeOverride.hasParam) {
+		document.documentElement.setAttribute(THEME_LOCKED_ATTR, 'true');
+		document.body.setAttribute(THEME_LOCKED_ATTR, 'true');
+		if (themeDock) themeDock.hidden = true;
+	}
+
+	let preference = themeOverride.preference ?? (themeOverride.hasParam ? 'system' : readThemePreference());
 
 	const syncTheme = (animate: boolean): void => {
 		applyTheme(resolveTheme(preference), preference, options, animate);
 	};
 
-	for (const optionButton of options) {
-		const option = parseThemeOption(optionButton.dataset.themeOption);
-		if (option === null) continue;
+	if (!themeOverride.hasParam) {
+		for (const optionButton of options) {
+			const option = parseThemeOption(optionButton.dataset.themeOption);
+			if (option === null) continue;
 
-		optionButton.addEventListener('click', () => {
-			preference = option;
-			writeThemePreference(preference);
-			syncTheme(true);
-		});
+			optionButton.addEventListener('click', () => {
+				preference = option;
+				writeThemePreference(preference);
+				syncTheme(true);
+			});
+		}
 	}
 
-	if (switchRoot && options.length > 0) {
+	if (!themeOverride.hasParam && switchRoot && options.length > 0) {
 		switchRoot.addEventListener('keydown', (event) => {
 			if (
 				event.key !== 'ArrowRight'
