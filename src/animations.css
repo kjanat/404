@@ -33,11 +33,11 @@
 @keyframes tip-glow {
 	0%,
 	100% {
-		box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+		box-shadow: 0 12px 26px rgb(0 0 0 / 0.35);
 	}
 
 	50% {
-		box-shadow: 0 14px 30px rgba(57, 193, 255, 0.28);
+		box-shadow: 0 14px 30px oklch(0.766 0.147 237 / 0.28);
 	}
 }
 
@@ -45,11 +45,11 @@
 	@keyframes tip-glow {
 		0%,
 		100% {
-			box-shadow: 0 12px 26px rgba(0, 0, 0, 0.1);
+			box-shadow: 0 12px 26px rgb(0 0 0 / 0.1);
 		}
 
 		50% {
-			box-shadow: 0 14px 30px rgba(11, 126, 194, 0.15);
+			box-shadow: 0 14px 30px oklch(0.571 0.144 248 / 0.15);
 		}
 	}
 }
