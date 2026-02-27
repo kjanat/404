@@ -697,11 +697,11 @@ body.calm-mode .edge-icon {
 }
 
 .theme-dock {
-	margin-top: 20px;
-	padding-top: 14px;
+	margin-top: 16px;
+	padding-top: 10px;
 	border-top: 1px solid color-mix(in oklch, var(--theme-border) 62%, transparent);
 	display: grid;
-	gap: 10px;
+	gap: 8px;
 }
 
 :root[data-theme-locked="true"] .theme-dock,
@@ -728,6 +728,18 @@ body.calm-mode .edge-icon {
 	text-transform: uppercase;
 	cursor: pointer;
 	transition: border-color 180ms ease, color 180ms ease, background-color 220ms ease;
+}
+
+.theme-dock-toggle[aria-expanded="false"] {
+	min-height: 42px;
+	padding: 6px 10px;
+	font-size: 0.53rem;
+	letter-spacing: 0.1em;
+}
+
+.theme-dock-toggle[aria-expanded="false"] .theme-dock__summary {
+	font-size: 0.5rem;
+	letter-spacing: 0.08em;
 }
 
 .theme-dock-toggle:hover {
@@ -767,6 +779,7 @@ body.calm-mode .edge-icon {
 .theme-drawer {
 	display: grid;
 	gap: 10px;
+	padding-top: 2px;
 }
 
 .theme-drawer[hidden] {
