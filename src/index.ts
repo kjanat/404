@@ -9,7 +9,7 @@
  * @module
  */
 
-import { StormEngine } from './storm';
+import { generateCloudBackground, StormEngine } from './storm';
 
 /** URL query parameter name for the explicit calm-mode override. */
 const CALM_PARAM = 'calm';
@@ -147,6 +147,7 @@ function initializePage(): void {
 }
 
 ((): void => {
+	document.documentElement.style.setProperty('--cloud-bg', generateCloudBackground());
 	const storm = new StormEngine();
 	applyCalmMode(storm);
 	subscribeCalmSignals(() => {

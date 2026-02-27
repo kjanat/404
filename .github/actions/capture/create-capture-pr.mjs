@@ -97,7 +97,7 @@ export default async function run({ github, context, core, exec }) {
 	const artifactUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}/artifacts`;
 
 	const previewImages = downloadedFiles.map(([scheme, file]) =>
-		`### ${scheme[0].toUpperCase()}${scheme.slice(1)}\n![${scheme} preview](${rawBase}/${commitSha}/${file})`,
+		`### ${scheme[0].toUpperCase()}${scheme.slice(1)}\n![${scheme} preview](${rawBase}/${commitSha}/${file})`
 	);
 
 	const body = [
@@ -139,9 +139,7 @@ export default async function run({ github, context, core, exec }) {
 			`PR: <a href="${pr.data.html_url}">${pr.data.html_url}</a>`,
 			`Branch: <code>${branch}</code>`,
 			`Commit: <code>${commitSha}</code>`,
-			...downloadedFiles.map(([, f]) =>
-				`Preview: <a href="${rawBase}/${commitSha}/${f}">${f}</a>`,
-			),
+			...downloadedFiles.map(([, f]) => `Preview: <a href="${rawBase}/${commitSha}/${f}">${f}</a>`),
 			`Artifact: <a href="${artifactUrl}">Download artifact</a>`,
 		])
 		.write();

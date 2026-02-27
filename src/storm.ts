@@ -69,6 +69,59 @@ function randLogNormal(center: number, spread: number): number {
 	return center * Math.exp(spread * normal);
 }
 
+// ── Procedural cloud generation ──────────────────────────────────────────────
+
+/** Minimum cloud masses to scatter across the sky. */
+const CLOUD_MASS_MIN = 5;
+
+/** Maximum cloud masses. */
+const CLOUD_MASS_MAX = 8;
+
+/** Minimum puffs per cloud mass. */
+const PUFFS_PER_MASS_MIN = 3;
+
+/** Maximum puffs per cloud mass. */
+const PUFFS_PER_MASS_MAX = 6;
+
+/**
+ * Generate a procedural CSS gradient background for the cloud layer.
+ *
+ * Creates {@linkcode CLOUD_MASS_MIN}–{@linkcode CLOUD_MASS_MAX} cloud masses,
+ * each composed of {@linkcode PUFFS_PER_MASS_MIN}–{@linkcode PUFFS_PER_MASS_MAX}
+ * overlapping elliptical radial gradients with randomized position, size, and
+ * density. The result is a `background` value that, when combined with the
+ * `#cloud-tex` SVG turbulence filter, produces realistic cloud shapes.
+ *
+ * Uses `rgb(0 0 0 / alpha)` with `mix-blend-mode: multiply` — works
+ * identically on both dark and light backgrounds.
+ *
+ * @returns CSS `background` value (comma-separated radial-gradient list).
+ */
+export function generateCloudBackground(): string {
+	const massCount = randInt(CLOUD_MASS_MIN, CLOUD_MASS_MAX);
+	const gradients: string[] = [];
+
+	for (let m = 0; m < massCount; m++) {
+		const cx = rand(8, 92);
+		const cy = rand(8, 92);
+		const puffCount = randInt(PUFFS_PER_MASS_MIN, PUFFS_PER_MASS_MAX);
+
+		for (let p = 0; p < puffCount; p++) {
+			const x = (cx + (Math.random() - 0.5) * 26).toFixed(0);
+			const y = (cy + (Math.random() - 0.5) * 20).toFixed(0);
+			const rx = rand(14, 38).toFixed(0);
+			const ry = rand(10, 28).toFixed(0);
+			const a = rand(0.35, 0.8).toFixed(2);
+			const fade = rand(48, 64).toFixed(0);
+			gradients.push(
+				`radial-gradient(ellipse ${rx}% ${ry}% at ${x}% ${y}%,rgb(0 0 0/${a}),transparent ${fade}%)`,
+			);
+		}
+	}
+
+	return gradients.join(',');
+}
+
 // ── Physical constants (animation-scaled) ────────────────────────────────────
 
 /** Minimum inter-flash interval in ms (storm-scale: ~3 s between CG flashes). */
