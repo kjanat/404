@@ -33,24 +33,37 @@
 @keyframes tip-glow {
 	0%,
 	100% {
-		box-shadow: 0 12px 26px rgb(0 0 0 / 0.35);
+		box-shadow: var(--theme-tip-shadow);
 	}
 
 	50% {
-		box-shadow: 0 14px 30px oklch(0.766 0.147 237 / 0.28);
+		box-shadow: var(--theme-tip-glow);
 	}
 }
 
-@media (prefers-color-scheme: light) {
-	@keyframes tip-glow {
-		0%,
-		100% {
-			box-shadow: 0 12px 26px rgb(0 0 0 / 0.1);
-		}
+@keyframes panel-in {
+	0% {
+		opacity: 0;
+		filter: blur(4px);
+	}
 
-		50% {
-			box-shadow: 0 14px 30px oklch(0.571 0.144 248 / 0.15);
-		}
+	100% {
+		opacity: 1;
+		filter: blur(0);
+	}
+}
+
+@keyframes reveal-up {
+	0% {
+		opacity: 0;
+		transform: translateY(14px);
+		filter: blur(2px);
+	}
+
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+		filter: blur(0);
 	}
 }
 

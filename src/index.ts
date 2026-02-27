@@ -23,6 +23,17 @@ const CALM_ON_RE = /^(1|true|yes|on)$/i;
 /** Matches falsy override values: `0`, `false`, `no`, `off`. */
 const CALM_OFF_RE = /^(0|false|no|off)$/i;
 
+const THEME_STORAGE_KEY = 'kjanat-theme-preference';
+const THEME_ATTR = 'data-theme';
+const THEME_PREFERENCE_ATTR = 'data-theme-preference';
+const PAGE_READY_CLASS = 'page-ready';
+
+const systemThemeQuery = window.matchMedia('(prefers-color-scheme: light)');
+const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+type ThemePreference = 'system' | 'light' | 'dark';
+type ThemeName = 'light' | 'dark';
+
 /**
  * Media query definitions whose activation triggers calm mode.
  *
@@ -38,9 +49,179 @@ const mediaQueryDefs = {
 type CalmSignal = keyof typeof mediaQueryDefs;
 
 /** Live `MediaQueryList` handles for each {@linkcode CalmSignal}. */
-const mediaQueries: Record<CalmSignal, MediaQueryList> = Object.fromEntries(
-	Object.entries(mediaQueryDefs).map(([key, query]) => [key, window.matchMedia(query)]),
-) as Record<CalmSignal, MediaQueryList>;
+const mediaQueries: Record<CalmSignal, MediaQueryList> = {
+	reduceMotion: window.matchMedia(mediaQueryDefs.reduceMotion),
+	moreContrast: window.matchMedia(mediaQueryDefs.moreContrast),
+	forcedColors: window.matchMedia(mediaQueryDefs.forcedColors),
+};
+
+type StartViewTransition = Exclude<Document['startViewTransition'], undefined>;
+
+function hasViewTransitionApi(
+	doc: Document,
+): doc is Document & { startViewTransition: StartViewTransition } {
+	return typeof doc.startViewTransition === 'function';
+}
+
+function parseThemePreference(raw: string | null): ThemePreference {
+	if (raw === 'light' || raw === 'dark' || raw === 'system') return raw;
+	return 'system';
+}
+
+function readThemePreference(): ThemePreference {
+	try {
+		return parseThemePreference(window.localStorage.getItem(THEME_STORAGE_KEY));
+	} catch {
+		return 'system';
+	}
+}
+
+function writeThemePreference(value: ThemePreference): void {
+	try {
+		window.localStorage.setItem(THEME_STORAGE_KEY, value);
+	} catch {
+		return;
+	}
+}
+
+function resolveTheme(preference: ThemePreference): ThemeName {
+	if (preference === 'system') {
+		return systemThemeQuery.matches ? 'light' : 'dark';
+	}
+
+	return preference;
+}
+
+function oppositeTheme(current: ThemeName): ThemeName {
+	return current === 'dark' ? 'light' : 'dark';
+}
+
+function updateThemeToggle(toggle: HTMLButtonElement | null, currentTheme: ThemeName): void {
+	if (!toggle) return;
+
+	const nextTheme = oppositeTheme(currentTheme);
+	const nextLabel = `Switch to ${nextTheme} mode`;
+	toggle.setAttribute('aria-label', nextLabel);
+	toggle.setAttribute('title', nextLabel);
+	toggle.setAttribute('aria-pressed', String(currentTheme === 'dark'));
+
+	const label = toggle.querySelector<HTMLElement>('[data-theme-label]');
+	if (label) {
+		label.textContent = `${nextTheme} mode`;
+	}
+}
+
+function applyTheme(
+	theme: ThemeName,
+	preference: ThemePreference,
+	toggle: HTMLButtonElement | null,
+	animate: boolean,
+): void {
+	const commit = (): void => {
+		document.documentElement.setAttribute(THEME_ATTR, theme);
+		document.documentElement.setAttribute(THEME_PREFERENCE_ATTR, preference);
+		document.body.setAttribute(THEME_ATTR, theme);
+		document.body.setAttribute(THEME_PREFERENCE_ATTR, preference);
+		updateThemeToggle(toggle, theme);
+	};
+
+	if (animate && !reduceMotionQuery.matches && hasViewTransitionApi(document)) {
+		document.startViewTransition(() => {
+			commit();
+		});
+		return;
+	}
+
+	commit();
+}
+
+function initializeThemeControls(): void {
+	const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+	let preference = readThemePreference();
+
+	const syncTheme = (animate: boolean): void => {
+		applyTheme(resolveTheme(preference), preference, toggle, animate);
+	};
+
+	if (toggle) {
+		toggle.addEventListener('click', () => {
+			preference = oppositeTheme(resolveTheme(preference));
+			writeThemePreference(preference);
+			syncTheme(true);
+		});
+	}
+
+	if (typeof systemThemeQuery.addEventListener === 'function') {
+		systemThemeQuery.addEventListener('change', () => {
+			if (preference === 'system') {
+				syncTheme(false);
+			}
+		});
+	}
+
+	syncTheme(false);
+}
+
+function initializePanelInteractivity(): void {
+	const panel = document.querySelector<HTMLElement>('.panel');
+	if (!panel) return;
+
+	const resetPanelStyle = (): void => {
+		panel.style.setProperty('--panel-tilt-x', '0');
+		panel.style.setProperty('--panel-tilt-y', '0');
+		panel.style.setProperty('--panel-glint-x', '20%');
+		panel.style.setProperty('--panel-glint-y', '0%');
+		panel.style.setProperty('--panel-press-depth', '0');
+	};
+
+	resetPanelStyle();
+
+	panel.addEventListener('pointermove', (event) => {
+		if (reduceMotionQuery.matches) return;
+
+		const rect = panel.getBoundingClientRect();
+		if (rect.width <= 0 || rect.height <= 0) return;
+
+		const x = Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width));
+		const y = Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height));
+
+		const tiltX = (x - 0.5) * 4.8;
+		const tiltY = (0.5 - y) * 4.2;
+
+		panel.style.setProperty('--panel-tilt-x', tiltX.toFixed(2));
+		panel.style.setProperty('--panel-tilt-y', tiltY.toFixed(2));
+		panel.style.setProperty('--panel-glint-x', `${(x * 100).toFixed(1)}%`);
+		panel.style.setProperty('--panel-glint-y', `${(y * 100).toFixed(1)}%`);
+	});
+
+	panel.addEventListener('pointerleave', resetPanelStyle);
+
+	panel.addEventListener('pointerdown', () => {
+		if (reduceMotionQuery.matches) return;
+		panel.style.setProperty('--panel-press-depth', '1');
+	});
+
+	const clearPressDepth = (): void => {
+		panel.style.setProperty('--panel-press-depth', '0');
+	};
+
+	panel.addEventListener('pointerup', clearPressDepth);
+	panel.addEventListener('pointercancel', clearPressDepth);
+
+	if (typeof reduceMotionQuery.addEventListener === 'function') {
+		reduceMotionQuery.addEventListener('change', () => {
+			if (reduceMotionQuery.matches) {
+				resetPanelStyle();
+			}
+		});
+	}
+}
+
+function markPageReady(): void {
+	requestAnimationFrame(() => {
+		document.body.classList.add(PAGE_READY_CLASS);
+	});
+}
 
 /**
  * Read the explicit `?calm=` URL parameter.
@@ -148,10 +329,15 @@ function initializePage(): void {
 
 ((): void => {
 	document.documentElement.style.setProperty('--cloud-bg', generateCloudBackground());
+	initializeThemeControls();
+	initializePanelInteractivity();
+	markPageReady();
+
 	const storm = new StormEngine();
 	applyCalmMode(storm);
 	subscribeCalmSignals(() => {
 		applyCalmMode(storm);
 	});
+
 	initializePage();
 })();

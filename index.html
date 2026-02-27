@@ -9,6 +9,16 @@
 		<meta name="keywords" content="404, not found, error, page, kajkowalski, edge">
 		<meta name="robots" content="noindex, nofollow">
 		<title>404 | Kajkowalski Edge</title>
+		<script>
+		(() => {
+			try {
+				const saved = window.localStorage.getItem('kjanat-theme-preference');
+				if (saved === 'light' || saved === 'dark') {
+					document.documentElement.setAttribute('data-theme', saved);
+				}
+			} catch {}
+		})();
+		</script>
 		<link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48">
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
 		<link rel="stylesheet" href="/src/styles.css">
@@ -42,7 +52,17 @@
 			<span class="storm-streak storm-streak-c"></span>
 		</div>
 		<main class="panel">
-			<div class="brandline">
+			<button
+				class="theme-toggle"
+				type="button"
+				data-theme-toggle
+				aria-label="Switch to light mode"
+				title="Switch to light mode"
+			>
+				<span class="theme-toggle__orb" aria-hidden="true"></span>
+				<span class="theme-toggle__label" data-theme-label>light mode</span>
+			</button>
+			<div class="brandline" data-reveal="1">
 				<img
 					class="edge-icon"
 					src="/src/icon.svg?inline=true"
@@ -58,8 +78,8 @@
 					>Edge</span>
 				</p>
 			</div>
-			<h1>404 - This host is not configured.</h1>
-			<p>
+			<h1 data-reveal="2">404 - This host is not configured.</h1>
+			<p data-reveal="3">
 				<span class="font-bold break-all text-accent-2" data-host>this hostname</span>
 				isn't set up yet, so there's nothing to show here right now. If you expected something here, check the address
 				and try again.
