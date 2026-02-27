@@ -46,6 +46,7 @@
 	--theme-flash-b-clear: oklch(0.898 0.063 233 / 0);
 	--theme-flash-c: oklch(0.834 0.098 241 / 0.65);
 	--theme-flash-c-clear: oklch(0.834 0.098 241 / 0);
+	--theme-flash-wash: transparent;
 	--theme-flash-blend: screen;
 
 	--theme-cloud-a: oklch(0.2 0.03 255 / 0.4);
@@ -55,6 +56,7 @@
 	--theme-cloud-blur: blur(18px);
 	--theme-cloud-opacity: 0.35;
 	--theme-region-strength: 1;
+	--theme-region-flash-boost: 0;
 
 	--theme-streak-blend: screen;
 	--theme-streak-shadow: drop-shadow(0 0 10px oklch(0.921 0.047 237 / 0.85));
@@ -132,6 +134,7 @@
 	--theme-flash-b-clear: oklch(0.508 0.116 158 / 0);
 	--theme-flash-c: oklch(0.464 0.141 255 / 0.42);
 	--theme-flash-c-clear: oklch(0.464 0.141 255 / 0);
+	--theme-flash-wash: oklch(0.55 0.06 255 / 0.38);
 	--theme-flash-blend: multiply;
 
 	--theme-cloud-a: oklch(0.35 0.05 258 / 0.3);
@@ -141,6 +144,7 @@
 	--theme-cloud-blur: blur(20px);
 	--theme-cloud-opacity: 0.5;
 	--theme-region-strength: 1.08;
+	--theme-region-flash-boost: 0.45;
 
 	--theme-streak-blend: multiply;
 	--theme-streak-shadow: drop-shadow(0 0 12px oklch(0.571 0.144 248 / 0.45));
@@ -209,6 +213,7 @@
 		--theme-flash-b-clear: oklch(0.508 0.116 158 / 0);
 		--theme-flash-c: oklch(0.464 0.141 255 / 0.42);
 		--theme-flash-c-clear: oklch(0.464 0.141 255 / 0);
+		--theme-flash-wash: oklch(0.55 0.06 255 / 0.38);
 		--theme-flash-blend: multiply;
 
 		--theme-cloud-a: oklch(0.35 0.05 258 / 0.3);
@@ -218,6 +223,7 @@
 		--theme-cloud-blur: blur(20px);
 		--theme-cloud-opacity: 0.5;
 		--theme-region-strength: 1.08;
+		--theme-region-flash-boost: 0.45;
 
 		--theme-streak-blend: multiply;
 		--theme-streak-shadow: drop-shadow(0 0 12px oklch(0.571 0.144 248 / 0.45));
@@ -339,7 +345,8 @@ body::before {
 		circle at 64% 75%,
 		var(--theme-flash-c),
 		var(--theme-flash-c-clear) 28%
-	);
+	),
+		var(--theme-flash-wash);
 	mix-blend-mode: var(--theme-flash-blend);
 	opacity: var(--flash, 0);
 	z-index: 0;
@@ -408,7 +415,9 @@ body::after {
 	);
 	mix-blend-mode: multiply;
 	filter: url(#cloud-tex);
-	opacity: calc(var(--region-dim, 0.5) * var(--theme-region-strength));
+	opacity: calc(
+		var(--region-dim, 0.5) * var(--theme-region-strength) + var(--flash, 0) * var(--theme-region-flash-boost, 0)
+	);
 }
 
 .storm-streaks {
