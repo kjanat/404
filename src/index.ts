@@ -92,29 +92,41 @@ function resolveTheme(preference: ThemePreference): ThemeName {
 	return preference;
 }
 
-function oppositeTheme(current: ThemeName): ThemeName {
-	return current === 'dark' ? 'light' : 'dark';
+function parseThemeOption(raw: string | undefined): ThemePreference | null {
+	if (raw === 'system' || raw === 'light' || raw === 'dark') return raw;
+	return null;
 }
 
-function updateThemeToggle(toggle: HTMLButtonElement | null, currentTheme: ThemeName): void {
-	if (!toggle) return;
+function updateThemeSwitch(
+	options: readonly HTMLButtonElement[],
+	preference: ThemePreference,
+	resolvedTheme: ThemeName,
+): void {
+	for (const optionButton of options) {
+		const option = parseThemeOption(optionButton.dataset.themeOption);
+		if (option === null) continue;
 
-	const nextTheme = oppositeTheme(currentTheme);
-	const nextLabel = `Switch to ${nextTheme} mode`;
-	toggle.setAttribute('aria-label', nextLabel);
-	toggle.setAttribute('title', nextLabel);
-	toggle.setAttribute('aria-pressed', String(currentTheme === 'dark'));
+		const isSelected = option === preference;
+		optionButton.setAttribute('aria-checked', String(isSelected));
+		optionButton.tabIndex = isSelected ? 0 : -1;
 
-	const label = toggle.querySelector<HTMLElement>('[data-theme-label]');
-	if (label) {
-		label.textContent = `${nextTheme} mode`;
+		if (option === 'system') {
+			const autoLabel = `Auto (${resolvedTheme})`;
+			optionButton.setAttribute('aria-label', autoLabel);
+			optionButton.setAttribute('title', autoLabel);
+			continue;
+		}
+
+		const themeLabel = `${option} theme`;
+		optionButton.setAttribute('aria-label', themeLabel);
+		optionButton.setAttribute('title', themeLabel);
 	}
 }
 
 function applyTheme(
 	theme: ThemeName,
 	preference: ThemePreference,
-	toggle: HTMLButtonElement | null,
+	options: readonly HTMLButtonElement[],
 	animate: boolean,
 ): void {
 	const commit = (): void => {
@@ -122,7 +134,7 @@ function applyTheme(
 		document.documentElement.setAttribute(THEME_PREFERENCE_ATTR, preference);
 		document.body.setAttribute(THEME_ATTR, theme);
 		document.body.setAttribute(THEME_PREFERENCE_ATTR, preference);
-		updateThemeToggle(toggle, theme);
+		updateThemeSwitch(options, preference, theme);
 	};
 
 	if (animate && !reduceMotionQuery.matches && hasViewTransitionApi(document)) {
@@ -136,18 +148,69 @@ function applyTheme(
 }
 
 function initializeThemeControls(): void {
-	const toggle = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+	const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]'));
+	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
 	let preference = readThemePreference();
 
 	const syncTheme = (animate: boolean): void => {
-		applyTheme(resolveTheme(preference), preference, toggle, animate);
+		applyTheme(resolveTheme(preference), preference, options, animate);
 	};
 
-	if (toggle) {
-		toggle.addEventListener('click', () => {
-			preference = oppositeTheme(resolveTheme(preference));
+	for (const optionButton of options) {
+		const option = parseThemeOption(optionButton.dataset.themeOption);
+		if (option === null) continue;
+
+		optionButton.addEventListener('click', () => {
+			preference = option;
 			writeThemePreference(preference);
 			syncTheme(true);
+		});
+	}
+
+	if (switchRoot && options.length > 0) {
+		switchRoot.addEventListener('keydown', (event) => {
+			if (
+				event.key !== 'ArrowRight'
+				&& event.key !== 'ArrowLeft'
+				&& event.key !== 'Home'
+				&& event.key !== 'End'
+			) {
+				return;
+			}
+
+			event.preventDefault();
+
+			let currentIndex = options.findIndex((optionButton) => optionButton === document.activeElement);
+			if (currentIndex < 0) {
+				currentIndex = options.findIndex((optionButton) => optionButton.getAttribute('aria-checked') === 'true');
+			}
+			if (currentIndex < 0) {
+				currentIndex = 0;
+			}
+
+			let nextIndex = currentIndex;
+
+			if (event.key === 'ArrowRight') {
+				nextIndex = (currentIndex + 1) % options.length;
+			}
+
+			if (event.key === 'ArrowLeft') {
+				nextIndex = (currentIndex + options.length - 1) % options.length;
+			}
+
+			if (event.key === 'Home') {
+				nextIndex = 0;
+			}
+
+			if (event.key === 'End') {
+				nextIndex = options.length - 1;
+			}
+
+			const nextOption = options[nextIndex];
+			if (!nextOption) return;
+
+			nextOption.focus();
+			nextOption.click();
 		});
 	}
 

@@ -51,17 +51,8 @@
 			<span class="storm-streak storm-streak-b"></span>
 			<span class="storm-streak storm-streak-c"></span>
 		</div>
+		<div class="cinema-matte" aria-hidden="true"></div>
 		<main class="panel">
-			<button
-				class="theme-toggle"
-				type="button"
-				data-theme-toggle
-				aria-label="Switch to light mode"
-				title="Switch to light mode"
-			>
-				<span class="theme-toggle__orb" aria-hidden="true"></span>
-				<span class="theme-toggle__label" data-theme-label>light mode</span>
-			</button>
 			<div class="brandline" data-reveal="1">
 				<img
 					class="edge-icon"
@@ -84,6 +75,20 @@
 				isn't set up yet, so there's nothing to show here right now. If you expected something here, check the address
 				and try again.
 			</p>
+			<div class="theme-dock" data-reveal="4">
+				<span class="theme-dock__label">Scene mode</span>
+				<div class="theme-switch" data-theme-switch role="radiogroup" aria-label="Theme mode">
+					<button class="theme-option" type="button" role="radio" data-theme-option="system" aria-checked="true">
+						auto
+					</button>
+					<button class="theme-option" type="button" role="radio" data-theme-option="dark" aria-checked="false">
+						dark
+					</button>
+					<button class="theme-option" type="button" role="radio" data-theme-option="light" aria-checked="false">
+						light
+					</button>
+				</div>
+			</div>
 		</main>
 	</body>
 </html>
