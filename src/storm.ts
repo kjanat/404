@@ -260,7 +260,7 @@ interface FlashSequence {
 	/** Whether this flash includes an M-component re-brightening pulse. */
 	readonly hasMComponent: boolean;
 	/** Dark intervals between successive strokes in ms (length = strokes.length - 1). */
-	readonly interstokeIntervals: readonly number[];
+	readonly interstrokeIntervals: readonly number[];
 }
 
 // ── Core engine ──────────────────────────────────────────────────────────────
@@ -329,8 +329,11 @@ export class StormEngine {
 	start(): void {
 		if (this.running) return;
 		this.running = true;
-		this.nextFlashTime = performance.now() + rand(800, 2200);
-		this.nextICGlowTime = performance.now() + rand(400, 1200);
+		const t = performance.now();
+		this.nextFlashTime = t + rand(800, 2200);
+		this.nextICGlowTime = t + rand(400, 1200);
+		this.icGlowEnd = this.nextICGlowTime + rand(IC_GLOW_DURATION_MIN, IC_GLOW_DURATION_MAX);
+		this.icGlowPeak = rand(IC_GLOW_INTENSITY_MIN, IC_GLOW_INTENSITY_MAX);
 		this.phase = FlashPhase.Quiet;
 		this.tick(performance.now());
 	}
@@ -407,7 +410,7 @@ export class StormEngine {
 			preflashDuration: rand(PREFLASH_DURATION_MIN, PREFLASH_DURATION_MAX),
 			continuingCurrentDuration: rand(CONTINUING_CURRENT_MIN, CONTINUING_CURRENT_MAX),
 			hasMComponent: Math.random() < M_COMPONENT_CHANCE,
-			interstokeIntervals: intervals,
+			interstrokeIntervals: intervals,
 		};
 	}
 
@@ -544,7 +547,7 @@ export class StormEngine {
 				const flash = this.currentFlash;
 				if (!flash) break;
 
-				const interval = flash.interstokeIntervals[this.strokeIndex] ?? INTERSTROKE_CENTER;
+				const interval = flash.interstrokeIntervals[this.strokeIndex] ?? INTERSTROKE_CENTER;
 				this.flash = 0;
 				this.boltA = 0;
 				this.boltB = 0;

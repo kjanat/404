@@ -9,34 +9,7 @@
 		<meta name="keywords" content="404, not found, error, page, kajkowalski, edge">
 		<meta name="robots" content="noindex, nofollow">
 		<title>404 | Kajkowalski Edge</title>
-		<script>
-		(() => {
-			try {
-				const params = new URLSearchParams(window.location.search);
-				const rawOverride = params.get('theme') ?? params.get('mode');
-				const normalizedOverride = rawOverride?.trim().toLowerCase();
-
-				if (rawOverride !== null) {
-					document.documentElement.setAttribute('data-theme-locked', 'true');
-
-					if (normalizedOverride === 'light' || normalizedOverride === 'dark') {
-						document.documentElement.setAttribute('data-theme', normalizedOverride);
-						document.documentElement.setAttribute('data-theme-preference', normalizedOverride);
-						return;
-					}
-
-					document.documentElement.setAttribute('data-theme-preference', 'system');
-					return;
-				}
-
-				const saved = window.localStorage.getItem('kjanat-theme-preference');
-				if (saved === 'light' || saved === 'dark') {
-					document.documentElement.setAttribute('data-theme', saved);
-					document.documentElement.setAttribute('data-theme-preference', saved);
-				}
-			} catch {}
-		})();
-		</script>
+		<!-- @inline src/early-theme.ts -->
 		<link rel="stylesheet" href="/src/styles.css">
 		<script type="module" src="/src/index.ts"></script>
 	</head>

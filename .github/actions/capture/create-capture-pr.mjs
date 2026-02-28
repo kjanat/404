@@ -82,7 +82,7 @@ export default async function run({ github, context, core, exec }) {
 
 	// Update README with <picture> element
 	const readmeContent = await readFile('README.md', 'utf8');
-	await writeFile('README.md', updateReadme(readmeContent, normalizedExt));
+	await writeFile('README.md', updateReadme(readmeContent, normalizedExt, downloadedFiles.map(([s]) => s)));
 
 	const filesToAdd = downloadedFiles.map(([, f]) => f);
 	await exec.exec('git', ['add', ...filesToAdd, 'README.md'])
@@ -152,17 +152,24 @@ export default async function run({ github, context, core, exec }) {
  * Replace the README image section with a `<picture>` element that switches
  * between dark and light preview images based on the user's color scheme.
  *
+ * Only emits `<source>` elements for schemes that actually exist, and falls
+ * back to `preview-dark` when both are present.
+ *
  * @param {string} content - Current README content.
  * @param {string} ext - Normalized file extension (e.g. "webp").
+ * @param {ReadonlyArray<typeof SCHEMES[number]>} schemes - Which schemes have preview files.
  * @returns {string} Updated README content.
  */
-function updateReadme(content, ext) {
+function updateReadme(content, ext, schemes) {
+	const fallback = schemes.includes('dark') ? 'dark' : schemes[0];
+	const sources = schemes
+		.map(s => `  <source media="(prefers-color-scheme: ${s})" srcset="preview-${s}.${ext}">`)
+		.join('\n');
 	const pictureBlock = [
 		'<a href="https://404.kjanat.com" title="Visit the 404 page">',
 		'<picture>',
-		`  <source media="(prefers-color-scheme: dark)" srcset="preview-dark.${ext}">`,
-		`  <source media="(prefers-color-scheme: light)" srcset="preview-light.${ext}">`,
-		`  <img alt="Preview of the 404 page" src="preview-dark.${ext}">`,
+		sources,
+		`  <img alt="Preview of the 404 page" src="preview-${fallback}.${ext}">`,
 		'</picture>',
 		'</a>',
 	].join('\n');
@@ -184,6 +191,10 @@ function updateReadme(content, ext) {
 			/(Custom 404 error page[^\n]*\n)\n*/,
 			`$1\n${pictureBlock}\n\n`,
 		);
+	}
+
+	if (!result.includes('<picture>')) {
+		console.warn('updateReadme: failed to insert <picture> block — README structure may have changed');
 	}
 
 	// Collapse excessive blank lines, ensure trailing newline
