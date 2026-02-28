@@ -145,14 +145,26 @@ try {
 
 /* ---------- Capture frames ---------- */
 
-// Clean up stale temp dirs from previous crashed runs
+// Create this job's temp dir first (implicitly ensures outDir exists)
 const outDir = dirname(OUT);
+mkdirSync(TMP, { recursive: true });
+
+// Clean up stale temp dirs from previous crashed runs, protecting any
+// concurrently-active dir younger than 2 minutes.
+const STALE_THRESHOLD_MS = 120_000;
+const now = Date.now();
 for (const entry of readdirSync(outDir)) {
-	if (entry.startsWith('.capture-frames-') && resolve(outDir, entry) !== TMP) {
-		rmSync(resolve(outDir, entry), { recursive: true, force: true });
+	if (!entry.startsWith('.capture-frames-')) continue;
+	const candidate = resolve(outDir, entry);
+	if (candidate === TMP) continue;
+	try {
+		if (statSync(candidate).mtimeMs < now - STALE_THRESHOLD_MS) {
+			rmSync(candidate, { recursive: true, force: true });
+		}
+	} catch {
+		/* already removed by a parallel run */
 	}
 }
-mkdirSync(TMP, { recursive: true });
 
 // Resolve the target URL — fall back to local 404.html when a remote URL is
 // unreachable (e.g. in sandboxed CI environments without outbound networking).
@@ -191,32 +203,35 @@ try {
 		args: ['--no-sandbox', '--disable-gpu', '--disable-blink-features=AutomationControlled'],
 	});
 
-	const page = await resolveTarget(browser);
+	try {
+		const page = await resolveTarget(browser);
 
-	// Emulate color scheme if requested
-	if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
-		await page.emulateMedia({ colorScheme: COLOR_SCHEME });
-		console.log(`Emulating prefers-color-scheme: ${COLOR_SCHEME}`);
-	}
+		// Emulate color scheme if requested
+		if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
+			await page.emulateMedia({ colorScheme: COLOR_SCHEME });
+			console.log(`Emulating prefers-color-scheme: ${COLOR_SCHEME}`);
+		}
 
-	// Let the first paint settle
-	await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);
+		// Let the first paint settle
+		await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);
 
-	for (let i = 0; i < TOTAL_FRAMES; i++) {
-		const padded = String(i).padStart(5, '0');
-		const captureStartedAt = Date.now();
-		await page.screenshot({ path: `${TMP}/frame-${padded}.png` });
-		if (i < TOTAL_FRAMES - 1) {
-			const captureDurationMs = Date.now() - captureStartedAt;
-			const remainingInterval = FRAME_INTERVAL - captureDurationMs;
-			if (remainingInterval > 0) {
-				await page.waitForTimeout(remainingInterval);
+		for (let i = 0; i < TOTAL_FRAMES; i++) {
+			const padded = String(i).padStart(5, '0');
+			const captureStartedAt = Date.now();
+			await page.screenshot({ path: `${TMP}/frame-${padded}.png` });
+			if (i < TOTAL_FRAMES - 1) {
+				const captureDurationMs = Date.now() - captureStartedAt;
+				const remainingInterval = FRAME_INTERVAL - captureDurationMs;
+				if (remainingInterval > 0) {
+					await page.waitForTimeout(remainingInterval);
+				}
 			}
 		}
-	}
 
-	await browser.close();
-	console.log(`Captured ${TOTAL_FRAMES} frames into ${TMP}`);
+		console.log(`Captured ${TOTAL_FRAMES} frames into ${TMP}`);
+	} finally {
+		await browser.close();
+	}
 
 	/* ---------- Assemble output with ffmpeg ---------- */
 

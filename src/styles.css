@@ -424,7 +424,8 @@ body::after {
 	}
 
 	.panel,
-	.theme-dock-toggle,
+	.theme-trigger,
+	.theme-trigger__icon,
 	.theme-switch,
 	.theme-option {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
@@ -953,12 +954,6 @@ p {
 		gap: 8px;
 	}
 
-	.theme-dock-toggle {
-		padding: 8px 10px;
-		font-size: 0.54rem;
-		letter-spacing: 0.1em;
-	}
-
 	.theme-dock__summary {
 		font-size: 0.5rem;
 	}
@@ -1020,12 +1015,6 @@ p {
 		margin-top: 12px;
 		padding-top: 10px;
 		gap: 10px;
-	}
-
-	.theme-dock-toggle {
-		padding: 7px 10px;
-		font-size: 0.5rem;
-		letter-spacing: 0.09em;
 	}
 
 	.theme-dock__label {
