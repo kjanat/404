@@ -661,7 +661,7 @@ body.calm-mode .edge-icon {
 	--panel-lift: 0px;
 }
 
-.panel > * {
+.panel > *:not(.theme-trigger, .theme-drawer) {
 	position: relative;
 	z-index: 3;
 	max-width: 100%;
@@ -705,94 +705,93 @@ body.calm-mode .edge-icon {
 	z-index: 2;
 }
 
-.theme-dock {
-	margin-top: 16px;
-	padding-top: 10px;
-	border-top: 1px solid color-mix(in oklch, var(--theme-border) 62%, transparent);
-	display: grid;
-	gap: 8px;
-}
+/* ── Gear trigger ────────────────────────────────── */
 
-:root[data-theme-locked="true"] .theme-dock,
-.theme-dock[hidden] {
+:root[data-theme-locked="true"] .theme-trigger,
+:root[data-theme-locked="true"] .theme-drawer {
 	display: none;
 }
 
-.theme-dock-toggle {
+.theme-trigger {
 	appearance: none;
-	width: 100%;
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	border: 1px solid color-mix(in oklch, var(--theme-border) 68%, transparent);
-	border-radius: 12px;
-	background: color-mix(in oklch, var(--theme-switch-bg) 70%, transparent);
-	color: var(--theme-text);
-	padding: 9px 12px;
-	font-family: var(--font-display);
-	font-size: 0.58rem;
-	font-weight: 700;
-	letter-spacing: 0.12em;
-	line-height: 1;
-	text-transform: uppercase;
+	position: absolute;
+	bottom: 12px;
+	right: 12px;
+	z-index: 10;
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	background: transparent;
+	color: color-mix(in oklch, var(--theme-muted) 60%, var(--theme-text) 40%);
 	cursor: pointer;
-	transition: border-color 180ms ease, color 180ms ease, background-color 220ms ease;
+	transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 360ms ease;
 }
 
-.theme-dock-toggle[aria-expanded="false"] {
-	min-height: 42px;
-	padding: 6px 10px;
-	font-size: 0.53rem;
-	letter-spacing: 0.1em;
+.theme-trigger:hover {
+	color: var(--theme-text);
+	background: color-mix(in oklch, var(--theme-switch-bg) 50%, transparent);
+	border-color: color-mix(in oklch, var(--theme-border) 40%, transparent);
 }
 
-.theme-dock-toggle[aria-expanded="false"] .theme-dock__summary {
-	font-size: 0.5rem;
-	letter-spacing: 0.08em;
+.theme-trigger:active {
+	transform: scale(0.92);
 }
 
-.theme-dock-toggle:hover {
-	border-color: var(--theme-switch-border);
-	color: color-mix(in oklch, var(--theme-text) 90%, var(--theme-accent) 10%);
+.theme-trigger[aria-expanded="true"] {
+	color: var(--theme-text);
+	background: color-mix(in oklch, var(--theme-switch-bg) 70%, transparent);
+	border-color: color-mix(in oklch, var(--theme-border) 60%, transparent);
 }
 
-.theme-dock-toggle:active {
-	transform: translateY(1px);
+.theme-trigger[aria-expanded="true"] .theme-trigger__icon {
+	transform: rotate(60deg);
 }
 
-.theme-dock-toggle__text {
-	color: color-mix(in oklch, var(--theme-muted) 80%, var(--theme-text) 20%);
+.theme-trigger__icon {
+	display: block;
+	transition: transform 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.theme-dock__summary {
-	margin-left: auto;
-	color: var(--theme-switch-text);
-	font-size: 0.55rem;
-	letter-spacing: 0.1em;
-	white-space: nowrap;
-}
-
-.theme-dock__chevron {
-	width: 8px;
-	height: 8px;
-	border-right: 2px solid currentColor;
-	border-bottom: 2px solid currentColor;
-	transform: translateY(-1px) rotate(45deg);
-	transition: transform 180ms ease;
-}
-
-.theme-dock-toggle[aria-expanded="true"] .theme-dock__chevron {
-	transform: translateY(1px) rotate(-135deg);
-}
+/* ── Theme drawer (popover) ─────────────────────── */
 
 .theme-drawer {
+	position: absolute;
+	bottom: 52px;
+	right: 12px;
+	z-index: 10;
 	display: grid;
 	gap: 10px;
-	padding-top: 2px;
+	padding: 14px 16px;
+	min-width: 220px;
+	border: 1px solid color-mix(in oklch, var(--theme-border) 68%, transparent);
+	border-radius: 14px;
+	background: var(--theme-card);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 8px 32px rgba(0 0 0 / 0.25);
+	transform-origin: bottom right;
 }
 
 .theme-drawer[hidden] {
 	display: none;
+}
+
+.theme-drawer:not([hidden]) {
+	animation: drawer-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes drawer-in {
+	from {
+		opacity: 0;
+		transform: scale(0.92) translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
 }
 
 .theme-dock__label {
@@ -877,7 +876,7 @@ body.page-ready [data-reveal="4"] {
 	animation: reveal-up 560ms cubic-bezier(0.2, 0.95, 0.25, 1) 300ms both;
 }
 
-.theme-dock-toggle:focus-visible,
+.theme-trigger:focus-visible,
 .theme-option:focus-visible,
 .edge-word:focus-visible {
 	outline: 2px solid var(--theme-focus-ring);

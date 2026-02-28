@@ -4,3 +4,4 @@ node_modules/
 dist
 tooltip-validation.png
 *.zip
+.capture-frames*/

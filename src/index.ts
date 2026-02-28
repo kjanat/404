@@ -139,31 +139,6 @@ function readThemeOverride(): { hasParam: boolean; preference: ThemePreference |
 	};
 }
 
-function formatThemeSummary(preference: ThemePreference, resolvedTheme: ThemeName): string {
-	if (preference === 'system') {
-		return `auto (${resolvedTheme})`;
-	}
-
-	return preference;
-}
-
-function updateThemeSummary(
-	summaryElement: HTMLElement | null,
-	dockToggle: HTMLButtonElement | null,
-	preference: ThemePreference,
-	resolvedTheme: ThemeName,
-): void {
-	const summary = formatThemeSummary(preference, resolvedTheme);
-	if (summaryElement) {
-		summaryElement.textContent = summary;
-	}
-
-	if (dockToggle) {
-		dockToggle.setAttribute('aria-label', `Scene settings, ${summary}`);
-		dockToggle.setAttribute('title', `Scene settings: ${summary}`);
-	}
-}
-
 function updateThemeSwitch(
 	options: readonly HTMLButtonElement[],
 	preference: ThemePreference,
@@ -217,10 +192,8 @@ function applyTheme(
 function initializeThemeControls(): void {
 	const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]'));
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
-	const themeDock = document.querySelector<HTMLElement>('.theme-dock');
 	const themeDockToggle = document.querySelector<HTMLButtonElement>('[data-theme-dock-toggle]');
 	const themeDrawer = document.querySelector<HTMLElement>('[data-theme-drawer]');
-	const themeSummary = document.querySelector<HTMLElement>('[data-theme-summary]');
 	const themeOverride = readThemeOverride();
 
 	const setThemeDrawerOpen = (open: boolean): void => {
@@ -236,7 +209,6 @@ function initializeThemeControls(): void {
 	if (themeOverride.hasParam) {
 		document.documentElement.setAttribute(THEME_LOCKED_ATTR, 'true');
 		document.body.setAttribute(THEME_LOCKED_ATTR, 'true');
-		if (themeDock) themeDock.hidden = true;
 		setThemeDrawerOpen(false);
 	}
 
@@ -245,7 +217,6 @@ function initializeThemeControls(): void {
 	const syncTheme = (animate: boolean): void => {
 		const resolvedTheme = resolveTheme(preference);
 		applyTheme(resolvedTheme, preference, options, animate);
-		updateThemeSummary(themeSummary, themeDockToggle, preference, resolvedTheme);
 	};
 
 	if (!themeOverride.hasParam) {
@@ -256,6 +227,46 @@ function initializeThemeControls(): void {
 				setThemeDrawerOpen(themeDrawer.hasAttribute('hidden'));
 			});
 		}
+
+		// Keyboard shortcut: press T to toggle scene settings
+		document.addEventListener('keydown', (event) => {
+			if (
+				event.target instanceof HTMLInputElement
+				|| event.target instanceof HTMLTextAreaElement
+				|| event.target instanceof HTMLSelectElement
+				|| event.metaKey
+				|| event.ctrlKey
+				|| event.altKey
+			) {
+				return;
+			}
+
+			if (event.key === 't' || event.key === 'T') {
+				event.preventDefault();
+				const isOpen = themeDrawer ? !themeDrawer.hasAttribute('hidden') : false;
+				setThemeDrawerOpen(!isOpen);
+
+				if (!isOpen && themeDrawer) {
+					const checked = themeDrawer.querySelector<HTMLButtonElement>('[aria-checked="true"]');
+					if (checked) checked.focus();
+				} else if (themeDockToggle) {
+					themeDockToggle.focus();
+				}
+			}
+		});
+
+		// Click outside to close drawer
+		document.addEventListener('click', (event) => {
+			if (
+				themeDrawer
+				&& !themeDrawer.hasAttribute('hidden')
+				&& event.target instanceof Node
+				&& !themeDrawer.contains(event.target)
+				&& !(themeDockToggle?.contains(event.target) ?? false)
+			) {
+				setThemeDrawerOpen(false);
+			}
+		});
 
 		for (const optionButton of options) {
 			const option = parseThemeOption(optionButton.dataset.themeOption);
@@ -534,15 +545,123 @@ function subscribeCalmSignals(onChange: () => void): () => void {
 	};
 }
 
+/** Randomly selected heading for the 404 page. */
+const HEADLINES: readonly [string, ...string[]] = [
+	// confused
+	'404 \u2014 Huh?',
+	'404 \u2014 Who are you?',
+	'404 \u2014 What are you doing here?',
+	'404 \u2014 Do I know you?',
+	'404 \u2014 Wait, what?',
+	'404 \u2014 Come again?',
+	'404 \u2014 Sorry, who?',
+	// blunt
+	'404 \u2014 Nope.',
+	'404 \u2014 Go home.',
+	'404 \u2014 No.',
+	'404 \u2014 Absolutely not.',
+	'404 \u2014 Not today.',
+	'404 \u2014 Try again. Or don\u2019t.',
+	'404 \u2014 Nothing to see here.',
+	// sassy
+	'404 \u2014 Nice try though.',
+	'404 \u2014 Not even close.',
+	'404 \u2014 You sure about that URL?',
+	'404 \u2014 Cute URL. Doesn\u2019t exist.',
+	'404 \u2014 Bold of you to assume.',
+	'404 \u2014 Bless your heart.',
+	// awkward
+	'404 \u2014 This is awkward.',
+	'404 \u2014 Well, this is embarrassing.',
+	'404 \u2014 You seem lost.',
+	'404 \u2014 Wrong turn, buddy.',
+	'404 \u2014 Somebody lied to you.',
+	// dry
+	'404 \u2014 This host is not configured.',
+	'404 \u2014 There\u2019s nothing here.',
+	'404 \u2014 Nobody lives here.',
+	'404 \u2014 Plot twist: there is no website.',
+	'404 \u2014 The void says hi.',
+];
+
+/** A `{host}` placeholder in each template is replaced with the actual hostname. */
+const BLURBS: readonly [string, ...string[]] = [
+	// existential
+	'{host} gazed into the void, and the void gazed back. There\u2019s nothing here \u2014 no site, no config, not even a humble \u2018Hello World.\u2019 If you expected something, someone owes you an apology.',
+	'Legend has it that {host} once hosted a website. That legend is wrong. There\u2019s nothing here. There never was.',
+	'{host} is the digital equivalent of showing up to a party at the wrong address. Awkward silence. Empty rooms. Check the address.',
+	'If {host} were a book, every page would be blank. Avant-garde? Maybe. Useful? Absolutely not.',
+	'Somewhere in a parallel universe, {host} is a thriving website. This is not that universe.',
+	// deadpan
+	'{host} is serving absolutely nothing. Whoever pointed you here probably fat-fingered a DNS record. We\u2019re not pointing fingers, but someone should double-check their work.',
+	'You\u2019ve reached {host}. Nobody\u2019s home. We checked. Twice. If you expected a website, the DNS might be lying to you.',
+	'{host} has the same energy as a \u2018Coming Soon\u2019 sign that\u2019s been up since 2019. Nothing\u2019s coming. Nothing was ever coming.',
+	'The server responded. {host} did not. One of them is doing their job.',
+	'Fun fact: {host} has been visited more times than it\u2019s been configured. You\u2019re part of the statistic now. Congratulations.',
+	// personified
+	'We asked {host} what it wanted to be when it grew up. It hasn\u2019t decided yet. Check back later, or check the address \u2014 one of you is lost.',
+	'{host} was supposed to be here, but it ghosted us. Left us on read. Not cool, {host}. Not cool.',
+	'{host} called in sick today. No substitute was provided. Please try again when it feels better, or check if you have the right address.',
+	'{host} is giving main character energy with zero plot development. Completely empty arc.',
+	'Dear {host}, we\u2019ve been trying to reach you about your extended website warranty. Please exist at your earliest convenience.',
+	// real estate
+	'{host} is a pristine, untouched plot of internet. No tenants, no content, just digital tumbleweeds. If you expected a website here, the address might be wrong \u2014 or the landlord forgot to build.',
+	'Welcome to {host}, a beautiful vacant lot on the information superhighway. Zoning permits pending. Utilities not connected. Content: none.',
+	'{host}: zero bedrooms, zero bathrooms, zero content. Great bones though. Someone should really develop this property.',
+	// poetry & wordplay
+	'Roses are red, violets are blue, {host} has no website, and now you\u2019re sad too.',
+	'Knock knock. Who\u2019s there? Not {host}, that\u2019s for sure. This domain is emptier than a promises.txt from your last standup.',
+	'404: the number of seconds you\u2019ll spend wondering why {host} has nothing on it. Spoiler: nobody configured it.',
+	'{host} exists the way your weekend plans do \u2014 technically real, but with absolutely nothing behind it. Check the address, maybe.',
+	// tech humor
+	'Turns out {host} is a domain, not a website. Common misconception. Like thinking the cloud is actually a cloud.',
+	'{host}\u2019s deployment pipeline is flawless: nothing goes in, nothing comes out. Zero bugs. Technically perfect.',
+	'SELECT * FROM {host} WHERE content IS NOT NULL returned zero rows. The database is not the problem. There is no database.',
+	'{host} runs on 100% renewable energy because it does absolutely nothing. Carbon-neutral by default.',
+	'git log for {host} is empty. No commits, no history, no regrets. A clean slate in every sense.',
+	// absurdist
+	'This page is the only proof that {host} exists. Think of it as a birth certificate for an empty domain. Frame it if you want.',
+	'A wise person once said, \u2018If you visit {host} and nothing loads, does the website even exist?\u2019 The answer is no. It does not.',
+	'{host} has all the charisma of a 404 page. Oh wait \u2014 that\u2019s exactly what this is.',
+];
+
+/** Pick a random element from a non-empty readonly tuple. */
+function pickRandom<T>(arr: readonly [T, ...T[]]): T {
+	const [fallback] = arr;
+	return arr[Math.floor(Math.random() * arr.length)] ?? fallback;
+}
+
 /**
  * Populate dynamic host-dependent content.
  *
- * Sets `textContent` of all `[data-host]` elements to the current hostname
- * and updates `document.title` to `404 | <hostname>`.
+ * Picks a random headline for `[data-headline]`, a random blurb for
+ * `[data-blurb]`, injects the hostname as an accented `<span>`, and
+ * updates `document.title` to `404 | <hostname>`.
  */
 function initializePage(): void {
-	const host = window.location.hostname;
+	const host = new URLSearchParams(window.location.search).get('host') ?? window.location.hostname;
 	if (!host) return;
+
+	const headlineTarget = document.querySelector<HTMLElement>('[data-headline]');
+	if (headlineTarget) {
+		headlineTarget.textContent = pickRandom(HEADLINES);
+	}
+
+	const blurbTarget = document.querySelector<HTMLElement>('[data-blurb]');
+	if (blurbTarget) {
+		const template = pickRandom(BLURBS);
+		const hostSpan = document.createElement('span');
+		hostSpan.className = 'font-bold break-all text-accent-2';
+		hostSpan.textContent = host;
+
+		const parts = template.split('{host}');
+		blurbTarget.textContent = '';
+		for (let i = 0; i < parts.length; i++) {
+			const part = parts[i];
+			if (i > 0) blurbTarget.appendChild(hostSpan.cloneNode(true));
+			if (part) blurbTarget.appendChild(document.createTextNode(part));
+		}
+	}
 
 	for (const target of document.querySelectorAll<HTMLElement>('[data-host]')) {
 		target.textContent = host;

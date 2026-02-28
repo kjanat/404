@@ -8,7 +8,7 @@ export default defineConfig({
 		tailwindcss(),
 		svgToIco({
 			input: 'src/icon.svg',
-			emit: { source: { name: 'favicon.svg' } },
+			emit: { source: { name: 'favicon.svg' }, inject: true },
 		}),
 		{
 			name: 'cf-async-disable',

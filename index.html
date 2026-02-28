@@ -37,8 +37,6 @@
 			} catch {}
 		})();
 		</script>
-		<link rel="icon" href="/favicon.ico" type="image/x-icon" sizes="16x16 32x32 48x48">
-		<link rel="icon" href="/favicon.svg" type="image/svg+xml" sizes="any">
 		<link rel="stylesheet" href="/src/styles.css">
 		<script type="module" src="/src/index.ts"></script>
 	</head>
@@ -87,37 +85,45 @@
 					>Edge</span>
 				</p>
 			</div>
-			<h1 data-reveal="2">404 - This host is not configured.</h1>
-			<p data-reveal="3">
-				<span class="font-bold break-all text-accent-2" data-host>this hostname</span>
-				isn't set up yet, so there's nothing to show here right now. If you expected something here, check the address
-				and try again.
-			</p>
-			<div class="theme-dock" data-reveal="4">
-				<button
-					class="theme-dock-toggle"
-					type="button"
-					data-theme-dock-toggle
-					aria-expanded="false"
-					aria-controls="theme-drawer"
+			<h1 data-reveal="2" data-headline></h1>
+			<p data-reveal="3" data-blurb></p>
+			<button
+				class="theme-trigger"
+				type="button"
+				data-theme-dock-toggle
+				aria-expanded="false"
+				aria-controls="theme-drawer"
+				aria-label="Scene settings"
+				data-reveal="4"
+			>
+				<svg
+					class="theme-trigger__icon"
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
 				>
-					<span class="theme-dock-toggle__text">Scene settings</span>
-					<span class="theme-dock__summary" data-theme-summary>auto</span>
-					<span class="theme-dock__chevron" aria-hidden="true"></span>
-				</button>
-				<div class="theme-drawer" id="theme-drawer" data-theme-drawer hidden>
-					<span class="theme-dock__label">Scene mode</span>
-					<div class="theme-switch" data-theme-switch role="radiogroup" aria-label="Theme mode">
-						<button class="theme-option" type="button" role="radio" data-theme-option="system" aria-checked="true">
-							auto
-						</button>
-						<button class="theme-option" type="button" role="radio" data-theme-option="dark" aria-checked="false">
-							dark
-						</button>
-						<button class="theme-option" type="button" role="radio" data-theme-option="light" aria-checked="false">
-							light
-						</button>
-					</div>
+					<circle cx="12" cy="12" r="3" />
+					<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+				</svg>
+			</button>
+			<div class="theme-drawer" id="theme-drawer" data-theme-drawer hidden>
+				<span class="theme-dock__label">Scene mode</span>
+				<div class="theme-switch" data-theme-switch role="radiogroup" aria-label="Theme mode">
+					<button class="theme-option" type="button" role="radio" data-theme-option="system" aria-checked="true">
+						auto
+					</button>
+					<button class="theme-option" type="button" role="radio" data-theme-option="dark" aria-checked="false">
+						dark
+					</button>
+					<button class="theme-option" type="button" role="radio" data-theme-option="light" aria-checked="false">
+						light
+					</button>
 				</div>
 			</div>
 		</main>
