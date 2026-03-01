@@ -13,72 +13,62 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  preview:
+  capture:
+    strategy:
+      matrix:
+        color_scheme: [dark, light]
+    name: "Capture ${{ matrix.color_scheme }}"
     runs-on: ubuntu-latest
+    permissions: { contents: read }
     steps:
       - uses: actions/checkout@v6
-      - uses: ./.github/actions/setup-node-bun
+      - uses: ./.github/actions/capture
         with:
-          install: "true"
-          frozen-lockfile: "true"
-      - uses: FedericoCarboni/setup-ffmpeg@v3
-      - name: Install Playwright browser
-        run: bunx playwright install chromium
-      - name: Build site and capture script
-        run: |
-          bun run build
-          mkdir -p .capture-dist
-          bun build scripts/capture.ts --target node --packages external --outfile .capture-dist/capture.mjs
-      - name: Capture dark and light screenshots
-        run: |
-          bunx vite preview --port 4174 &
-          for i in $(seq 1 30); do
-            curl -sf http://localhost:4174 >/dev/null 2>&1 && break
-            sleep 0.5
-          done
+          color_scheme: ${{ matrix.color_scheme }}
+          duration: "5"
+          quality: "90"
 
-          URL="http://localhost:4174?host=unavailable.kajkowalski.nl"
-          for scheme in dark light; do
-            node .capture-dist/capture.mjs \
-              --url "$URL" \
-              --color-scheme "$scheme" \
-              -d 5 --fps 12 -q 90 --max-bytes 3145728 \
-              -o "preview-${scheme}.webp"
-          done
-
-          kill %1 2>/dev/null || true
-      - name: Push screenshots to preview branch
-        id: push
-        run: |
-          PR=${{ github.event.pull_request.number }}
-          BRANCH="pr-preview/${PR}"
-
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Create orphan branch with just the screenshots
-          git checkout --orphan "$BRANCH"
-          git rm -rf . >/dev/null 2>&1 || true
-          git add preview-dark.webp preview-light.webp
-          git commit -m "Preview screenshots for PR #${PR}"
-          git push origin "$BRANCH" --force
-
-          SHA=$(git rev-parse HEAD)
-          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
-          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
-      - name: Post or update PR comment
+  comment:
+    needs: capture
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: "preview-*.webp"
+          merge-multiple: true
+      - name: Push to preview branch and comment
         uses: actions/github-script@v8
-        env:
-          PREVIEW_SHA: ${{ steps.push.outputs.sha }}
-          PREVIEW_BRANCH: ${{ steps.push.outputs.branch }}
         with:
           script: |
+            const fs = require('fs');
             const { owner, repo } = context.repo;
             const prNumber = context.payload.pull_request.number;
             const headSha = context.payload.pull_request.head.sha.substring(0, 7);
-            const previewSha = process.env.PREVIEW_SHA;
-            const rawBase = `https://raw.githubusercontent.com/${owner}/${repo}/${previewSha}`;
+            const branch = `pr-preview/${prNumber}`;
             const marker = '<!-- pr-preview-screenshots -->';
+
+            // Push screenshots to orphan branch
+            await exec.exec('git', ['config', 'user.name', 'github-actions[bot]']);
+            await exec.exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
+            await exec.exec('git', ['checkout', '--orphan', branch]);
+            await exec.exec('git', ['rm', '-rf', '.']);
+
+            const files = fs.readdirSync('.').filter(f => f.startsWith('preview-') && f.endsWith('.webp'));
+            if (files.length === 0) {
+              core.setFailed('No preview files found');
+              return;
+            }
+            await exec.exec('git', ['add', ...files]);
+            await exec.exec('git', ['commit', '-m', `Preview screenshots for PR #${prNumber}`]);
+            await exec.exec('git', ['push', 'origin', branch, '--force']);
+
+            const { stdout } = await exec.getExecOutput('git', ['rev-parse', 'HEAD']);
+            const previewSha = stdout.trim();
+            const rawBase = `https://raw.githubusercontent.com/${owner}/${repo}/${previewSha}`;
 
             const body = [
               marker,
@@ -86,11 +76,10 @@ jobs:
               ``,
               `> Commit: \`${headSha}\` | [Workflow run](https://github.com/${owner}/${repo}/actions/runs/${context.runId})`,
               ``,
-              `### Dark`,
-              `![dark preview](${rawBase}/preview-dark.webp)`,
-              ``,
-              `### Light`,
-              `![light preview](${rawBase}/preview-light.webp)`,
+              ...files.map(f => {
+                const scheme = f.replace('preview-', '').replace('.webp', '');
+                return `### ${scheme.charAt(0).toUpperCase() + scheme.slice(1)}\n![${scheme} preview](${rawBase}/${f})`;
+              }),
               ``,
               `_Auto-generated by PR Preview workflow_`,
             ].join('\n');
@@ -101,13 +90,9 @@ jobs:
             const existing = comments.find(c => c.body?.includes(marker));
 
             if (existing) {
-              await github.rest.issues.updateComment({
-                owner, repo, comment_id: existing.id, body,
-              });
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
               core.info(`Updated comment ${existing.id}`);
             } else {
-              await github.rest.issues.createComment({
-                owner, repo, issue_number: prNumber, body,
-              });
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
               core.info('Created preview comment');
             }
