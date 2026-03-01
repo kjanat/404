@@ -366,19 +366,7 @@ body::after {
 		var(--theme-streak-mid) 50%,
 		var(--theme-streak-bottom) 100%
 	);
-	clip-path: polygon(
-		44% 0,
-		64% 12%,
-		47% 31%,
-		74% 47%,
-		40% 67%,
-		63% 84%,
-		36% 100%,
-		52% 66%,
-		30% 46%,
-		50% 28%,
-		28% 12%
-	);
+	/* clip-path set inline per bolt by StormEngine */
 }
 
 .storm-streak-a {

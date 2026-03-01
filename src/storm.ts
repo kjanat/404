@@ -20,10 +20,9 @@
  * | Property       | Range | Purpose                                                        |
  * | -------------- | ----- | -------------------------------------------------------------- |
  * | `--flash`      | 0..1  | Overall flash intensity (body::before, panel shadow, h1 glow)  |
- * | `--bolt-a`     | 0..1  | Bolt A visibility                                              |
- * | `--bolt-b`     | 0..1  | Bolt B visibility                                              |
- * | `--bolt-c`     | 0..1  | Bolt C visibility                                              |
  * | `--region-dim` | 0..1  | Storm region darkening (inverted: low = bright flash moment)   |
+ *
+ * Bolt opacity is set directly on dynamically created bolt elements.
  *
  * @module
  */
@@ -251,8 +250,8 @@ interface StrokeEvent {
 interface FlashSequence {
 	/** Ordered return strokes (first is brightest). */
 	readonly strokes: readonly StrokeEvent[];
-	/** Which bolt SVG path(s) illuminate during this flash. */
-	readonly bolts: readonly ('a' | 'b' | 'c')[];
+	/** Indices into the bolt element array for this flash. */
+	readonly boltIndices: readonly number[];
 	/** Duration of the pre-flash IC glow buildup in ms. */
 	readonly preflashDuration: number;
 	/** Duration of the continuing current tail in ms. */
