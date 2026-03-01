@@ -178,10 +178,15 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 		console.log(`Emulating prefers-color-scheme: ${COLOR_SCHEME}`);
 	}
 
-	if (/^https?:\/\//.test(TARGET_URL)) {
+	// Append ?theme= param so early-theme.ts picks up the scheme at parse time
+	const navUrl = COLOR_SCHEME
+		? `${TARGET_URL}${TARGET_URL.includes('?') ? '&' : '?'}theme=${COLOR_SCHEME}`
+		: TARGET_URL;
+
+	if (/^https?:\/\//.test(navUrl)) {
 		try {
-			await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
-			console.log(`Loaded remote URL: ${TARGET_URL}`);
+			await page.goto(navUrl, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
+			console.log(`Loaded remote URL: ${navUrl}`);
 			return page;
 		} catch {
 			console.log(`Remote URL unreachable, falling back to local 404.html`);
@@ -198,7 +203,10 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 	if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
 		await fallback.emulateMedia({ colorScheme: COLOR_SCHEME });
 	}
-	await fallback.goto(`file://${htmlPath}`, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
+	const fallbackUrl = COLOR_SCHEME
+		? `file://${htmlPath}?theme=${COLOR_SCHEME}`
+		: `file://${htmlPath}`;
+	await fallback.goto(fallbackUrl, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
 	console.log(`Loaded local file: ${htmlPath}`);
 	return fallback;
 };
