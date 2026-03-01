@@ -5,7 +5,6 @@ run-name: "Publish ${{ github.event.release.tag_name || github.ref_name }} to np
 on:
   release:
     types: [published]
-  workflow_dispatch:
 
 concurrency:
   group: publish-npm
@@ -23,6 +22,7 @@ jobs:
       url: ${{ steps.version.outputs.npm_url }}
     steps:
       - uses: actions/checkout@v6
+      - uses: ./.github/actions/version-check
       - uses: actions/setup-node@v6
         with: { node-version: lts/*, registry-url: https://registry.npmjs.org }
       - uses: oven-sh/setup-bun@v2
