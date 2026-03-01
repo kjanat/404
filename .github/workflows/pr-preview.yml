@@ -83,23 +83,36 @@ jobs:
         with:
           script: |
             const fs = require('fs');
+            const path = require('path');
             const { owner, repo } = context.repo;
             const prNumber = context.payload.pull_request.number;
             const headSha = context.payload.pull_request.head.sha.substring(0, 7);
             const branch = `pr-preview/${prNumber}`;
             const marker = '<!-- pr-preview-screenshots -->';
 
+            // Save preview files before git operations wipe the working dir
+            const tmpDir = '/tmp/previews';
+            fs.mkdirSync(tmpDir, { recursive: true });
+            const previewFiles = fs.readdirSync('.').filter(f => f.startsWith('preview-') && f.endsWith('.webp'));
+            if (previewFiles.length === 0) {
+              core.setFailed('No preview files found');
+              return;
+            }
+            for (const f of previewFiles) {
+              fs.copyFileSync(f, path.join(tmpDir, f));
+            }
+
             await exec.exec('git', ['config', 'user.name', 'github-actions[bot]']);
             await exec.exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
             await exec.exec('git', ['checkout', '--orphan', branch]);
             await exec.exec('git', ['rm', '-rf', '.']);
 
-            const files = fs.readdirSync('.').filter(f => f.startsWith('preview-') && f.endsWith('.webp'));
-            if (files.length === 0) {
-              core.setFailed('No preview files found');
-              return;
+            // Copy preview files back
+            for (const f of previewFiles) {
+              fs.copyFileSync(path.join(tmpDir, f), f);
             }
-            await exec.exec('git', ['add', ...files]);
+
+            await exec.exec('git', ['add', ...previewFiles]);
             await exec.exec('git', ['commit', '-m', `Preview screenshots for PR #${prNumber}`]);
             await exec.exec('git', ['push', 'origin', branch, '--force']);
 
