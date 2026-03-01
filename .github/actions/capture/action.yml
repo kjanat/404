@@ -17,6 +17,18 @@ outputs:
   artifact-url:
     description: "URL to the uploaded artifact"
     value: ${{ steps.upload.outputs.artifact-url }}
+  artifact-id:
+    description: "ID of the uploaded artifact"
+    value: ${{ steps.upload.outputs.artifact-id }}
+  artifact-name:
+    description: "Name of the uploaded artifact (e.g. preview-dark.webp)"
+    value: "preview-${{ inputs.color_scheme }}.${{ inputs.ext }}"
+  file-name:
+    description: "Output file name"
+    value: "preview-${{ inputs.color_scheme }}.${{ inputs.ext }}"
+  color-scheme:
+    description: "Color scheme that was captured"
+    value: ${{ inputs.color_scheme }}
 
 runs:
   using: composite
