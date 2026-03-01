@@ -648,12 +648,14 @@ body.calm-mode .edge-icon {
 	border-radius: 8px;
 	background: transparent;
 	color: color-mix(in oklch, var(--theme-muted) 60%, var(--theme-text) 40%);
+	opacity: 0.4;
 	cursor: pointer;
-	transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, transform 360ms ease;
+	transition: color 180ms ease, background-color 180ms ease, border-color 180ms ease, opacity 180ms ease, transform 360ms ease;
 }
 
 .theme-trigger:hover {
 	color: var(--theme-text);
+	opacity: 1;
 	background: color-mix(in oklch, var(--theme-switch-bg) 50%, transparent);
 	border-color: color-mix(in oklch, var(--theme-border) 40%, transparent);
 }
@@ -664,6 +666,7 @@ body.calm-mode .edge-icon {
 
 .theme-trigger[aria-expanded="true"] {
 	color: var(--theme-text);
+	opacity: 1;
 	background: color-mix(in oklch, var(--theme-switch-bg) 70%, transparent);
 	border-color: color-mix(in oklch, var(--theme-border) 60%, transparent);
 }
