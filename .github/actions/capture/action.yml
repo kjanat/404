@@ -46,45 +46,10 @@ runs:
         _VIDEO_CRF: ${{ inputs.video_crf }}
         _EXT: ${{ inputs.ext }}
         _COLOR_SCHEME: ${{ inputs.color_scheme }}
-      run: |
-        append_env() {
-          local key="$1"
-          local value="$2"
-          local delimiter="EOF_$(date +%s%N)_$RANDOM"
-          {
-            printf '%s<<%s\n' "$key" "$delimiter"
-            printf '%s\n' "$value"
-            printf '%s\n' "$delimiter"
-          } >> "$GITHUB_ENV"
-        }
-
-        append_env "INPUT_WIDTH" "$_WIDTH"
-        append_env "INPUT_HEIGHT" "$_HEIGHT"
-        append_env "INPUT_URL" "$_URL"
-        append_env "INPUT_DURATION" "$_DURATION"
-        append_env "INPUT_FPS" "$_FPS"
-        append_env "INPUT_QUALITY" "$_QUALITY"
-        append_env "INPUT_MAX_MB" "$_MAX_MB"
-        append_env "INPUT_VIDEO_CRF" "$_VIDEO_CRF"
-        append_env "INPUT_EXT" "$_EXT"
-        append_env "INPUT_COLOR_SCHEME" "$_COLOR_SCHEME"
+      run: ${{ github.action_path }}/scripts/expose-inputs.sh
     - name: Validate inputs
       shell: bash
-      run: |
-        case "$INPUT_EXT" in
-          webp|gif|mp4) ;;
-          *)
-            echo "Invalid INPUT_EXT value: $INPUT_EXT (allowed: webp, gif, mp4)" >&2
-            exit 1
-            ;;
-        esac
-        case "$INPUT_COLOR_SCHEME" in
-          light|dark) ;;
-          *)
-            echo "Invalid INPUT_COLOR_SCHEME value: $INPUT_COLOR_SCHEME (allowed: light, dark)" >&2
-            exit 1
-            ;;
-        esac
+      run: ${{ github.action_path }}/scripts/validate-inputs.sh
     - name: Setup JS toolchain
       uses: ./.github/actions/setup-node-bun
       with:
@@ -99,54 +64,10 @@ runs:
       run: bun run build
     - name: Build capture script for Node execution
       shell: bash
-      run: |
-        mkdir -p .capture-dist
-        # Keep third-party packages external to avoid bundler/runtime mismatches
-        # in Node 20 for playwright-extra + stealth plugin internals.
-        bun build scripts/capture.ts --target node --packages external --outfile .capture-dist/capture.mjs
+      run: ${{ github.action_path }}/scripts/build-capture.sh
     - name: Generate animation
       shell: bash
-      run: |
-        max_bytes="$(
-          awk -v mb="$INPUT_MAX_MB" '
-            BEGIN {
-              if (mb ~ /^[0-9]+([.][0-9]+)?$/) {
-                printf "%.0f", mb * 1024 * 1024;
-                exit 0;
-              }
-              exit 1;
-            }
-          '
-        )" || {
-          echo "Invalid INPUT_MAX_MB value: $INPUT_MAX_MB" >&2
-          exit 1
-        }
-
-        # Start a local preview server from the freshly built dist/ so captures
-        # always reflect the current commit (immune to CDN/edge-cache staleness).
-        bunx vite preview --port 4174 &
-        LOCAL_PID=$!
-        # Wait for the server to be ready
-        for i in $(seq 1 30); do
-          curl -sf http://localhost:4174 >/dev/null 2>&1 && break
-          sleep 0.5
-        done
-
-        # Rewrite the capture URL to use the local server with the original hostname
-        CAPTURE_HOST="${INPUT_URL#*://}"
-        CAPTURE_HOST="${CAPTURE_HOST%%/*}"
-        CAPTURE_HOST="${CAPTURE_HOST%%\?*}"
-        LOCAL_URL="http://localhost:4174?host=${CAPTURE_HOST}"
-
-        node .capture-dist/capture.mjs \
-          -w "$INPUT_WIDTH" -h "$INPUT_HEIGHT" \
-          --url "$LOCAL_URL" -d "$INPUT_DURATION" --fps "$INPUT_FPS" \
-          -q "$INPUT_QUALITY" --max-bytes "$max_bytes" \
-          --video-crf "$INPUT_VIDEO_CRF" \
-          --color-scheme "$INPUT_COLOR_SCHEME" \
-          -o "preview-$INPUT_COLOR_SCHEME.$INPUT_EXT"
-
-        kill "$LOCAL_PID" 2>/dev/null || true
+      run: ${{ github.action_path }}/scripts/generate-animation.sh
     - id: upload
       uses: actions/upload-artifact@v7
       with:
