@@ -76,7 +76,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/download-artifact@v7
         with:
-          pattern: "preview-*.webp"
+          pattern: "preview-*"
           merge-multiple: true
       - name: Push to preview branch and update comment
         uses: actions/github-script@v8
