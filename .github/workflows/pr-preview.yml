@@ -2,7 +2,7 @@ name: PR Preview Screenshots
 run-name: "Preview for PR #${{ github.event.pull_request.number }}"
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, closed]
 
 permissions:
   contents: write
@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   pending:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
@@ -51,6 +52,7 @@ jobs:
             }
 
   capture:
+    if: github.event.action != 'closed'
     needs: pending
     strategy:
       matrix:
@@ -67,6 +69,7 @@ jobs:
           quality: "90"
 
   comment:
+    if: github.event.action != 'closed'
     needs: capture
     runs-on: ubuntu-latest
     permissions:
@@ -90,7 +93,6 @@ jobs:
             const branch = `pr-preview/${prNumber}`;
             const marker = '<!-- pr-preview-screenshots -->';
 
-            // Save preview files before git operations wipe the working dir
             const tmpDir = '/tmp/previews';
             fs.mkdirSync(tmpDir, { recursive: true });
             const previewFiles = fs.readdirSync('.').filter(f => f.startsWith('preview-') && f.endsWith('.webp'));
@@ -107,7 +109,6 @@ jobs:
             await exec.exec('git', ['checkout', '--orphan', branch]);
             await exec.exec('git', ['rm', '-rf', '.']);
 
-            // Copy preview files back
             for (const f of previewFiles) {
               fs.copyFileSync(path.join(tmpDir, f), f);
             }
@@ -145,4 +146,27 @@ jobs:
             } else {
               await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
               core.info('Created preview comment');
+            }
+
+  cleanup:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete preview branch
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const branch = `pr-preview/${context.payload.pull_request.number}`;
+            try {
+              await github.rest.git.deleteRef({ owner, repo, ref: `heads/${branch}` });
+              core.info(`Deleted branch ${branch}`);
+            } catch (err) {
+              if (err.status === 422) {
+                core.info(`Branch ${branch} already deleted`);
+              } else {
+                throw err;
+              }
             }
