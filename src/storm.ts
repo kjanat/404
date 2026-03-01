@@ -405,7 +405,10 @@ export class StormEngine {
 		for (let i = allBolts.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
 			const a = allBolts[i], b = allBolts[j];
-			if (a !== undefined && b !== undefined) { allBolts[i] = b; allBolts[j] = a; }
+			if (a !== undefined && b !== undefined) {
+				allBolts[i] = b;
+				allBolts[j] = a;
+			}
 		}
 		const bolts = allBolts.slice(0, boltCount);
 
