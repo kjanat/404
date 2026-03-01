@@ -1,0 +1,26 @@
+name: Version-tag check
+description: Verify git tag matches package.json version
+
+inputs:
+  tag: { description: "Git tag (e.g. v2.0.0). Defaults to GITHUB_REF tag.", required: false }
+
+runs:
+  using: composite
+  steps:
+    - name: Compare tag to package.json version
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.tag }}" ]; then
+          TAG="${{ inputs.tag }}"
+        else
+          TAG="${GITHUB_REF#refs/tags/}"
+        fi
+        TAG="${TAG#v}"
+        PKG=$(node -p "require('./package.json').version")
+        echo "Git tag:        v${TAG}"
+        echo "package.json:   ${PKG}"
+        if [ "$TAG" != "$PKG" ]; then
+          echo "::error::Version mismatch! Tag v${TAG} does not match package.json version ${PKG}"
+          exit 1
+        fi
+        echo "✅ Versions match"
