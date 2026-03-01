@@ -172,6 +172,12 @@ for (const entry of readdirSync(outDir)) {
 const resolveTarget = async (browser: Browser): Promise<Page> => {
 	const page = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
 
+	// Emulate color scheme BEFORE navigation so early-theme.ts picks it up
+	if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
+		await page.emulateMedia({ colorScheme: COLOR_SCHEME });
+		console.log(`Emulating prefers-color-scheme: ${COLOR_SCHEME}`);
+	}
+
 	if (/^https?:\/\//.test(TARGET_URL)) {
 		try {
 			await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
@@ -189,6 +195,9 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 		process.exit(1);
 	}
 	const fallback = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });
+	if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
+		await fallback.emulateMedia({ colorScheme: COLOR_SCHEME });
+	}
 	await fallback.goto(`file://${htmlPath}`, { waitUntil: 'domcontentloaded', timeout: NAVIGATION_TIMEOUT_MS });
 	console.log(`Loaded local file: ${htmlPath}`);
 	return fallback;
@@ -205,12 +214,6 @@ try {
 
 	try {
 		const page = await resolveTarget(browser);
-
-		// Emulate color scheme if requested
-		if (COLOR_SCHEME === 'light' || COLOR_SCHEME === 'dark') {
-			await page.emulateMedia({ colorScheme: COLOR_SCHEME });
-			console.log(`Emulating prefers-color-scheme: ${COLOR_SCHEME}`);
-		}
 
 		// Let the first paint settle
 		await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);
