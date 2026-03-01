@@ -262,7 +262,59 @@ interface FlashSequence {
 	readonly interstrokeIntervals: readonly number[];
 }
 
+// ── Bolt shape generation ────────────────────────────────────────────────────
+
+/** Minimum segments for a bolt zigzag path. */
+const BOLT_SEGMENTS_MIN = 8;
+
+/** Maximum segments for a bolt zigzag path. */
+const BOLT_SEGMENTS_MAX = 12;
+
+/** Half-width of the bolt stroke in percentage points. */
+const BOLT_HALF_WIDTH = 1.5;
+
+/**
+ * Generate a random lightning bolt clip-path polygon string.
+ *
+ * Uses a downward random walk with lateral jitter to create a unique
+ * zigzag shape, then mirrors it with a small offset to give width.
+ *
+ * @returns CSS `polygon()` value.
+ */
+function generateBoltPath(): string {
+	const segments = randInt(BOLT_SEGMENTS_MIN, BOLT_SEGMENTS_MAX);
+	const stepY = 100 / segments;
+
+	// Build center spine points
+	const spine: { x: number; y: number }[] = [{ x: 50, y: 0 }];
+	let x = 50;
+
+	for (let i = 1; i <= segments; i++) {
+		const jitter = rand(-20, 20);
+		x = Math.max(10, Math.min(90, x + jitter));
+		spine.push({ x, y: i * stepY });
+	}
+
+	// Build polygon: left side going down, right side going up
+	const left: string[] = [];
+	const right: string[] = [];
+
+	for (const pt of spine) {
+		left.push(`${(pt.x - BOLT_HALF_WIDTH).toFixed(1)}% ${pt.y.toFixed(1)}%`);
+	}
+	for (let i = spine.length - 1; i >= 0; i--) {
+		const pt = spine[i];
+		if (!pt) continue;
+		right.push(`${(pt.x + BOLT_HALF_WIDTH).toFixed(1)}% ${pt.y.toFixed(1)}%`);
+	}
+
+	return `polygon(${[...left, ...right].join(',')})`;
+}
+
 // ── Core engine ──────────────────────────────────────────────────────────────
+
+/** Default number of bolt elements to create. */
+const DEFAULT_BOLT_COUNT = 6;
 
 /**
  * Procedural lightning animation engine.
@@ -271,8 +323,8 @@ interface FlashSequence {
  * producing stochastic −CG flash sequences and IC background glow events
  * grounded in observed lightning physics.
  *
- * No two animation cycles are identical — stroke counts, intensities, intervals,
- * bolt selection, and M-component presence are all randomized per flash.
+ * Bolt elements are created dynamically with procedural clip-path shapes
+ * and randomized positions. No two animation cycles are identical.
  *
  * @example
  * ```ts
@@ -284,18 +336,22 @@ interface FlashSequence {
  * ```
  */
 export class StormEngine {
-	/** Element whose inline style receives `--flash`, `--bolt-*`, `--region-dim`. */
+	/** Element whose inline style receives `--flash`, `--region-dim`. */
 	private readonly root: HTMLElement;
+	/** Number of bolt elements to create. */
+	private readonly boltCount: number;
 	/** Active `requestAnimationFrame` handle, or 0 if idle. */
 	private rafId = 0;
 	/** Whether the rAF loop is currently running. */
 	private running = false;
 
+	/** Dynamically created bolt DOM elements. */
+	private boltElements: HTMLSpanElement[] = [];
+	/** Container for bolt elements. */
+	private container: HTMLElement | null = null;
+
 	// Current output values
 	private flash = 0;
-	private boltA = 0;
-	private boltB = 0;
-	private boltC = 0;
 	private regionDim = REGION_DIM_BASELINE;
 
 	// Timeline state
@@ -313,21 +369,78 @@ export class StormEngine {
 	 *
 	 * @param root - Element to set CSS custom properties on.
 	 *   Defaults to `document.documentElement`.
+	 * @param boltCount - Number of bolt elements to create.
+	 *   Defaults to {@linkcode DEFAULT_BOLT_COUNT}.
 	 */
-	constructor(root: HTMLElement = document.documentElement) {
+	constructor(root: HTMLElement = document.documentElement, boltCount = DEFAULT_BOLT_COUNT) {
 		this.root = root;
+		this.boltCount = boltCount;
+	}
+
+	// ── Bolt DOM management ──────────────────────────────────────────────────
+
+	/**
+	 * Create bolt DOM elements with randomized positions and procedural shapes.
+	 *
+	 * Each bolt gets a unique clip-path, random position, rotation, and scale.
+	 * Elements are appended to the `.storm-streaks` container.
+	 */
+	private createBolts(): void {
+		this.container = document.querySelector('.storm-streaks');
+		if (!this.container) return;
+
+		// Clear any existing bolts
+		this.destroyBolts();
+
+		for (let i = 0; i < this.boltCount; i++) {
+			const el = document.createElement('span');
+			el.className = 'storm-streak';
+
+			// Randomized position and transform
+			el.style.left = `${rand(5, 85).toFixed(0)}%`;
+			el.style.top = `${rand(-16, -4).toFixed(0)}%`;
+			const rotation = rand(-15, 15).toFixed(1);
+			const scale = rand(0.6, 1.1).toFixed(2);
+			el.style.transform = `rotate(${rotation}deg) scale(${scale})`;
+
+			// Procedural clip-path on the ::before pseudo-element via CSS var
+			el.style.setProperty('--bolt-clip', generateBoltPath());
+
+			this.container.appendChild(el);
+			this.boltElements.push(el);
+		}
+	}
+
+	/**
+	 * Remove all dynamically created bolt elements from the DOM.
+	 */
+	private destroyBolts(): void {
+		for (const el of this.boltElements) {
+			el.remove();
+		}
+		this.boltElements = [];
+	}
+
+	/**
+	 * Regenerate clip-paths for all bolt elements (new shapes each flash cycle).
+	 */
+	private refreshBoltShapes(): void {
+		for (const el of this.boltElements) {
+			el.style.setProperty('--bolt-clip', generateBoltPath());
+		}
 	}
 
 	/**
 	 * Begin the animation loop.
 	 *
-	 * Schedules the first CG flash within 0.8-2.2 s and the first IC glow
-	 * within 0.4-1.2 s, then enters the rAF loop. Safe to call multiple
-	 * times — subsequent calls are no-ops while already running.
+	 * Creates bolt DOM elements, schedules the first CG flash within 0.8-2.2 s
+	 * and the first IC glow within 0.4-1.2 s, then enters the rAF loop.
+	 * Safe to call multiple times — subsequent calls are no-ops while already running.
 	 */
 	start(): void {
 		if (this.running) return;
 		this.running = true;
+		this.createBolts();
 		const t = performance.now();
 		this.nextFlashTime = t + rand(800, 2200);
 		this.nextICGlowTime = t + rand(400, 1200);
@@ -338,10 +451,11 @@ export class StormEngine {
 	}
 
 	/**
-	 * Stop the animation loop and reset all CSS custom properties to neutral.
+	 * Stop the animation loop, reset CSS custom properties, and remove bolt elements.
 	 *
-	 * Cancels the pending rAF, zeroes flash/bolt values, and restores
-	 * `--region-dim` to its ambient baseline. Safe to call when already stopped.
+	 * Cancels the pending rAF, zeroes flash values, restores `--region-dim`
+	 * to its ambient baseline, and cleans up bolt DOM elements.
+	 * Safe to call when already stopped.
 	 */
 	stop(): void {
 		this.running = false;
@@ -350,11 +464,10 @@ export class StormEngine {
 			this.rafId = 0;
 		}
 		this.flash = 0;
-		this.boltA = 0;
-		this.boltB = 0;
-		this.boltC = 0;
 		this.regionDim = REGION_DIM_BASELINE;
+		this.setAllBoltsOpacity(0);
 		this.commit();
+		this.destroyBolts();
 	}
 
 	// ── Flash generation ─────────────────────────────────────────────────────
@@ -363,7 +476,7 @@ export class StormEngine {
 	 * Procedurally generate a complete −CG flash sequence.
 	 *
 	 * Randomizes stroke count, per-stroke intensity/decay, interstroke intervals
-	 * (log-normal), bolt selection (1-2 of 3 paths), continuing current duration,
+	 * (log-normal), bolt selection (1-3 of N bolts), continuing current duration,
 	 * and M-component presence.
 	 *
 	 * @returns Immutable flash descriptor ready for playback.
@@ -397,23 +510,31 @@ export class StormEngine {
 			intervals.push(Math.max(20, Math.min(200, interval))); // clamp to observed range
 		}
 
-		// Choose which bolt(s) appear (1-2 bolts per flash)
-		const allBolts: ('a' | 'b' | 'c')[] = ['a', 'b', 'c'];
-		const boltCount = Math.random() < 0.35 ? 2 : 1;
-		// Fisher-Yates in-place shuffle (unbiased — indices always in bounds)
-		for (let i = allBolts.length - 1; i > 0; i--) {
+		// Choose which bolt(s) appear (1-3 bolts per flash)
+		const activeBoltCount = randInt(1, Math.min(3, this.boltCount));
+		const indices: number[] = [];
+		const available = Array.from({ length: this.boltCount }, (_, i) => i);
+		// Fisher-Yates shuffle and take first N
+		for (let i = available.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
-			const a = allBolts[i], b = allBolts[j];
+			const a = available[i];
+			const b = available[j];
 			if (a !== undefined && b !== undefined) {
-				allBolts[i] = b;
-				allBolts[j] = a;
+				available[i] = b;
+				available[j] = a;
 			}
 		}
-		const bolts = allBolts.slice(0, boltCount);
+		for (let i = 0; i < activeBoltCount; i++) {
+			const idx = available[i];
+			if (idx !== undefined) indices.push(idx);
+		}
+
+		// Regenerate bolt shapes for visual variety
+		this.refreshBoltShapes();
 
 		return {
 			strokes,
-			bolts,
+			boltIndices: indices,
 			preflashDuration: rand(PREFLASH_DURATION_MIN, PREFLASH_DURATION_MAX),
 			continuingCurrentDuration: rand(CONTINUING_CURRENT_MIN, CONTINUING_CURRENT_MAX),
 			hasMComponent: Math.random() < M_COMPONENT_CHANCE,
@@ -440,7 +561,7 @@ export class StormEngine {
 	/**
 	 * Advance the {@linkcode FlashPhase} state machine by one frame.
 	 *
-	 * Computes output values (`flash`, `boltA`..`boltC`, `regionDim`) based on
+	 * Computes output values (`flash`, bolt opacities, `regionDim`) based on
 	 * elapsed time within the current phase, and transitions between phases
 	 * when timing thresholds are met.
 	 *
@@ -452,9 +573,7 @@ export class StormEngine {
 		switch (this.phase) {
 			case FlashPhase.Quiet:
 				this.flash = 0;
-				this.boltA = 0;
-				this.boltB = 0;
-				this.boltC = 0;
+				this.setAllBoltsOpacity(0);
 				this.regionDim = REGION_DIM_BASELINE;
 
 				// Check for IC background glow
@@ -508,7 +627,7 @@ export class StormEngine {
 				// Instantaneous peak — held for one frame then into decay
 				this.flash = stroke.peakIntensity;
 				this.regionDim = Math.max(0.05, REGION_DIM_BASELINE - stroke.peakIntensity * 0.7);
-				this.setBolts(flash.bolts, stroke.peakIntensity);
+				this.setBolts(flash.boltIndices, stroke.peakIntensity);
 				this.phase = FlashPhase.StrokeDecay;
 				this.phaseStart = now;
 				break;
@@ -538,14 +657,12 @@ export class StormEngine {
 						this.phase = FlashPhase.Interstroke;
 						this.phaseStart = now;
 						this.flash = 0;
-						this.boltA = 0;
-						this.boltB = 0;
-						this.boltC = 0;
+						this.setAllBoltsOpacity(0);
 					}
 				} else {
 					this.flash = decayed;
 					this.regionDim = Math.max(0.1, REGION_DIM_BASELINE - decayed * 0.5);
-					this.setBolts(flash.bolts, decayed);
+					this.setBolts(flash.boltIndices, decayed);
 				}
 				break;
 			}
@@ -556,9 +673,7 @@ export class StormEngine {
 
 				const interval = flash.interstrokeIntervals[this.strokeIndex] ?? INTERSTROKE_CENTER;
 				this.flash = 0;
-				this.boltA = 0;
-				this.boltB = 0;
-				this.boltC = 0;
+				this.setAllBoltsOpacity(0);
 				this.regionDim = REGION_DIM_BASELINE;
 
 				if (elapsed >= interval) {
@@ -577,9 +692,7 @@ export class StormEngine {
 				if (ccProgress >= 1) {
 					// Flash fully complete
 					this.flash = 0;
-					this.boltA = 0;
-					this.boltB = 0;
-					this.boltC = 0;
+					this.setAllBoltsOpacity(0);
 					this.regionDim = REGION_DIM_BASELINE;
 					this.currentFlash = null;
 					this.phase = FlashPhase.Quiet;
@@ -605,7 +718,7 @@ export class StormEngine {
 					this.flash = baseFade + mPulse;
 					this.regionDim = REGION_DIM_BASELINE - this.flash * 0.15;
 					// Bolts fade during continuing current
-					this.setBolts(flash.bolts, baseFade * 0.5);
+					this.setBolts(flash.boltIndices, baseFade * 0.5);
 				}
 				break;
 			}
@@ -616,15 +729,31 @@ export class StormEngine {
 	}
 
 	/**
-	 * Set bolt output values based on which bolts are active in this flash.
+	 * Set opacity on active bolt elements.
 	 *
-	 * @param activeBolts - Bolt identifiers selected for the current flash.
-	 * @param intensity - Luminosity to apply to active bolts (0..1).
+	 * @param activeIndices - Indices of bolts to illuminate.
+	 * @param intensity - Opacity to apply (0..1).
 	 */
-	private setBolts(activeBolts: readonly ('a' | 'b' | 'c')[], intensity: number): void {
-		this.boltA = activeBolts.includes('a') ? intensity : 0;
-		this.boltB = activeBolts.includes('b') ? intensity : 0;
-		this.boltC = activeBolts.includes('c') ? intensity : 0;
+	private setBolts(activeIndices: readonly number[], intensity: number): void {
+		const value = intensity.toFixed(4);
+		for (let i = 0; i < this.boltElements.length; i++) {
+			const el = this.boltElements[i];
+			if (el) {
+				el.style.opacity = activeIndices.includes(i) ? value : '0';
+			}
+		}
+	}
+
+	/**
+	 * Set all bolt elements to the same opacity.
+	 *
+	 * @param opacity - Opacity value (0..1).
+	 */
+	private setAllBoltsOpacity(opacity: number): void {
+		const value = opacity.toFixed(4);
+		for (const el of this.boltElements) {
+			el.style.opacity = value;
+		}
 	}
 
 	// ── DOM output ───────────────────────────────────────────────────────────
@@ -638,9 +767,6 @@ export class StormEngine {
 	private commit(): void {
 		const s = this.root.style;
 		s.setProperty('--flash', this.flash.toFixed(4));
-		s.setProperty('--bolt-a', this.boltA.toFixed(4));
-		s.setProperty('--bolt-b', this.boltB.toFixed(4));
-		s.setProperty('--bolt-c', this.boltC.toFixed(4));
 		s.setProperty('--region-dim', this.regionDim.toFixed(4));
 	}
 }

@@ -10,7 +10,7 @@
 	--color-accent: oklch(0.766 0.147 237);
 	--color-accent-2: oklch(0.822 0.156 160);
 	--color-border: oklch(0.756 0.054 259 / 0.3);
-	/* Custom properties driven by JS: --flash, --bolt-a, --bolt-b, --bolt-c, --region-dim */
+	/* Custom properties driven by JS: --flash, --region-dim */
 
 	--color-bg-top--light: oklch(0.874 0.037 254);
 	--color-bg-bottom--light: oklch(0.951 0.015 252);
@@ -366,28 +366,7 @@ body::after {
 		var(--theme-streak-mid) 50%,
 		var(--theme-streak-bottom) 100%
 	);
-	/* clip-path set inline per bolt by StormEngine */
-}
-
-.storm-streak-a {
-	left: 15%;
-	top: -8%;
-	transform: rotate(11deg);
-	opacity: var(--bolt-a, 0);
-}
-
-.storm-streak-b {
-	left: 69%;
-	top: -11%;
-	transform: rotate(-8deg) scale(0.9);
-	opacity: var(--bolt-b, 0);
-}
-
-.storm-streak-c {
-	left: 50%;
-	top: -14%;
-	transform: rotate(4deg) scale(0.72);
-	opacity: var(--bolt-c, 0);
+	clip-path: var(--bolt-clip);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -68,8 +68,8 @@
 }
 
 /*
- * All flash-driven keyframes (lightning-flash, bolt-a/b/c, panel-flicker,
+ * All flash-driven keyframes (lightning-flash, panel-flicker,
  * panel-afterglow, icon-blink, title-flicker, region-dim) have been removed.
  * They are now driven procedurally by StormEngine via CSS custom properties:
- *   --flash, --bolt-a, --bolt-b, --bolt-c, --region-dim
+ *   --flash, --region-dim
  */
