@@ -401,8 +401,12 @@ export class StormEngine {
 		// Choose which bolt(s) appear (1-2 bolts per flash)
 		const allBolts: ('a' | 'b' | 'c')[] = ['a', 'b', 'c'];
 		const boltCount = Math.random() < 0.35 ? 2 : 1;
-		const shuffled = allBolts.sort(() => Math.random() - 0.5);
-		const bolts = shuffled.slice(0, boltCount);
+		// Fisher-Yates in-place shuffle (unbiased)
+		for (let i = allBolts.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[allBolts[i], allBolts[j]] = [allBolts[j], allBolts[i]];
+		}
+		const bolts = allBolts.slice(0, boltCount);
 
 		return {
 			strokes,
