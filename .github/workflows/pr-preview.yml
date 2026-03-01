@@ -13,7 +13,45 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  pending:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post or update pending status
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const headSha = context.payload.pull_request.head.sha.substring(0, 7);
+            const marker = '<!-- pr-preview-screenshots -->';
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const body = [
+              marker,
+              `## 📸 Preview Screenshots`,
+              ``,
+              `> ⏳ **Nieuwe preview wordt gegenereerd...** [\`${headSha}\`](${runUrl})`,
+              `>`,
+              `> Dit wordt automatisch bijgewerkt zodra de captures klaar zijn.`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner, repo, issue_number: prNumber,
+            });
+            const existing = comments.find(c => c.body?.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              core.info(`Updated comment ${existing.id} to pending`);
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+              core.info('Created pending comment');
+            }
+
   capture:
+    needs: pending
     strategy:
       matrix:
         color_scheme: [dark, light]
@@ -40,7 +78,7 @@ jobs:
         with:
           pattern: "preview-*.webp"
           merge-multiple: true
-      - name: Push to preview branch and comment
+      - name: Push to preview branch and update comment
         uses: actions/github-script@v8
         with:
           script: |
@@ -51,7 +89,6 @@ jobs:
             const branch = `pr-preview/${prNumber}`;
             const marker = '<!-- pr-preview-screenshots -->';
 
-            // Push screenshots to orphan branch
             await exec.exec('git', ['config', 'user.name', 'github-actions[bot]']);
             await exec.exec('git', ['config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com']);
             await exec.exec('git', ['checkout', '--orphan', branch]);
