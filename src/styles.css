@@ -432,6 +432,11 @@ body::after {
 		transition: none !important;
 	}
 
+	.theme-drawer:not([hidden]) {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		animation: none !important;
+	}
+
 	/*
 	 * Flash-driven elements: StormEngine is stopped via JS when reduced-motion
 	 * is detected, but we also hardcode neutral fallbacks here as defense-in-depth.
