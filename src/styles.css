@@ -808,10 +808,12 @@ body.page-ready [data-reveal="4"] {
 	border-radius: 3px;
 }
 
-::view-transition-old(root),
-::view-transition-new(root) {
-	animation-duration: 420ms;
-	animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+@media (prefers-reduced-motion: no-preference) {
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: 420ms;
+		animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+	}
 }
 
 .brandline {
