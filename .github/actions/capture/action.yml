@@ -46,10 +46,10 @@ runs:
         _VIDEO_CRF: ${{ inputs.video_crf }}
         _EXT: ${{ inputs.ext }}
         _COLOR_SCHEME: ${{ inputs.color_scheme }}
-      run: ${{ github.action_path }}/scripts/expose-inputs.sh
+      run: '"${{ github.action_path }}/scripts/expose-inputs.sh"'
     - name: Validate inputs
       shell: bash
-      run: ${{ github.action_path }}/scripts/validate-inputs.sh
+      run: '"${{ github.action_path }}/scripts/validate-inputs.sh"'
     - name: Setup JS toolchain
       uses: ./.github/actions/setup-node-bun
       with:
@@ -64,10 +64,10 @@ runs:
       run: bun run build
     - name: Build capture script for Node execution
       shell: bash
-      run: ${{ github.action_path }}/scripts/build-capture.sh
+      run: '"${{ github.action_path }}/scripts/build-capture.sh"'
     - name: Generate animation
       shell: bash
-      run: ${{ github.action_path }}/scripts/generate-animation.sh
+      run: '"${{ github.action_path }}/scripts/generate-animation.sh"'
     - id: upload
       uses: actions/upload-artifact@v7
       with:
