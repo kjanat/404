@@ -126,7 +126,7 @@ jobs:
               ``,
               `> Commit: \`${headSha}\` | [Workflow run](https://github.com/${owner}/${repo}/actions/runs/${context.runId})`,
               ``,
-              ...files.map(f => {
+              ...previewFiles.map(f => {
                 const scheme = f.replace('preview-', '').replace('.webp', '');
                 return `### ${scheme.charAt(0).toUpperCase() + scheme.slice(1)}\n![${scheme} preview](${rawBase}/${f})`;
               }),
