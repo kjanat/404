@@ -19,7 +19,7 @@ function imagen() {
 }
 
 # Check if http://localhost:5173 is available before starting the capture
-if ! curl -s "$URL" >/dev/null; then
+if ! curl -fsS --max-time 5 "$URL" >/dev/null; then
 	printf "[%s] Error: %s is not available. Please start the development server before running this script.\n" "$(date)" "${URL}"
 	exit 1
 fi

@@ -334,7 +334,7 @@ body::after {
 		radial-gradient(ellipse 48% 38% at 58% 78%, rgb(0 0 0 / 0.75), transparent 52%)
 	);
 	mix-blend-mode: multiply;
-	filter: url(#cloud-tex);
+	filter: url("#cloud-tex");
 	opacity: calc(
 		var(--region-dim, 0.5) * var(--theme-region-strength) + var(--flash, 0) * var(--theme-region-flash-boost, 0)
 	);
@@ -952,13 +952,10 @@ p {
 		background: none;
 	}
 
-	.theme-dock {
+	.theme-drawer {
 		gap: 8px;
 	}
 
-	.theme-dock__summary {
-		font-size: 0.5rem;
-	}
 
 	.theme-switch {
 		width: 100%;
@@ -1013,7 +1010,7 @@ p {
 		height: 16px;
 	}
 
-	.theme-dock {
+	.theme-drawer {
 		margin-top: 12px;
 		padding-top: 10px;
 		gap: 10px;
@@ -1023,9 +1020,6 @@ p {
 		font-size: 0.54rem;
 	}
 
-	.theme-dock__summary {
-		font-size: 0.48rem;
-	}
 
 	.theme-switch {
 		gap: 4px;

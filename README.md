@@ -6,9 +6,9 @@ Custom 404 error page for [KajKowalski Edge](https://404.kjanat.com).
 
 <a href="https://404.kjanat.com" title="Visit the 404 page">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="preview-dark.webp">
-  <source media="(prefers-color-scheme: light)" srcset="preview-light.webp">
-  <img alt="Preview of the 404 page" src="preview-dark.webp">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/kjanat/404/refs/heads/master/preview-dark.webp">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/kjanat/404/refs/heads/master/preview-light.webp">
+  <img alt="Preview of the 404 page" src="https://raw.githubusercontent.com/kjanat/404/refs/heads/master/preview-dark.webp">
 </picture>
 </a>
 

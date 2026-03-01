@@ -404,7 +404,7 @@ export class StormEngine {
 		// Fisher-Yates in-place shuffle (unbiased)
 		for (let i = allBolts.length - 1; i > 0; i--) {
 			const j = Math.floor(Math.random() * (i + 1));
-			[allBolts[i], allBolts[j]] = [allBolts[j], allBolts[i]];
+			[allBolts[i], allBolts[j]] = [allBolts[j]!, allBolts[i]!];
 		}
 		const bolts = allBolts.slice(0, boltCount);
 
