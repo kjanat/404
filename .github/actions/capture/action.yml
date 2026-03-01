@@ -112,7 +112,7 @@ runs:
 
         # Start a local preview server from the freshly built dist/ so captures
         # always reflect the current commit (immune to CDN/edge-cache staleness).
-        bun run preview --port 4174 &
+        bunx vite preview --port 4174 &
         LOCAL_PID=$!
         # Wait for the server to be ready
         for i in $(seq 1 30); do
