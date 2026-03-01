@@ -5,6 +5,9 @@ inputs:
   artifact-url:
     description: "URL of the uploaded capture artifact"
     required: true
+  color-scheme:
+    description: "Color scheme used for this capture"
+    required: true
 
 runs:
   using: composite
@@ -13,6 +16,7 @@ runs:
       uses: actions/github-script@v8
       env:
         ARTIFACT_URL: ${{ inputs.artifact-url }}
+        COLOR_SCHEME: ${{ inputs.color-scheme }}
       with:
         script: |
           const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/capture-summary.mjs`)

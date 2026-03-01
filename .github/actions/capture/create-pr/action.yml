@@ -1,8 +1,11 @@
 name: Create Capture PR
-description: Commit preview artifact and create a pull request.
+description: Commit preview artifacts and create a pull request.
 inputs:
   ext:
     description: "Artifact extension to download (webp, gif, mp4)"
+    required: true
+  color_scheme:
+    description: "Color scheme(s) captured (both, dark, light)"
     required: true
 outputs:
   pr-url:
@@ -11,10 +14,11 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Validate artifact extension
+    - name: Validate inputs
       shell: bash
       env:
         INPUT_EXT: ${{ inputs.ext }}
+        INPUT_COLOR_SCHEME: ${{ inputs.color_scheme }}
       run: |
         case "$INPUT_EXT" in
           webp|gif|mp4) ;;
@@ -23,10 +27,17 @@ runs:
             exit 1
             ;;
         esac
+        case "$INPUT_COLOR_SCHEME" in
+          both|dark|light) ;;
+          *)
+            echo "Invalid color_scheme input: $INPUT_COLOR_SCHEME (allowed: both, dark, light)" >&2
+            exit 1
+            ;;
+        esac
     - uses: actions/download-artifact@v7
       with:
-        name: preview.${{ inputs.ext }}
-        path: .
+        pattern: "preview-*.${{ inputs.ext }}"
+        merge-multiple: true
     - name: Commit, push and create PR
       id: create_pr
       uses: actions/github-script@v8

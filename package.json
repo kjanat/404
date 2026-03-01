@@ -1,6 +1,6 @@
 {
 	"name": "@kjanat/404-page",
-	"version": "1.0.3",
+	"version": "1.1.0",
 	"description": "Custom 404 error page for KajKowalski Edge.",
 	"homepage": "https://404.kjanat.com",
 	"repository": {
@@ -33,7 +33,7 @@
 		"@typescript/native-preview": "^7.0.0-dev.20260226.1",
 		"dprint": "^0.52.0",
 		"eslint": "^10.0.2",
-		"eslint-plugin-tailwindcss": "^4.0.0-beta.0",
+		"eslint-plugin-better-tailwindcss": "^4.3.1",
 		"globals": "^17.3.0",
 		"jiti": "^2.6.1",
 		"playwright": "^1.58.2",

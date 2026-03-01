@@ -21,6 +21,7 @@ export default async function run({ context, core }) {
 		ext = 'webp',
 	} = inputs;
 	const artifactUrl = process.env.ARTIFACT_URL ?? '';
+	const colorScheme = process.env.COLOR_SCHEME ?? '';
 
 	/** Escape HTML special characters for safe inclusion in table cells. @param {unknown} value */
 	const esc = value =>
@@ -40,6 +41,7 @@ export default async function run({ context, core }) {
 			['Max size', esc(`${maxMb} MB`)],
 			['Video CRF', esc(videoCrf)],
 			['Filetype', `<code>${esc(ext)}</code>`],
+			['Color scheme', `<code>${esc(colorScheme)}</code>`],
 		])
 		.addEOL()
 		.addLink('Download artifact', artifactUrl)
