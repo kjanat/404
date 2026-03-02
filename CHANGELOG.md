@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update `packageManager` field in `package.json` to `bun@1.3.10` to reflect current development environment.
+- Bump package version to `2.1.0` after removing the legacy storm compatibility shim.
 - Disable production source map output in Vite build so `dist/` no longer includes generated `.js.map` files.
 - Configure `vite-robots-txt` with `disallowAll` + `meta: true` for auto-derived robots directives so search engines do not index or follow links from the error page.
 - Remove hardcoded `<meta name="robots">` from `index.html` and let plugin-managed injection own robots directives.
@@ -34,6 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace storm `*_MIN`/`*_MAX` pairs with immutable `Range` constants and overload `rand`/`randInt` to accept either `(min, max)` or a `Range` object.
 - Parse blurb templates into typed AST (`TextPart | HostPart | CodePart`) to support backtick `<code>` spans and `\n` line breaks in blurb copy.
 - Add `setup-shfmt` action step to autofix CI workflow.
+
+### Fixed
+
+- Make smoke test deterministic by waiting for `.storm-streak` and a non-empty `--cloud-bg` CSS variable instead of a fixed timeout.
+- Guard calm media query initialization for non-browser imports and add `MediaQueryList.addListener`/`removeListener` fallbacks for Safari <14.
+- Treat empty or whitespace-only `?host=` values as unset so host falls back to `window.location.hostname`.
+- Remove redundant body theme-attribute writes, normalize the `t` keyboard shortcut check, and add Safari <14 fallback for system-theme change listeners.
 
 ## [2.0.5] - 2026-03-02
 

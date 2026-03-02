@@ -60,7 +60,11 @@ try {
 		await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
 		await page.goto(smokeUrl, { waitUntil: 'domcontentloaded' });
 		await page.waitForFunction(() => document.body.classList.contains('page-ready'));
-		await page.waitForTimeout(150);
+		await page.waitForSelector('.storm-streak', { state: 'attached' });
+		await page.waitForFunction(() => {
+			const cloudBackground = getComputedStyle(document.documentElement).getPropertyValue('--cloud-bg').trim();
+			return cloudBackground.length > 0;
+		});
 
 		const state = await page.evaluate(() => {
 			const styles = getComputedStyle(document.documentElement);

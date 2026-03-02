@@ -159,7 +159,10 @@ function renderBlurb(
  * Uses `?host=` override when present, else falls back to `window.location.hostname`.
  */
 export function initializePage(): void {
-	const host = new URLSearchParams(window.location.search).get('host') ?? window.location.hostname;
+	const rawHostParam = new URLSearchParams(window.location.search).get('host');
+	const host = rawHostParam && rawHostParam.trim().length > 0
+		? rawHostParam.trim()
+		: window.location.hostname;
 	if (!host) return;
 
 	const headlineTarget = document.querySelector<HTMLElement>('[data-headline]');

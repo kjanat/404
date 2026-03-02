@@ -1,10 +1,30 @@
 import { CALM_OFF_RE, CALM_ON_RE, CALM_PARAM, type CalmSignal, mediaQueryDefs } from './constants.ts';
 
-const mediaQueries: Record<CalmSignal, MediaQueryList> = {
-	reduceMotion: window.matchMedia(mediaQueryDefs.reduceMotion),
-	moreContrast: window.matchMedia(mediaQueryDefs.moreContrast),
-	forcedColors: window.matchMedia(mediaQueryDefs.forcedColors),
-};
+let mediaQueries: Record<CalmSignal, MediaQueryList> | null = null;
+const noopCleanup = (): void => undefined;
+
+interface LegacyMediaQueryList {
+	readonly addListener?: (handler: () => void) => void;
+	readonly removeListener?: (handler: () => void) => void;
+}
+
+function getMediaQueries(): Record<CalmSignal, MediaQueryList> | null {
+	if (mediaQueries !== null) {
+		return mediaQueries;
+	}
+
+	if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+		return null;
+	}
+
+	mediaQueries = {
+		reduceMotion: window.matchMedia(mediaQueryDefs.reduceMotion),
+		moreContrast: window.matchMedia(mediaQueryDefs.moreContrast),
+		forcedColors: window.matchMedia(mediaQueryDefs.forcedColors),
+	};
+
+	return mediaQueries;
+}
 
 /**
  * Read explicit calm mode URL override from `?calm=`.
@@ -13,6 +33,8 @@ const mediaQueries: Record<CalmSignal, MediaQueryList> = {
  * or `null` when unset/invalid.
  */
 export function getCalmOverride(): boolean | null {
+	if (typeof window === 'undefined') return null;
+
 	const raw = new URLSearchParams(window.location.search).get(CALM_PARAM);
 	if (raw === null) return null;
 	if (CALM_ON_RE.test(raw)) return true;
@@ -26,7 +48,10 @@ export function getCalmOverride(): boolean | null {
  * @returns `true` when any calm media query matches.
  */
 export function getAccessibilityCalm(): boolean {
-	return Object.values(mediaQueries).some((mq) => mq.matches);
+	const queries = getMediaQueries();
+	if (queries === null) return false;
+
+	return Object.values(queries).some((mq) => mq.matches);
 }
 
 /**
@@ -46,8 +71,10 @@ export function shouldCalm(): boolean {
  */
 export function subscribeCalmSignals(onChange: () => void): () => void {
 	const cleanup: (() => void)[] = [];
+	const queries = getMediaQueries();
+	if (queries === null) return noopCleanup;
 
-	for (const mq of Object.values(mediaQueries)) {
+	for (const mq of Object.values(queries)) {
 		const handler = (): void => {
 			onChange();
 		};
@@ -56,6 +83,19 @@ export function subscribeCalmSignals(onChange: () => void): () => void {
 			mq.addEventListener('change', handler);
 			cleanup.push((): void => {
 				mq.removeEventListener('change', handler);
+			});
+		} else {
+			const legacyMq: LegacyMediaQueryList = mq;
+			const addLegacyListener = legacyMq.addListener;
+			const removeLegacyListener = legacyMq.removeListener;
+
+			if (typeof addLegacyListener !== 'function' || typeof removeLegacyListener !== 'function') {
+				continue;
+			}
+
+			addLegacyListener.call(mq, handler);
+			cleanup.push((): void => {
+				removeLegacyListener.call(mq, handler);
 			});
 		}
 	}

@@ -12,6 +12,10 @@ import { hasViewTransitionApi } from './view-transition.ts';
 
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
+interface LegacyMediaQueryList {
+	readonly addListener?: (handler: () => void) => void;
+}
+
 function updateThemeSwitch(
 	options: readonly HTMLButtonElement[],
 	preference: ThemePreference,
@@ -47,8 +51,6 @@ function applyTheme(
 	const commit = (): void => {
 		document.documentElement.setAttribute(THEME_ATTR, theme);
 		document.documentElement.setAttribute(THEME_PREFERENCE_ATTR, preference);
-		document.body.setAttribute(THEME_ATTR, theme);
-		document.body.setAttribute(THEME_PREFERENCE_ATTR, preference);
 		updateThemeSwitch(options, preference, theme);
 	};
 
@@ -119,7 +121,7 @@ export function initializeThemeControls(): void {
 				return;
 			}
 
-			if (event.key === 't' || event.key === 'T') {
+			if (event.key.toLowerCase() === 't') {
 				event.preventDefault();
 				const isOpen = themeDrawer ? !themeDrawer.hasAttribute('hidden') : false;
 				setThemeDrawerOpen(!isOpen);
@@ -214,12 +216,20 @@ export function initializeThemeControls(): void {
 		});
 	}
 
+	const handleSystemThemeChange = (): void => {
+		if (preference === 'system') {
+			syncTheme(false);
+		}
+	};
+
 	if (typeof systemThemeQuery.addEventListener === 'function') {
-		systemThemeQuery.addEventListener('change', () => {
-			if (preference === 'system') {
-				syncTheme(false);
-			}
-		});
+		systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+	} else {
+		const legacySystemThemeQuery: LegacyMediaQueryList = systemThemeQuery;
+		const addLegacyListener = legacySystemThemeQuery.addListener;
+		if (typeof addLegacyListener === 'function') {
+			addLegacyListener.call(systemThemeQuery, handleSystemThemeChange);
+		}
 	}
 
 	syncTheme(false);
