@@ -56,7 +56,7 @@ const BLURBS: readonly [string, ...string[]] = [
 	'{host} exists the way your weekend plans do \u2014 technically real, but with absolutely nothing behind it. Check the address, maybe.',
 	'Turns out {host} is a domain, not a website. Common misconception. Like thinking the cloud is actually a cloud.',
 	'{host}\u2019s deployment pipeline is flawless: nothing goes in, nothing comes out. Zero bugs. Technically perfect.',
-	'SELECT * FROM {host} WHERE content IS NOT NULL returned zero rows. The database is not the problem. There is no database.',
+	'`SELECT * FROM {host} WHERE content IS NOT NULL`\nreturned zero rows. The database is not the problem. There is no database.',
 	'{host} runs on 100% renewable energy because it does absolutely nothing. Carbon-neutral by default.',
 	'git log for {host} is empty. No commits, no history, no regrets. A clean slate in every sense.',
 	'This page is the only proof that {host} exists. Think of it as a birth certificate for an empty domain. Frame it if you want.',
@@ -68,6 +68,89 @@ const BLURBS: readonly [string, ...string[]] = [
 function pickRandom<T>(arr: readonly [T, ...T[]]): T {
 	const [fallback] = arr;
 	return arr[Math.floor(Math.random() * arr.length)] ?? fallback;
+}
+
+/* Blurb template parsing */
+
+type TextPart = { readonly kind: 'text'; readonly value: string };
+type HostPart = { readonly kind: 'host' };
+type InlinePart = TextPart | HostPart;
+type CodePart = { readonly kind: 'code'; readonly inner: readonly InlinePart[] };
+type TemplatePart = InlinePart | CodePart;
+
+/** Split a raw string on `{host}` into typed inline parts. */
+function parseInline(text: string): readonly InlinePart[] {
+	const result: InlinePart[] = [];
+	const segments = text.split('{host}');
+	for (let i = 0; i < segments.length; i++) {
+		if (i > 0) result.push({ kind: 'host' });
+		const seg = segments[i];
+		if (seg) result.push({ kind: 'text', value: seg });
+	}
+	return result;
+}
+
+/**
+ * Parse a blurb template string into typed segments.
+ *
+ * Backtick-delimited spans become `CodePart`; everything else is split on
+ * `{host}` into `TextPart` / `HostPart` inline nodes.
+ */
+function parseTemplate(template: string): readonly TemplatePart[] {
+	const result: TemplatePart[] = [];
+	const segments = template.split('`');
+	for (let i = 0; i < segments.length; i++) {
+		const seg = segments[i] ?? '';
+		const inner = parseInline(seg);
+		if (i % 2 === 1) {
+			result.push({ kind: 'code', inner });
+		} else {
+			result.push(...inner);
+		}
+	}
+	return result;
+}
+
+/** Append `text` to `parent`, inserting `<br>` elements at each `\n`. */
+function appendTextWithBreaks(parent: HTMLElement, text: string): void {
+	const lines = text.split('\n');
+	for (let i = 0; i < lines.length; i++) {
+		if (i > 0) parent.appendChild(document.createElement('br'));
+		const line = lines[i];
+		if (line) parent.appendChild(document.createTextNode(line));
+	}
+}
+
+/**
+ * Render a parsed blurb into the DOM.
+ *
+ * Substitutes `hostSpan` clones for every `{host}` placeholder and wraps
+ * backtick spans in `<code>` elements. Newlines outside code spans become
+ * `<br>` elements.
+ */
+function renderBlurb(
+	target: HTMLElement,
+	parts: readonly TemplatePart[],
+	hostSpan: HTMLSpanElement,
+): void {
+	target.textContent = '';
+	for (const part of parts) {
+		if (part.kind === 'text') {
+			appendTextWithBreaks(target, part.value);
+		} else if (part.kind === 'host') {
+			target.appendChild(hostSpan.cloneNode(true));
+		} else {
+			const code = document.createElement('code');
+			for (const inner of part.inner) {
+				if (inner.kind === 'text') {
+					code.appendChild(document.createTextNode(inner.value));
+				} else {
+					code.appendChild(hostSpan.cloneNode(true));
+				}
+			}
+			target.appendChild(code);
+		}
+	}
 }
 
 /**
@@ -86,18 +169,10 @@ export function initializePage(): void {
 
 	const blurbTarget = document.querySelector<HTMLElement>('[data-blurb]');
 	if (blurbTarget) {
-		const template = pickRandom(BLURBS);
 		const hostSpan = document.createElement('span');
 		hostSpan.className = 'font-bold break-all text-accent-2';
 		hostSpan.textContent = host;
-
-		const parts = template.split('{host}');
-		blurbTarget.textContent = '';
-		for (let i = 0; i < parts.length; i++) {
-			const part = parts[i];
-			if (i > 0) blurbTarget.appendChild(hostSpan.cloneNode(true));
-			if (part) blurbTarget.appendChild(document.createTextNode(part));
-		}
+		renderBlurb(blurbTarget, parseTemplate(pickRandom(BLURBS)), hostSpan);
 	}
 
 	for (const target of document.querySelectorAll<HTMLElement>('[data-host]')) {
