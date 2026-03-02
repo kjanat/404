@@ -72,10 +72,22 @@ function pickRandom<T>(arr: readonly [T, ...T[]]): T {
 
 /* Blurb template parsing */
 
-type TextPart = { readonly kind: 'text'; readonly value: string };
-type HostPart = { readonly kind: 'host' };
+interface TextPart {
+	readonly kind: 'text';
+	readonly value: string;
+}
+
+interface HostPart {
+	readonly kind: 'host';
+}
+
 type InlinePart = TextPart | HostPart;
-type CodePart = { readonly kind: 'code'; readonly inner: readonly InlinePart[] };
+
+interface CodePart {
+	readonly kind: 'code';
+	readonly inner: readonly InlinePart[];
+}
+
 type TemplatePart = InlinePart | CodePart;
 
 /** Split a raw string on `{host}` into typed inline parts. */
