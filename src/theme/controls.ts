@@ -14,7 +14,11 @@ const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 interface LegacyMediaQueryList {
 	readonly addListener?: (handler: () => void) => void;
+	readonly removeListener?: (handler: () => void) => void;
 }
+
+let themeControlsInitialized = false;
+let disposeThemeControls: (() => void) | null = null;
 
 function updateThemeSwitch(
 	options: readonly HTMLButtonElement[],
@@ -71,6 +75,13 @@ function applyTheme(
  * drawer open/close behavior, and system theme change reactions.
  */
 export function initializeThemeControls(): void {
+	if (themeControlsInitialized && disposeThemeControls !== null) {
+		disposeThemeControls();
+		disposeThemeControls = null;
+		themeControlsInitialized = false;
+	}
+
+	const cleanup: (() => void)[] = [];
 	const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]'));
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
 	const themeDockToggle = document.querySelector<HTMLButtonElement>('[data-theme-dock-toggle]');
@@ -91,6 +102,9 @@ export function initializeThemeControls(): void {
 		document.documentElement.setAttribute(THEME_LOCKED_ATTR, 'true');
 		document.body.setAttribute(THEME_LOCKED_ATTR, 'true');
 		setThemeDrawerOpen(false);
+	} else {
+		document.documentElement.removeAttribute(THEME_LOCKED_ATTR);
+		document.body.removeAttribute(THEME_LOCKED_ATTR);
 	}
 
 	let preference = themeOverride.preference ?? (themeOverride.hasParam ? 'system' : readThemePreference());
@@ -104,12 +118,16 @@ export function initializeThemeControls(): void {
 		setThemeDrawerOpen(false);
 
 		if (themeDockToggle && themeDrawer) {
-			themeDockToggle.addEventListener('click', () => {
+			const onThemeDockToggleClick = (): void => {
 				setThemeDrawerOpen(themeDrawer.hasAttribute('hidden'));
+			};
+			themeDockToggle.addEventListener('click', onThemeDockToggleClick);
+			cleanup.push((): void => {
+				themeDockToggle.removeEventListener('click', onThemeDockToggleClick);
 			});
 		}
 
-		document.addEventListener('keydown', (event) => {
+		const onDocumentKeydown = (event: KeyboardEvent): void => {
 			if (
 				event.repeat
 				|| (event.target instanceof HTMLElement && event.target.isContentEditable)
@@ -135,9 +153,13 @@ export function initializeThemeControls(): void {
 					themeDockToggle.focus();
 				}
 			}
+		};
+		document.addEventListener('keydown', onDocumentKeydown);
+		cleanup.push((): void => {
+			document.removeEventListener('keydown', onDocumentKeydown);
 		});
 
-		document.addEventListener('click', (event) => {
+		const onDocumentClick = (event: MouseEvent): void => {
 			if (
 				themeDrawer
 				&& !themeDrawer.hasAttribute('hidden')
@@ -147,22 +169,30 @@ export function initializeThemeControls(): void {
 			) {
 				setThemeDrawerOpen(false);
 			}
+		};
+		document.addEventListener('click', onDocumentClick);
+		cleanup.push((): void => {
+			document.removeEventListener('click', onDocumentClick);
 		});
 
 		for (const optionButton of options) {
 			const option = parseThemeOption(optionButton.dataset.themeOption);
 			if (option === null) continue;
 
-			optionButton.addEventListener('click', () => {
+			const onOptionClick = (): void => {
 				preference = option;
 				writeThemePreference(preference);
 				syncTheme(true);
+			};
+			optionButton.addEventListener('click', onOptionClick);
+			cleanup.push((): void => {
+				optionButton.removeEventListener('click', onOptionClick);
 			});
 		}
 	}
 
 	if (!themeOverride.hasParam && switchRoot && options.length > 0) {
-		switchRoot.addEventListener('keydown', (event) => {
+		const onSwitchRootKeydown = (event: KeyboardEvent): void => {
 			if (event.key === 'Escape') {
 				setThemeDrawerOpen(false);
 				if (themeDockToggle) {
@@ -215,6 +245,10 @@ export function initializeThemeControls(): void {
 
 			nextOption.focus();
 			nextOption.click();
+		};
+		switchRoot.addEventListener('keydown', onSwitchRootKeydown);
+		cleanup.push((): void => {
+			switchRoot.removeEventListener('keydown', onSwitchRootKeydown);
 		});
 	}
 
@@ -226,13 +260,24 @@ export function initializeThemeControls(): void {
 
 	if (typeof systemThemeQuery.addEventListener === 'function') {
 		systemThemeQuery.addEventListener('change', handleSystemThemeChange);
+		cleanup.push((): void => {
+			systemThemeQuery.removeEventListener('change', handleSystemThemeChange);
+		});
 	} else {
 		const legacySystemThemeQuery: LegacyMediaQueryList = systemThemeQuery;
 		const addLegacyListener = legacySystemThemeQuery.addListener;
-		if (typeof addLegacyListener === 'function') {
+		const removeLegacyListener = legacySystemThemeQuery.removeListener;
+		if (typeof addLegacyListener === 'function' && typeof removeLegacyListener === 'function') {
 			addLegacyListener.call(systemThemeQuery, handleSystemThemeChange);
+			cleanup.push((): void => {
+				removeLegacyListener.call(systemThemeQuery, handleSystemThemeChange);
+			});
 		}
 	}
 
 	syncTheme(false);
+	disposeThemeControls = (): void => {
+		for (const fn of cleanup) fn();
+	};
+	themeControlsInitialized = true;
 }

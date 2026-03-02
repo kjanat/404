@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add domain-split runtime modules under `src/theme/`, `src/calm/`, and `src/storm/`, plus dedicated `src/panel.ts` and `src/page-content.ts` entry helpers.
 - Add JSR-style API doc comments across extracted theme, calm, panel, page-content, and storm modules.
 - Add `bun run smoke` Playwright-based smoke test script (`scripts/smoke.ts`) that builds and validates the page via `vite preview`.
+- Add Playwright e2e regression coverage for theme-control re-init listener cleanup and hotkey guards, plus `bun run test:e2e` script.
+- Add Playwright accessibility regression test with `@axe-core/playwright` for WCAG A/AA violations.
 
 ### Changed
 
