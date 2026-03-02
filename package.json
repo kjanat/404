@@ -20,6 +20,7 @@
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
 		"lint": "eslint; biome lint",
+		"smoke": "bun scripts/smoke.ts",
 		"capture": "bun scripts/capture.ts",
 		"typecheck": "tsgo --noEmit"
 	},

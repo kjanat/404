@@ -1,10 +1,4 @@
-import {
-	CALM_OFF_RE,
-	CALM_ON_RE,
-	CALM_PARAM,
-	mediaQueryDefs,
-	type CalmSignal,
-} from './constants.ts';
+import { CALM_OFF_RE, CALM_ON_RE, CALM_PARAM, type CalmSignal, mediaQueryDefs } from './constants.ts';
 
 const mediaQueries: Record<CalmSignal, MediaQueryList> = {
 	reduceMotion: window.matchMedia(mediaQueryDefs.reduceMotion),

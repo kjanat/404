@@ -1,8 +1,4 @@
-import {
-	THEME_ATTR,
-	THEME_LOCKED_ATTR,
-	THEME_PREFERENCE_ATTR,
-} from './constants.ts';
+import { THEME_ATTR, THEME_LOCKED_ATTR, THEME_PREFERENCE_ATTR } from './constants.ts';
 import {
 	parseThemeOption,
 	readThemeOverride,

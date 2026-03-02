@@ -1,5 +1,5 @@
 {
 	"lineWidth": 120,
 	"extends": "https://raw.githubusercontent.com/kjanat/kjanat/master/configs/dprint.remote.json",
-	"excludes": [".github/workflows/capture.yml", ".github/actions/capture/action.yml"],
+	"excludes": ["**/dist", "**/node_modules", "**/coverage"],
 }

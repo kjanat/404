@@ -2,16 +2,16 @@ name: Capture Animation
 description: Capture preview media and upload it as an artifact.
 
 inputs:
-  width:        { description: "Capture width in pixels",             default: "1152"                   }
-  height:       { description: "Capture height in pixels",            default: "648"                    }
-  url:          { description: "URL to capture",                      default: "https://404.kjanat.com" }
-  duration:     { description: "Capture duration in seconds",         default: "6"                      }
-  fps:          { description: "Frames per second",                   default: "12"                     }
-  quality:      { description: "WebP quality (0-100)",                default: "100"                    }
-  max_mb:       { description: "Max output size in MB",               default: "3"                      }
-  video_crf:    { description: "MP4 quality (0-51, lower is better)", default: "28"                     }
-  ext:          { description: "Filetype to capture (webp, gif, mp4)",default: "webp"                   }
-  color_scheme: { description: "Browser color scheme (light, dark)",  default: "dark"                    }
+  width: { description: "Capture width in pixels", default: "1152" }
+  height: { description: "Capture height in pixels", default: "648" }
+  url: { description: "URL to capture", default: "https://404.kjanat.com" }
+  duration: { description: "Capture duration in seconds", default: "6" }
+  fps: { description: "Frames per second", default: "12" }
+  quality: { description: "WebP quality (0-100)", default: "100" }
+  max_mb: { description: "Max output size in MB", default: "3" }
+  video_crf: { description: "MP4 quality (0-51, lower is better)", default: "28" }
+  ext: { description: "Filetype to capture (webp, gif, mp4)", default: "webp" }
+  color_scheme: { description: "Browser color scheme (light, dark)", default: "dark" }
 
 outputs:
   artifact-url:
