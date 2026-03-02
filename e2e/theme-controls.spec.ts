@@ -7,6 +7,10 @@ async function gotoReady(page: Page): Promise<void> {
 
 test('theme option click writes preference once', async ({ page }) => {
 	await gotoReady(page);
+	const html = page.locator('html');
+	const lightOption = page.locator('[data-theme-option="light"]');
+	const darkOption = page.locator('[data-theme-option="dark"]');
+	const systemOption = page.locator('[data-theme-option="system"]');
 
 	const setCalls = await page.evaluate(() => {
 		const isStorageSetItem = (value: unknown): value is Storage['setItem'] => typeof value === 'function';
@@ -37,6 +41,11 @@ test('theme option click writes preference once', async ({ page }) => {
 	});
 
 	expect(setCalls).toBe(1);
+	await expect(html).toHaveAttribute('data-theme', 'light');
+	await expect(html).toHaveAttribute('data-theme-preference', 'light');
+	await expect(lightOption).toHaveAttribute('aria-checked', 'true');
+	await expect(darkOption).toHaveAttribute('aria-checked', 'false');
+	await expect(systemOption).toHaveAttribute('aria-checked', 'false');
 });
 
 test('theme hotkey ignores repeat and contentEditable targets', async ({ page }) => {
