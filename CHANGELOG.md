@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `vite-robots-txt` as a production dependency and generate crawler directives for this 404-only site.
 - Add `biome lint` to the lint script.
+- Add domain-split runtime modules under `src/theme/`, `src/calm/`, and `src/storm/`, plus dedicated `src/panel.ts` and `src/page-content.ts` entry helpers.
+- Add JSR-style API doc comments across extracted theme, calm, panel, page-content, and storm modules.
 
 ### Changed
 
@@ -18,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Disable production source map output in Vite build so `dist/` no longer includes generated `.js.map` files.
 - Configure `vite-robots-txt` with `disallowAll` + `meta: true` for auto-derived robots directives so search engines do not index or follow links from the error page.
 - Remove hardcoded `<meta name="robots">` from `index.html` and let plugin-managed injection own robots directives.
+- Refactor `src/index.ts` into a thin bootstrap and move logic into domain files; keep `src/storm.ts` as a compatibility re-export shim.
+- Adjust inline-theme injection order in `index.html` and wrap `inlineScript` output in `vite.config.ts` with a leading newline for cleaner generated markup.
 
 ## [2.0.5] - 2026-03-02
 
