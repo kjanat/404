@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update `packageManager` field in `package.json` to `bun@1.3.10` to reflect current development environment.
+- Disable production source map output in Vite build so `dist/` no longer includes generated `.js.map` files.
 
 ## [2.0.5] - 2026-03-02
 

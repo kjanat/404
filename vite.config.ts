@@ -76,7 +76,7 @@ export default defineConfig({
 			},
 		},
 	],
-	build: { target: 'esnext', sourcemap: true },
+	build: { target: 'esnext', sourcemap: false },
 	server: {
 		open: true,
 		host: true,
