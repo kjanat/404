@@ -36,8 +36,8 @@ export function generateCloudBackground(): string {
 		const puffCount = randInt(PUFFS_PER_MASS);
 
 		for (let p = 0; p < puffCount; p++) {
-			const x = (cx + (Math.random() - 0.5) * 26).toFixed(0);
-			const y = (cy + (Math.random() - 0.5) * 20).toFixed(0);
+			const x = (cx + rand(-13, 13)).toFixed(0);
+			const y = (cy + rand(-10, 10)).toFixed(0);
 			const rx = rand(14, 38).toFixed(0);
 			const ry = rand(10, 28).toFixed(0);
 			const a = rand(0.35, 0.8).toFixed(2);
