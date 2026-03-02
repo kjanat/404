@@ -19,11 +19,14 @@
 		"dev": "vite",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
-		"lint": "eslint",
+		"lint": "eslint; biome lint",
 		"capture": "bun scripts/capture.ts",
 		"typecheck": "tsgo --noEmit"
 	},
-	"dependencies": { "vite-svg-to-ico": "^2.0.1" },
+	"dependencies": {
+		"vite-robots-txt": "^1.0.0",
+		"vite-svg-to-ico": "^2.0.1"
+	},
 	"devDependencies": {
 		"@actions/artifact": "^6.2.0",
 		"@actions/github-script": "github:actions/github-script",

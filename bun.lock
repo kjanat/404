@@ -4,6 +4,7 @@
   "workspaces": {
     "": {
       "dependencies": {
+        "vite-robots-txt": "^1.0.0",
         "vite-svg-to-ico": "^2.0.1",
       },
       "devDependencies": {
@@ -781,6 +782,8 @@
     "valibot": ["valibot@1.2.0", "", { "peerDependencies": { "typescript": ">=5" }, "optionalPeers": ["typescript"] }, "sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg=="],
 
     "vite": ["rolldown-vite@7.3.1", "", { "dependencies": { "@oxc-project/runtime": "0.101.0", "fdir": "^6.5.0", "lightningcss": "^1.30.2", "picomatch": "^4.0.3", "postcss": "^8.5.6", "rolldown": "1.0.0-beta.53", "tinyglobby": "^0.2.15" }, "optionalDependencies": { "fsevents": "~2.3.3" }, "peerDependencies": { "@types/node": "^20.19.0 || >=22.12.0", "esbuild": "^0.27.0", "jiti": ">=1.21.0", "less": "^4.0.0", "sass": "^1.70.0", "sass-embedded": "^1.70.0", "stylus": ">=0.54.8", "sugarss": "^5.0.0", "terser": "^5.16.0", "tsx": "^4.8.1", "yaml": "^2.4.2" }, "optionalPeers": ["@types/node", "esbuild", "jiti", "less", "sass", "sass-embedded", "stylus", "sugarss", "terser", "tsx", "yaml"], "bin": { "vite": "bin/vite.js" } }, "sha512-LYzdNAjRHhF2yA4JUQm/QyARyi216N2rpJ0lJZb8E9FU2y5v6Vk+xq/U4XBOxMefpWixT5H3TslmAHm1rqIq2w=="],
+
+    "vite-robots-txt": ["vite-robots-txt@1.0.0", "", { "peerDependencies": { "vite": "^5.0.0 || ^6.0.0 || ^7.0.0" } }, "sha512-AcS8Vy4vesENA3vzNrMmaFQ/kJtBaMV4Xzt08edWhUhkMjgYmS5DXeKzjEXqBQfHOS+j5gplRqiDVaKXTY5zbA=="],
 
     "vite-svg-to-ico": ["vite-svg-to-ico@2.0.1", "", { "dependencies": { "sharp": "^0.34.5" }, "peerDependencies": { "vite": "^6.0.0 || ^7.0.0" } }, "sha512-CudGfPwFrredOq6Nc81bO9lsxDHMuB8iwbhcb0egnThPBiVwqmiItPbh2oleGskS5esOWoJ/sZHXQc3DQ4Ujbg=="],
 

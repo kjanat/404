@@ -11,7 +11,7 @@
  * @module
  */
 
-import { generateCloudBackground, StormEngine } from './storm';
+import { generateCloudBackground, StormEngine } from './storm.ts';
 
 /** URL query parameter name for the explicit calm-mode override. */
 const CALM_PARAM = 'calm';
@@ -301,7 +301,9 @@ function initializeThemeControls(): void {
 
 			event.preventDefault();
 
-			let currentIndex = options.findIndex((optionButton) => optionButton === document.activeElement);
+			let currentIndex = document.activeElement instanceof HTMLButtonElement
+				? options.indexOf(document.activeElement)
+				: -1;
 			if (currentIndex < 0) {
 				currentIndex = options.findIndex((optionButton) => optionButton.getAttribute('aria-checked') === 'true');
 			}
