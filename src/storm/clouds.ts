@@ -1,32 +1,25 @@
 import { rand, randInt } from './rng.ts';
+import type { Range } from './types.ts';
 
 /**
- * Minimum number of cloud masses layered into the generated background.
+ * Cloud mass count range layered into the generated background.
  *
  * Use when sampling `massCount` in {@link generateCloudBackground}.
  */
-const CLOUD_MASS_MIN = 5;
+const CLOUD_MASS: Range = {
+	min: 5,
+	max: 8,
+};
 
 /**
- * Maximum number of cloud masses layered into the generated background.
- *
- * Use when sampling `massCount` in {@link generateCloudBackground}.
- */
-const CLOUD_MASS_MAX = 8;
-
-/**
- * Minimum number of radial puffs generated inside one cloud mass.
+ * Radial puff count range generated inside one cloud mass.
  *
  * Use when sampling `puffCount` in {@link generateCloudBackground}.
  */
-const PUFFS_PER_MASS_MIN = 3;
-
-/**
- * Maximum number of radial puffs generated inside one cloud mass.
- *
- * Use when sampling `puffCount` in {@link generateCloudBackground}.
- */
-const PUFFS_PER_MASS_MAX = 6;
+const PUFFS_PER_MASS: Range = {
+	min: 3,
+	max: 6,
+};
 
 /**
  * Generate procedural cloud gradient stack for `--cloud-bg` CSS variable.
@@ -34,13 +27,13 @@ const PUFFS_PER_MASS_MAX = 6;
  * @returns Comma-separated `radial-gradient(...)` background value.
  */
 export function generateCloudBackground(): string {
-	const massCount = randInt(CLOUD_MASS_MIN, CLOUD_MASS_MAX);
+	const massCount = randInt(CLOUD_MASS);
 	const gradients: string[] = [];
 
 	for (let m = 0; m < massCount; m++) {
 		const cx = rand(8, 92);
 		const cy = rand(8, 92);
-		const puffCount = randInt(PUFFS_PER_MASS_MIN, PUFFS_PER_MASS_MAX);
+		const puffCount = randInt(PUFFS_PER_MASS);
 
 		for (let p = 0; p < puffCount; p++) {
 			const x = (cx + (Math.random() - 0.5) * 26).toFixed(0);

@@ -1,29 +1,21 @@
 import { generateBoltPath } from './bolt.ts';
 import {
-	CONTINUING_CURRENT_MAX,
-	CONTINUING_CURRENT_MIN,
+	CONTINUING_CURRENT,
 	DEFAULT_BOLT_COUNT,
-	IC_GLOW_DURATION_MAX,
-	IC_GLOW_DURATION_MIN,
-	IC_GLOW_INTENSITY_MAX,
-	IC_GLOW_INTENSITY_MIN,
-	IC_GLOW_MAX,
-	IC_GLOW_MIN,
-	INTER_FLASH_MAX,
-	INTER_FLASH_MIN,
+	IC_GLOW,
+	IC_GLOW_DURATION,
+	IC_GLOW_INTENSITY,
+	INTER_FLASH,
 	INTERSTROKE_CENTER,
 	INTERSTROKE_SPREAD,
 	M_COMPONENT_CHANCE,
 	M_COMPONENT_DURATION,
 	M_COMPONENT_INTENSITY,
-	PREFLASH_DURATION_MAX,
-	PREFLASH_DURATION_MIN,
+	PREFLASH_DURATION,
 	REGION_DIM_BASELINE,
 	STROKE_DECAY_TAU,
-	STROKES_MAX,
-	STROKES_MIN,
-	SUBSEQUENT_INTENSITY_MAX,
-	SUBSEQUENT_INTENSITY_MIN,
+	STROKES,
+	SUBSEQUENT_INTENSITY,
 } from './constants.ts';
 import { rand, randInt, randLogNormal } from './rng.ts';
 import { FlashPhase, type FlashSequence, type StrokeEvent } from './types.ts';
@@ -144,8 +136,8 @@ export class StormEngine {
 		const t = performance.now();
 		this.nextFlashTime = t + rand(800, 2200);
 		this.nextICGlowTime = t + rand(400, 1200);
-		this.icGlowEnd = this.nextICGlowTime + rand(IC_GLOW_DURATION_MIN, IC_GLOW_DURATION_MAX);
-		this.icGlowPeak = rand(IC_GLOW_INTENSITY_MIN, IC_GLOW_INTENSITY_MAX);
+		this.icGlowEnd = this.nextICGlowTime + rand(IC_GLOW_DURATION);
+		this.icGlowPeak = rand(IC_GLOW_INTENSITY);
 		this.phase = FlashPhase.Quiet;
 		this.tick(performance.now());
 	}
@@ -169,7 +161,7 @@ export class StormEngine {
 	}
 
 	private generateFlash(): FlashSequence {
-		const strokeCount = randInt(STROKES_MIN, STROKES_MAX);
+		const strokeCount = randInt(STROKES);
 		const strokes: StrokeEvent[] = [];
 
 		const firstPeak = rand(0.85, 1.0);
@@ -179,7 +171,7 @@ export class StormEngine {
 		});
 
 		for (let i = 1; i < strokeCount; i++) {
-			const relativeIntensity = rand(SUBSEQUENT_INTENSITY_MIN, SUBSEQUENT_INTENSITY_MAX);
+			const relativeIntensity = rand(SUBSEQUENT_INTENSITY);
 			const decay = 1 - (i / strokeCount) * 0.3;
 			strokes.push({
 				peakIntensity: firstPeak * relativeIntensity * decay,
@@ -215,8 +207,8 @@ export class StormEngine {
 		return {
 			strokes,
 			boltIndices: indices,
-			preflashDuration: rand(PREFLASH_DURATION_MIN, PREFLASH_DURATION_MAX),
-			continuingCurrentDuration: rand(CONTINUING_CURRENT_MIN, CONTINUING_CURRENT_MAX),
+			preflashDuration: rand(PREFLASH_DURATION),
+			continuingCurrentDuration: rand(CONTINUING_CURRENT),
 			hasMComponent: Math.random() < M_COMPONENT_CHANCE,
 			interstrokeIntervals: intervals,
 		};
@@ -251,10 +243,10 @@ export class StormEngine {
 			this.flash = this.icGlowPeak * Math.max(0, envelope);
 			this.regionDim = REGION_DIM_BASELINE - this.flash * 0.15;
 		} else if (now >= this.icGlowEnd && this.icGlowEnd > 0) {
-			this.nextICGlowTime = now + rand(IC_GLOW_MIN, IC_GLOW_MAX);
-			const duration = rand(IC_GLOW_DURATION_MIN, IC_GLOW_DURATION_MAX);
+			this.nextICGlowTime = now + rand(IC_GLOW);
+			const duration = rand(IC_GLOW_DURATION);
 			this.icGlowEnd = this.nextICGlowTime + duration;
-			this.icGlowPeak = rand(IC_GLOW_INTENSITY_MIN, IC_GLOW_INTENSITY_MAX);
+			this.icGlowPeak = rand(IC_GLOW_INTENSITY);
 		}
 
 		if (now >= this.nextFlashTime) {
@@ -352,7 +344,7 @@ export class StormEngine {
 			this.currentFlash = null;
 			this.phase = FlashPhase.Quiet;
 			this.phaseStart = now;
-			this.nextFlashTime = now + rand(INTER_FLASH_MIN, INTER_FLASH_MAX);
+			this.nextFlashTime = now + rand(INTER_FLASH);
 			return;
 		}
 

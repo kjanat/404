@@ -1,21 +1,48 @@
+import type { Range } from './types.ts';
+
+function resolveRange(minOrRange: number | Range, maybeMax: number | undefined): Range {
+	if (typeof minOrRange === 'number') {
+		if (typeof maybeMax !== 'number') {
+			throw new TypeError('max is required when calling rand/randInt with min number');
+		}
+
+		return {
+			min: minOrRange,
+			max: maybeMax,
+		};
+	}
+
+	return minOrRange;
+}
+
 /**
  * Uniform random float in `[min, max)`.
+ *
+ * Accepts either explicit bounds or a range object.
  *
  * @param min - Inclusive lower bound.
  * @param max - Exclusive upper bound.
  */
-export function rand(min: number, max: number): number {
-	return min + Math.random() * (max - min);
+export function rand(min: number, max: number): number;
+export function rand(range: Range): number;
+export function rand(minOrRange: number | Range, maybeMax?: number): number {
+	const range = resolveRange(minOrRange, maybeMax);
+	return range.min + Math.random() * (range.max - range.min);
 }
 
 /**
  * Random integer in `[min, max]`.
  *
+ * Accepts either explicit bounds or a range object.
+ *
  * @param min - Inclusive lower bound.
  * @param max - Inclusive upper bound.
  */
-export function randInt(min: number, max: number): number {
-	return Math.floor(rand(min, max + 1));
+export function randInt(min: number, max: number): number;
+export function randInt(range: Range): number;
+export function randInt(minOrRange: number | Range, maybeMax?: number): number {
+	const range = resolveRange(minOrRange, maybeMax);
+	return Math.floor(rand(range.min, range.max + 1));
 }
 
 /**

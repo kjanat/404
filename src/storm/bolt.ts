@@ -1,18 +1,15 @@
 import { rand, randInt } from './rng.ts';
+import type { Range } from './types.ts';
 
 /**
- * Minimum number of spine segments used per generated bolt.
+ * Spine segment count range used per generated bolt.
  *
  * Use when sampling `segments` in {@link generateBoltPath}.
  */
-const BOLT_SEGMENTS_MIN = 8;
-
-/**
- * Maximum number of spine segments used per generated bolt.
- *
- * Use when sampling `segments` in {@link generateBoltPath}.
- */
-const BOLT_SEGMENTS_MAX = 12;
+const BOLT_SEGMENTS: Range = {
+	min: 8,
+	max: 12,
+};
 
 /**
  * Half-width offset (percentage points) for mirrored bolt polygon edges.
@@ -29,7 +26,7 @@ const BOLT_HALF_WIDTH = 1.5;
  * @returns CSS `polygon(...)` value.
  */
 export function generateBoltPath(): string {
-	const segments = randInt(BOLT_SEGMENTS_MIN, BOLT_SEGMENTS_MAX);
+	const segments = randInt(BOLT_SEGMENTS);
 	const stepY = 100 / segments;
 
 	const spine: { x: number; y: number }[] = [{ x: 50, y: 0 }];

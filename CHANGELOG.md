@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switch Biome schema to local `node_modules` copy, enable domain-level lint categories, and change JS quote style to single quotes.
 - Reorganize `package.json` scripts (alphabetize, split `lint` into `lint:biome`/`lint:eslint`) and bump `@biomejs/biome`, `@typescript/native-preview`, and `globals`.
 - Move `prefers-reduced-motion`, calm-mode, and theme-locked CSS overrides to end of stylesheet and reorder `.theme-trigger__icon` transition before expanded state rule.
+- Replace storm `*_MIN`/`*_MAX` pairs with immutable `Range` constants and overload `rand`/`randInt` to accept either `(min, max)` or a `Range` object.
 
 ## [2.0.5] - 2026-03-02
 

@@ -26,6 +26,14 @@ export interface StrokeEvent {
 	readonly decayTau: number;
 }
 
+/** Numeric range used for bounded random sampling. */
+export interface Range {
+	/** Inclusive lower bound. */
+	readonly min: number;
+	/** Upper bound (exclusive for `rand`, inclusive for `randInt`). */
+	readonly max: number;
+}
+
 /** Fully generated CG flash sequence used by the runtime state machine. */
 export interface FlashSequence {
 	/** Ordered stroke list, first stroke typically brightest. */

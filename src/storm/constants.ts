@@ -1,44 +1,29 @@
+import type { Range } from './types.ts';
+
+function createRange(min: number, max: number): Range {
+	return Object.freeze({ min, max });
+}
+
 /**
- * Minimum inter-flash delay (ms).
+ * Inter-flash delay range (ms).
  *
  * Use when sampling delay before scheduling the next flash.
  */
-export const INTER_FLASH_MIN = 2800;
+export const INTER_FLASH = createRange(2800, 8500);
 
 /**
- * Maximum inter-flash delay (ms).
- *
- * Use when sampling delay before scheduling the next flash.
- */
-export const INTER_FLASH_MAX = 8500;
-
-/**
- * Minimum IC glow interval while quiet (ms).
+ * IC glow interval range while quiet (ms).
  *
  * Use when sampling idle intra-cloud glow interval.
  */
-export const IC_GLOW_MIN = 1200;
+export const IC_GLOW = createRange(1200, 4000);
 
 /**
- * Maximum IC glow interval while quiet (ms).
- *
- * Use when sampling idle intra-cloud glow interval.
- */
-export const IC_GLOW_MAX = 4000;
-
-/**
- * Minimum return strokes per flash.
+ * Return-stroke count range per flash.
  *
  * Use when sampling stroke count for a single flash.
  */
-export const STROKES_MIN = 3;
-
-/**
- * Maximum return strokes per flash.
- *
- * Use when sampling stroke count for a single flash.
- */
-export const STROKES_MAX = 6;
+export const STROKES = createRange(3, 6);
 
 /**
  * Geometric center of interstroke interval (ms).
@@ -55,18 +40,11 @@ export const INTERSTROKE_CENTER = 52;
 export const INTERSTROKE_SPREAD = 0.45;
 
 /**
- * Minimum preflash buildup duration (ms).
+ * Preflash buildup duration range (ms).
  *
  * Use when sampling preflash buildup time before first stroke.
  */
-export const PREFLASH_DURATION_MIN = 40;
-
-/**
- * Maximum preflash buildup duration (ms).
- *
- * Use when sampling preflash buildup time before first stroke.
- */
-export const PREFLASH_DURATION_MAX = 90;
+export const PREFLASH_DURATION = createRange(40, 90);
 
 /**
  * Base exponential decay tau for return strokes (ms).
@@ -76,32 +54,18 @@ export const PREFLASH_DURATION_MAX = 90;
 export const STROKE_DECAY_TAU = 28;
 
 /**
- * Minimum relative intensity for subsequent strokes.
+ * Relative intensity range for subsequent strokes.
  *
  * Use when scaling intensity for strokes after the first one.
  */
-export const SUBSEQUENT_INTENSITY_MIN = 0.35;
+export const SUBSEQUENT_INTENSITY = createRange(0.35, 0.65);
 
 /**
- * Maximum relative intensity for subsequent strokes.
- *
- * Use when scaling intensity for strokes after the first one.
- */
-export const SUBSEQUENT_INTENSITY_MAX = 0.65;
-
-/**
- * Minimum continuing-current tail duration (ms).
+ * Continuing-current tail duration range (ms).
  *
  * Use when sampling lingering tail duration after return strokes.
  */
-export const CONTINUING_CURRENT_MIN = 120;
-
-/**
- * Maximum continuing-current tail duration (ms).
- *
- * Use when sampling lingering tail duration after return strokes.
- */
-export const CONTINUING_CURRENT_MAX = 350;
+export const CONTINUING_CURRENT = createRange(120, 350);
 
 /**
  * Probability that a flash includes an M-component pulse.
@@ -125,32 +89,18 @@ export const M_COMPONENT_INTENSITY = 0.12;
 export const M_COMPONENT_DURATION = 35;
 
 /**
- * Minimum IC glow peak intensity.
+ * IC glow peak intensity range.
  *
  * Use when sampling peak intensity for idle glow events.
  */
-export const IC_GLOW_INTENSITY_MIN = 0.04;
+export const IC_GLOW_INTENSITY = createRange(0.04, 0.12);
 
 /**
- * Maximum IC glow peak intensity.
- *
- * Use when sampling peak intensity for idle glow events.
- */
-export const IC_GLOW_INTENSITY_MAX = 0.12;
-
-/**
- * Minimum IC glow event duration (ms).
+ * IC glow event duration range (ms).
  *
  * Use when sampling duration for idle glow events.
  */
-export const IC_GLOW_DURATION_MIN = 80;
-
-/**
- * Maximum IC glow event duration (ms).
- *
- * Use when sampling duration for idle glow events.
- */
-export const IC_GLOW_DURATION_MAX = 250;
+export const IC_GLOW_DURATION = createRange(80, 250);
 
 /**
  * Baseline darkness value used when no active flash is present.
