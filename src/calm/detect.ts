@@ -37,8 +37,9 @@ export function getCalmOverride(): boolean | null {
 
 	const raw = new URLSearchParams(window.location.search).get(CALM_PARAM);
 	if (raw === null) return null;
-	if (CALM_ON_RE.test(raw)) return true;
-	if (CALM_OFF_RE.test(raw)) return false;
+	const value = raw.trim();
+	if (CALM_ON_RE.test(value)) return true;
+	if (CALM_OFF_RE.test(value)) return false;
 	return null;
 }
 

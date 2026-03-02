@@ -185,21 +185,24 @@ export class StormEngine {
 			intervals.push(Math.max(20, Math.min(200, interval)));
 		}
 
-		const activeBoltCount = randInt(1, Math.min(3, this.boltCount));
 		const indices: number[] = [];
-		const available = Array.from({ length: this.boltCount }, (_, i) => i);
-		for (let i = available.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			const a = available[i];
-			const b = available[j];
-			if (a !== undefined && b !== undefined) {
-				available[i] = b;
-				available[j] = a;
+		const maxBolts = Math.max(0, this.boltCount);
+		const available = Array.from({ length: maxBolts }, (_, i) => i);
+		if (maxBolts > 0) {
+			const activeBoltCount = randInt(1, Math.min(3, maxBolts));
+			for (let i = available.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				const a = available[i];
+				const b = available[j];
+				if (a !== undefined && b !== undefined) {
+					available[i] = b;
+					available[j] = a;
+				}
 			}
-		}
-		for (let i = 0; i < activeBoltCount; i++) {
-			const idx = available[i];
-			if (idx !== undefined) indices.push(idx);
+			for (let i = 0; i < activeBoltCount && i < available.length; i++) {
+				const idx = available[i];
+				if (idx !== undefined) indices.push(idx);
+			}
 		}
 
 		this.refreshBoltShapes();

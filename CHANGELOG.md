@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Treat empty or whitespace-only `?host=` values as unset so host falls back to `window.location.hostname`.
 - Remove redundant body theme-attribute writes, normalize the `t` keyboard shortcut check, and add Safari <14 fallback for system-theme change listeners.
 - Route cloud puff offset sampling through shared `rand` helpers instead of direct `Math.random()` calls.
+- Trim whitespace on `?calm=` query parameter before matching on/off patterns.
+- Replace silent fallback in `pickRandom` with an explicit throw on impossible out-of-range index.
+- Guard bolt-shuffle loop against zero `boltCount` and scope `activeBoltCount` inside the guard.
+- Skip repeated `keydown` events and `contentEditable` elements in theme keyboard shortcut handler.
 
 ## [2.0.5] - 2026-03-02
 

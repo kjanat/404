@@ -66,8 +66,11 @@ const BLURBS: readonly [string, ...string[]] = [
 
 /** Pick a random item from a non-empty readonly tuple. */
 function pickRandom<T>(arr: readonly [T, ...T[]]): T {
-	const [fallback] = arr;
-	return arr[Math.floor(Math.random() * arr.length)] ?? fallback;
+	const value = arr[Math.floor(Math.random() * arr.length)];
+	if (value === undefined) {
+		throw new Error('pickRandom selected out-of-range index');
+	}
+	return value;
 }
 
 /* Blurb template parsing */

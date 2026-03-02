@@ -111,7 +111,9 @@ export function initializeThemeControls(): void {
 
 		document.addEventListener('keydown', (event) => {
 			if (
-				event.target instanceof HTMLInputElement
+				event.repeat
+				|| (event.target instanceof HTMLElement && event.target.isContentEditable)
+				|| event.target instanceof HTMLInputElement
 				|| event.target instanceof HTMLTextAreaElement
 				|| event.target instanceof HTMLSelectElement
 				|| event.metaKey
