@@ -18,7 +18,7 @@ test('theme option click writes preference once', async ({ page }) => {
 		const originalSetItem = originalSetItemDescriptor.value;
 		let calls = 0;
 
-		Storage.prototype.setItem = function (this: Storage, key: string, value: string): void {
+		Storage.prototype.setItem = function(this: Storage, key: string, value: string): void {
 			calls += 1;
 			originalSetItem.call(this, key, value);
 		};
