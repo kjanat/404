@@ -23,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove hardcoded `<meta name="robots">` from `index.html` and let plugin-managed injection own robots directives.
 - Refactor `StormEngine` phase handling into explicit strategy functions and remove the `src/storm.ts` compatibility shim now that imports are fully migrated to leaf modules.
 - Adjust inline-theme injection order in `index.html` and wrap `inlineScript` output in `vite.config.ts` with a leading newline for cleaner generated markup.
+- Harden capture CI shell scripts with strict env guards (`${VAR:?}`), brace-quoted expansions, and tab indentation via `shfmt`.
+- Refactor `capture-summary.mjs` to parse inputs from a forwarded JSON env var instead of the raw webhook payload, adding safe type coercion.
+- Import capture summary script via `action_path` instead of hardcoded workspace path.
+- Bump `actions/download-artifact` to v8 in PR-preview workflow.
+- Add `shfmt` and `sort-package-json` exec plugins to `.dprint.jsonc`.
+- Switch Biome schema to local `node_modules` copy, enable domain-level lint categories, and change JS quote style to single quotes.
+- Reorganize `package.json` scripts (alphabetize, split `lint` into `lint:biome`/`lint:eslint`) and bump `@biomejs/biome`, `@typescript/native-preview`, and `globals`.
+- Move `prefers-reduced-motion`, calm-mode, and theme-locked CSS overrides to end of stylesheet and reorder `.theme-trigger__icon` transition before expanded state rule.
 
 ## [2.0.5] - 2026-03-02
 

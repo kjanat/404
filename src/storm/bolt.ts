@@ -1,7 +1,24 @@
 import { rand, randInt } from './rng.ts';
 
+/**
+ * Minimum number of spine segments used per generated bolt.
+ *
+ * Use when sampling `segments` in {@link generateBoltPath}.
+ */
 const BOLT_SEGMENTS_MIN = 8;
+
+/**
+ * Maximum number of spine segments used per generated bolt.
+ *
+ * Use when sampling `segments` in {@link generateBoltPath}.
+ */
 const BOLT_SEGMENTS_MAX = 12;
+
+/**
+ * Half-width offset (percentage points) for mirrored bolt polygon edges.
+ *
+ * Use when mirroring spine points into left/right polygon edges in {@link generateBoltPath}.
+ */
 const BOLT_HALF_WIDTH = 1.5;
 
 /**

@@ -1,8 +1,36 @@
+/**
+ * Time window for counting rapid panel presses before locking (ms).
+ *
+ * Use when filtering recent press samples in {@link initializePanelInteractivity}.
+ */
 const PANEL_PRESS_SPAM_WINDOW_MS = 1300;
+
+/**
+ * Number of presses in the spam window that trigger a temporary lock.
+ *
+ * Use when checking spam threshold in {@link initializePanelInteractivity}.
+ */
 const PANEL_PRESS_SPAM_LIMIT = 4;
+
+/**
+ * Duration of temporary lock after spam-threshold press burst (ms).
+ *
+ * Use when setting unlock timeout in {@link initializePanelInteractivity}.
+ */
 const PANEL_PRESS_COOLDOWN_MS = 2400;
+
+/**
+ * CSS class marking panel press interactions as temporarily locked.
+ *
+ * Use when toggling lock state in {@link initializePanelInteractivity}.
+ */
 const PANEL_PRESS_LOCK_CLASS = 'panel-press-locked';
 
+/**
+ * Media query representing user reduced-motion preference.
+ *
+ * Use when gating motion-heavy interactions in {@link initializePanelInteractivity}.
+ */
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 /**

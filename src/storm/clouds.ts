@@ -1,8 +1,31 @@
 import { rand, randInt } from './rng.ts';
 
+/**
+ * Minimum number of cloud masses layered into the generated background.
+ *
+ * Use when sampling `massCount` in {@link generateCloudBackground}.
+ */
 const CLOUD_MASS_MIN = 5;
+
+/**
+ * Maximum number of cloud masses layered into the generated background.
+ *
+ * Use when sampling `massCount` in {@link generateCloudBackground}.
+ */
 const CLOUD_MASS_MAX = 8;
+
+/**
+ * Minimum number of radial puffs generated inside one cloud mass.
+ *
+ * Use when sampling `puffCount` in {@link generateCloudBackground}.
+ */
 const PUFFS_PER_MASS_MIN = 3;
+
+/**
+ * Maximum number of radial puffs generated inside one cloud mass.
+ *
+ * Use when sampling `puffCount` in {@link generateCloudBackground}.
+ */
 const PUFFS_PER_MASS_MAX = 6;
 
 /**

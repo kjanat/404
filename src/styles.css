@@ -369,153 +369,6 @@ body::after {
 	clip-path: var(--bolt-clip);
 }
 
-@media (prefers-reduced-motion: reduce) {
-	/* Ambient CSS keyframes — still need animation: none */
-	body,
-	body::after,
-	.edge-word::after {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		animation: none !important;
-	}
-
-	body.page-ready .panel,
-	body.page-ready [data-reveal] {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		animation: none !important;
-	}
-
-	body.page-ready [data-reveal] {
-		opacity: 1;
-		transform: none;
-		filter: none;
-	}
-
-	.panel,
-	.theme-trigger,
-	.theme-trigger__icon,
-	.theme-switch,
-	.theme-option {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		transition: none !important;
-	}
-
-	.theme-drawer:not([hidden]) {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		animation: none !important;
-	}
-
-	/*
-	 * Flash-driven elements: StormEngine is stopped via JS when reduced-motion
-	 * is detected, but we also hardcode neutral fallbacks here as defense-in-depth.
-	 */
-	.storm-streak {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		opacity: 0 !important;
-	}
-
-	body::before {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		opacity: 0.06 !important;
-	}
-
-	body::after {
-		opacity: 0.15;
-	}
-
-	.storm-regions {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		opacity: 0.16 !important;
-	}
-
-	.panel {
-		border-color: color-mix(in oklch, var(--theme-border) 86%, transparent);
-		box-shadow: var(--theme-panel-shadow-calm);
-	}
-
-	.panel::after {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		opacity: 0 !important;
-	}
-
-	h1 {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		text-shadow: none !important;
-	}
-
-	.edge-icon {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		filter: none !important;
-	}
-
-	::view-transition-old(root),
-	::view-transition-new(root) {
-		animation-duration: 1ms;
-	}
-}
-
-/* Ambient CSS keyframes — still need animation: none in calm mode */
-body.calm-mode,
-body.calm-mode::after,
-body.calm-mode .edge-word::after {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	animation: none !important;
-}
-
-body.calm-mode.page-ready .panel,
-body.calm-mode.page-ready [data-reveal] {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	animation: none !important;
-}
-
-body.calm-mode.page-ready [data-reveal] {
-	opacity: 1;
-	transform: none;
-	filter: none;
-}
-
-/*
- * Flash-driven elements: StormEngine.stop() is called in JS for calm-mode,
- * which resets all custom properties to neutral. These rules are defense-in-depth.
- */
-body.calm-mode .storm-streak {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	opacity: 0 !important;
-}
-
-body.calm-mode::before {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	opacity: 0.06 !important;
-}
-
-body.calm-mode::after {
-	opacity: 0.15;
-}
-
-body.calm-mode .storm-regions {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	opacity: 0.16 !important;
-}
-
-body.calm-mode .panel {
-	border-color: color-mix(in oklch, var(--theme-border) 86%, transparent);
-	box-shadow: var(--theme-panel-shadow-calm);
-}
-
-body.calm-mode .panel::after {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	opacity: 0 !important;
-}
-
-body.calm-mode h1 {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	text-shadow: none !important;
-}
-
-body.calm-mode .edge-icon {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	filter: none !important;
-}
-
 .panel {
 	width: min(680px, 100%);
 	padding: 28px;
@@ -600,11 +453,6 @@ body.calm-mode .edge-icon {
 
 /* ── Gear trigger ────────────────────────────────── */
 
-:root[data-theme-locked="true"] .theme-trigger,
-:root[data-theme-locked="true"] .theme-drawer {
-	display: none;
-}
-
 .theme-trigger {
 	appearance: none;
 	position: absolute;
@@ -648,13 +496,13 @@ body.calm-mode .edge-icon {
 	border-color: color-mix(in oklch, var(--theme-border) 60%, transparent);
 }
 
-.theme-trigger[aria-expanded="true"] .theme-trigger__icon {
-	transform: rotate(60deg);
-}
-
 .theme-trigger__icon {
 	display: block;
 	transition: transform 360ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.theme-trigger[aria-expanded="true"] .theme-trigger__icon {
+	transform: rotate(60deg);
 }
 
 /* ── Theme drawer (popover) ─────────────────────── */
@@ -1040,4 +888,156 @@ p {
 		max-width: 240px;
 		font-size: 0.66rem;
 	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	/* Ambient CSS keyframes — still need animation: none */
+	body,
+	body::after,
+	.edge-word::after {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		animation: none !important;
+	}
+
+	.panel,
+	.theme-trigger,
+	.theme-switch,
+	.theme-option,
+	.theme-trigger[aria-expanded="true"] .theme-trigger__icon {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		transition: none !important;
+	}
+
+	.theme-drawer:not([hidden]) {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		animation: none !important;
+	}
+
+	body.page-ready .panel,
+	body.page-ready [data-reveal] {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		animation: none !important;
+	}
+
+	body.page-ready [data-reveal] {
+		opacity: 1;
+		transform: none;
+		filter: none;
+	}
+
+	/*
+	 * Flash-driven elements: StormEngine is stopped via JS when reduced-motion
+	 * is detected, but we also hardcode neutral fallbacks here as defense-in-depth.
+	 */
+	.storm-streak {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0 !important;
+	}
+
+	body::before {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0.06 !important;
+	}
+
+	body::after {
+		opacity: 0.15;
+	}
+
+	.storm-regions {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0.16 !important;
+	}
+
+	.panel {
+		border-color: color-mix(in oklch, var(--theme-border) 86%, transparent);
+		box-shadow: var(--theme-panel-shadow-calm);
+	}
+
+	.panel::after {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0 !important;
+	}
+
+	h1 {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		text-shadow: none !important;
+	}
+
+	.edge-icon {
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		filter: none !important;
+	}
+
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: 1ms;
+	}
+}
+
+/* Ambient CSS keyframes — still need animation: none in calm mode */
+body.calm-mode,
+body.calm-mode::after,
+body.calm-mode .edge-word::after {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	animation: none !important;
+}
+
+/*
+ * Flash-driven elements: StormEngine.stop() is called in JS for calm-mode,
+ * which resets all custom properties to neutral. These rules are defense-in-depth.
+ */
+body.calm-mode .storm-streak {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0 !important;
+}
+
+body.calm-mode::before {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0.06 !important;
+}
+
+body.calm-mode::after {
+	opacity: 0.15;
+}
+
+body.calm-mode .storm-regions {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0.16 !important;
+}
+
+body.calm-mode .panel {
+	border-color: color-mix(in oklch, var(--theme-border) 86%, transparent);
+	box-shadow: var(--theme-panel-shadow-calm);
+}
+
+body.calm-mode .panel::after {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0 !important;
+}
+
+body.calm-mode h1 {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	text-shadow: none !important;
+}
+
+body.calm-mode .edge-icon {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	filter: none !important;
+}
+
+body.calm-mode.page-ready .panel,
+body.calm-mode.page-ready [data-reveal] {
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	animation: none !important;
+}
+
+body.calm-mode.page-ready [data-reveal] {
+	opacity: 1;
+	transform: none;
+	filter: none;
+}
+
+:root[data-theme-locked="true"] .theme-trigger,
+:root[data-theme-locked="true"] .theme-drawer {
+	display: none;
 }

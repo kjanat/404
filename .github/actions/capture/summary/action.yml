@@ -8,6 +8,9 @@ inputs:
   color-scheme:
     description: "Color scheme used for this capture"
     required: true
+  capture-inputs:
+    description: "JSON-serialized capture inputs map"
+    required: true
 
 runs:
   using: composite
@@ -17,7 +20,8 @@ runs:
       env:
         ARTIFACT_URL: ${{ inputs.artifact-url }}
         COLOR_SCHEME: ${{ inputs.color-scheme }}
+        CAPTURE_INPUTS: ${{ inputs.capture-inputs }}
       with:
         script: |
-          const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/capture-summary.mjs`)
+          const { default: run } = await import("${{ github.action_path }}/../capture-summary.mjs")
           await run({ context, core })

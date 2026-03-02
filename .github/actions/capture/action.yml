@@ -79,3 +79,4 @@ runs:
       with:
         artifact-url: ${{ steps.upload.outputs.artifact-url }}
         color-scheme: ${{ inputs.color_scheme }}
+        capture-inputs: ${{ toJson(inputs) }}

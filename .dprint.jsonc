@@ -2,4 +2,16 @@
 	"lineWidth": 120,
 	"extends": "https://raw.githubusercontent.com/kjanat/kjanat/master/configs/dprint.remote.json",
 	"excludes": ["**/dist", "**/node_modules", "**/coverage"],
+	"exec": {
+		"commands": [
+			{
+				"command": "shfmt -i 0 -ln bash -bn -ci -filename {{file_path}}",
+				"exts": ["sh", "bash"],
+			},
+			{ "command": "sort-package-json --stdin", "fileNames": ["package.json"] },
+		],
+	},
+	"plugins": [
+		"https://plugins.dprint.dev/exec-0.6.0.json@a054130d458f124f9b5c91484833828950723a5af3f8ff2bd1523bd47b83b364",
+	],
 }
