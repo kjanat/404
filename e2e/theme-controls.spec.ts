@@ -5,6 +5,11 @@ async function gotoReady(page: Page): Promise<void> {
 	await page.waitForFunction(() => document.body.classList.contains('page-ready'));
 }
 
+async function gotoReadyWithPath(page: Page, path: string): Promise<void> {
+	await page.goto(path);
+	await page.waitForFunction(() => document.body.classList.contains('page-ready'));
+}
+
 test('theme option click writes preference once', async ({ page }) => {
 	await gotoReady(page);
 	const html = page.locator('html');
@@ -77,4 +82,26 @@ test('theme hotkey ignores repeat and contentEditable targets', async ({ page })
 
 	await page.keyboard.press('t');
 	await expect(drawer).toBeHidden();
+});
+
+test('theme URL override locks and hides theme controls', async ({ page }) => {
+	await gotoReadyWithPath(page, '/?theme=dark');
+
+	const html = page.locator('html');
+	const trigger = page.locator('.theme-trigger');
+	const drawer = page.locator('.theme-drawer');
+
+	await expect(html).toHaveAttribute('data-theme-locked', 'true');
+	await expect(trigger).toBeHidden();
+	await expect(drawer).toBeHidden();
+});
+
+test('theme controls are unlocked and trigger is visible without URL override', async ({ page }) => {
+	await gotoReady(page);
+
+	const html = page.locator('html');
+	const trigger = page.locator('.theme-trigger');
+
+	await expect(html).not.toHaveAttribute('data-theme-locked');
+	await expect(trigger).toBeVisible();
 });
