@@ -36,7 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move `prefers-reduced-motion`, calm-mode, and theme-locked CSS overrides to end of stylesheet and reorder `.theme-trigger__icon` transition before expanded state rule.
 - Replace storm `*_MIN`/`*_MAX` pairs with immutable `Range` constants and overload `rand`/`randInt` to accept either `(min, max)` or a `Range` object.
 - Parse blurb templates into typed AST (`TextPart | HostPart | CodePart`) to support backtick `<code>` spans and `\n` line breaks in blurb copy.
-- Switch `shfmt` setup action to `kjanat/install-shfmt` in autofix and lint CI workflows.
+- Switch `shfmt` setup action to `kjanat/install-shfmt@v1` in autofix and lint CI workflows.
+- Collapse multiline `permissions` block to single-line YAML in `pr-preview` workflow.
 
 ### Fixed
 

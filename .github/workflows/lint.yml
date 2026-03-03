@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: kjanat/install-shfmt@master
+      - uses: kjanat/install-shfmt@v1
       - { uses: ./.github/actions/setup-node-bun, with: { install: "true", frozen-lockfile: "true" } }
       - run: bun typecheck
       - run: bun lint

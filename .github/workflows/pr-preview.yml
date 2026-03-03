@@ -16,8 +16,7 @@ jobs:
   pending:
     if: github.event.action != 'closed'
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
+    permissions: { pull-requests: write }
     steps:
       - name: Post or update pending status
         uses: actions/github-script@v8
