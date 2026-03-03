@@ -940,7 +940,8 @@ p {
 	}
 
 	body::after {
-		opacity: 0.15;
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		opacity: 0.15 !important;
 	}
 
 	.storm-regions {
@@ -997,7 +998,8 @@ body.calm-mode::before {
 }
 
 body.calm-mode::after {
-	opacity: 0.15;
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	opacity: 0.15 !important;
 }
 
 body.calm-mode .storm-regions {
