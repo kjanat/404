@@ -54,7 +54,7 @@ function inlineScript(): Plugin {
 						},
 					});
 
-					return `<script>\n${outputText}</script>`;
+					return `<script data-cfasync="false">\n${outputText}</script>`;
 				},
 			);
 		},
