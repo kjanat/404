@@ -11,7 +11,9 @@
 	--color-accent-2: oklch(0.822 0.156 160);
 	--color-border: oklch(0.756 0.054 259 / 0.3);
 	/* Custom properties driven by JS: --flash, --region-dim */
+}
 
+:root {
 	--color-bg-top--light: oklch(0.874 0.037 254);
 	--color-bg-bottom--light: oklch(0.951 0.015 252);
 	--color-card--light: oklch(1 0 0 / 0.82);
@@ -20,9 +22,7 @@
 	--color-accent--light: oklch(0.571 0.144 248);
 	--color-accent-2--light: oklch(0.618 0.139 158);
 	--color-border--light: oklch(0.493 0.062 258 / 0.22);
-}
 
-:root {
 	color-scheme: dark;
 	--font-body: "Avenir Next", "Trebuchet MS", "Gill Sans", sans-serif;
 	--font-display: "Avenir Next Condensed", "Trebuchet MS", "Gill Sans", sans-serif;
