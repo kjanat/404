@@ -111,7 +111,8 @@ test('reduced-motion suppresses drawer animation and storm streak visibility', a
 	await gotoReadyWithPath(page, '/?calm=off');
 
 	const drawer = page.locator('[data-theme-drawer]');
-	await page.keyboard.press('t');
+	const trigger = page.locator('[data-theme-dock-toggle]');
+	await trigger.click();
 	await expect(drawer).toBeVisible();
 
 	const drawerAnimationName = await drawer.evaluate((element) => getComputedStyle(element).animationName);
@@ -134,4 +135,40 @@ test('reduced-motion suppresses drawer animation and storm streak visibility', a
 	});
 
 	expect(stormStreakOpacity).toBe(0);
+});
+
+test('theme radiogroup arrow keys update selection, roving tabindex, and escape', async ({ page }) => {
+	await gotoReady(page);
+
+	const drawer = page.locator('[data-theme-drawer]');
+	const trigger = page.locator('[data-theme-dock-toggle]');
+	const systemOption = page.locator('[data-theme-option="system"]');
+	const darkOption = page.locator('[data-theme-option="dark"]');
+	const lightOption = page.locator('[data-theme-option="light"]');
+
+	await page.keyboard.press('t');
+	await expect(drawer).toBeVisible();
+
+	await expect(systemOption).toHaveAttribute('aria-checked', 'true');
+	await expect(systemOption).toHaveAttribute('tabindex', '0');
+
+	await systemOption.focus();
+	await page.keyboard.press('ArrowRight');
+	await expect(darkOption).toHaveAttribute('aria-checked', 'true');
+	await expect(systemOption).toHaveAttribute('aria-checked', 'false');
+	await expect(darkOption).toHaveAttribute('tabindex', '0');
+	await expect(systemOption).toHaveAttribute('tabindex', '-1');
+	await expect(darkOption).toBeFocused();
+
+	await systemOption.focus();
+	await page.keyboard.press('ArrowLeft');
+	await expect(lightOption).toHaveAttribute('aria-checked', 'true');
+	await expect(darkOption).toHaveAttribute('aria-checked', 'false');
+	await expect(lightOption).toHaveAttribute('tabindex', '0');
+	await expect(darkOption).toHaveAttribute('tabindex', '-1');
+	await expect(lightOption).toBeFocused();
+
+	await page.keyboard.press('Escape');
+	await expect(drawer).toBeHidden();
+	await expect(trigger).toBeFocused();
 });
