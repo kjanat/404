@@ -100,11 +100,9 @@ export function initializeThemeControls(): void {
 
 	if (themeOverride.hasParam) {
 		document.documentElement.setAttribute(THEME_LOCKED_ATTR, 'true');
-		document.body.setAttribute(THEME_LOCKED_ATTR, 'true');
 		setThemeDrawerOpen(false);
 	} else {
 		document.documentElement.removeAttribute(THEME_LOCKED_ATTR);
-		document.body.removeAttribute(THEME_LOCKED_ATTR);
 	}
 
 	let preference = themeOverride.preference ?? (themeOverride.hasParam ? 'system' : readThemePreference());
