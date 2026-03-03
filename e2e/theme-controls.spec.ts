@@ -172,3 +172,13 @@ test('theme radiogroup arrow keys update selection, roving tabindex, and escape'
 	await expect(drawer).toBeHidden();
 	await expect(trigger).toBeFocused();
 });
+
+test('calm URL override toggles body calm-mode class', async ({ page }) => {
+	const body = page.locator('body');
+
+	await gotoReadyWithPath(page, '/?calm=on');
+	await expect(body).toHaveClass(/(^|\s)calm-mode(\s|$)/);
+
+	await gotoReadyWithPath(page, '/?calm=off');
+	await expect(body).not.toHaveClass(/(^|\s)calm-mode(\s|$)/);
+});
