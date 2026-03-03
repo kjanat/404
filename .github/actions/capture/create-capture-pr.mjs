@@ -138,7 +138,7 @@ export default async function run({ github, context, core, exec }) {
 		.addList([
 			`PR: <a href="${pr.data.html_url}">${pr.data.html_url}</a>`,
 			`Branch: <code>${branch}</code>`,
-			`Commit: <code>${commitSha}</code>`,
+			`Commit: ${commitSha}`,
 			...downloadedFiles.map(([, f]) => `Preview: <a href="${rawBase}/${commitSha}/${f}">${f}</a>`),
 			`Artifact: <a href="${artifactUrl}">Download artifact</a>`,
 		])

@@ -12,10 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: kjanat/install-shfmt@v1
       - uses: ./.github/actions/setup-node-bun
-        with:
-          install: "true"
-          frozen-lockfile: "true"
-      - name: Format sources
-        run: bun fmt --allow-no-files --diff --excludes ".github"
+        with: { install: "true", frozen-lockfile: "true" }
+      - run: bun fmt --allow-no-files --diff --excludes ".github"
       - uses: autofix-ci/action@v1

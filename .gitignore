@@ -5,3 +5,4 @@ dist
 tooltip-validation.png
 *.zip
 .capture-frames*/
+test-results/
