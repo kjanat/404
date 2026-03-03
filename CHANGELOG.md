@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Enable `customConditions: ["bun"]` in `tsconfig.json` so TypeScript resolves Bun-specific package exports during development.
+- Bump `@types/bun` and `@typescript/native-preview` dev dependencies.
 
 ## [2.1.1] - 2026-03-03
 
