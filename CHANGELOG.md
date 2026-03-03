@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `bun run smoke` Playwright-based smoke test script (`scripts/smoke.ts`) that builds and validates the page via `vite preview`.
 - Add Playwright e2e regression coverage for theme-control re-init listener cleanup and hotkey guards, plus `bun run test:e2e` script.
 - Add Playwright accessibility regression test with `@axe-core/playwright` for WCAG A/AA violations.
+- Add `dark-calm-off` accessibility test variant for dark-theme storm-active coverage.
 
 ### Changed
 
@@ -38,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Parse blurb templates into typed AST (`TextPart | HostPart | CodePart`) to support backtick `<code>` spans and `\n` line breaks in blurb copy.
 - Switch `shfmt` setup action to `kjanat/install-shfmt@v1` in autofix and lint CI workflows.
 - Collapse multiline `permissions` block to single-line YAML in `pr-preview` workflow.
+- Merge `gotoReady`/`gotoReadyWithPath` e2e helpers into a single `gotoReady` with optional path parameter.
+- Switch e2e theme-control selectors from class names to `data-*` attribute selectors for resilience.
+- Enable `fullyParallel` Playwright execution with dynamic worker count (2 in CI, auto locally).
+- Use spread-based `testIgnore` override for WebKit skip instead of conditional empty array.
 
 ### Fixed
 
@@ -50,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace silent fallback in `pickRandom` with an explicit throw on impossible out-of-range index.
 - Guard bolt-shuffle loop against zero `boltCount` and scope `activeBoltCount` inside the guard.
 - Skip repeated `keydown` events and `contentEditable` elements in theme keyboard shortcut handler.
+- Validate and normalize `StormEngine` `boltCount` constructor argument, falling back to default for non-finite or sub-1 values.
 
 ## [2.0.5] - 2026-03-02
 

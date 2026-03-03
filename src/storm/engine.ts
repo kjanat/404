@@ -86,7 +86,10 @@ export class StormEngine {
 	 */
 	constructor(root: HTMLElement = document.documentElement, boltCount = DEFAULT_BOLT_COUNT) {
 		this.root = root;
-		this.boltCount = boltCount;
+		const normalizedBoltCount = Number.isFinite(boltCount)
+			? Math.floor(boltCount)
+			: DEFAULT_BOLT_COUNT;
+		this.boltCount = normalizedBoltCount >= 1 ? normalizedBoltCount : DEFAULT_BOLT_COUNT;
 	}
 
 	private createBolts(): void {

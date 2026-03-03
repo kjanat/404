@@ -1,11 +1,6 @@
 import { expect, type Page, test } from 'playwright/test';
 
-async function gotoReady(page: Page): Promise<void> {
-	await page.goto('/');
-	await page.waitForFunction(() => document.body.classList.contains('page-ready'));
-}
-
-async function gotoReadyWithPath(page: Page, path: string): Promise<void> {
+async function gotoReady(page: Page, path = '/'): Promise<void> {
 	await page.goto(path);
 	await page.waitForFunction(() => document.body.classList.contains('page-ready'));
 }
@@ -86,11 +81,11 @@ test('theme hotkey ignores repeat and contentEditable targets', async ({ page })
 });
 
 test('theme URL override locks and hides theme controls', async ({ page }) => {
-	await gotoReadyWithPath(page, '/?theme=dark');
+	await gotoReady(page, '/?theme=dark');
 
 	const html = page.locator('html');
-	const trigger = page.locator('.theme-trigger');
-	const drawer = page.locator('.theme-drawer');
+	const trigger = page.locator('[data-theme-dock-toggle]');
+	const drawer = page.locator('[data-theme-drawer]');
 
 	await expect(html).toHaveAttribute('data-theme-locked', 'true');
 	await expect(trigger).toBeHidden();
@@ -101,7 +96,7 @@ test('theme controls are unlocked and trigger is visible without URL override', 
 	await gotoReady(page);
 
 	const html = page.locator('html');
-	const trigger = page.locator('.theme-trigger');
+	const trigger = page.locator('[data-theme-dock-toggle]');
 
 	await expect(html).not.toHaveAttribute('data-theme-locked');
 	await expect(trigger).toBeVisible();
@@ -109,7 +104,7 @@ test('theme controls are unlocked and trigger is visible without URL override', 
 
 test('reduced-motion suppresses drawer animation and storm streak visibility', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'reduce' });
-	await gotoReadyWithPath(page, '/?calm=off');
+	await gotoReady(page, '/?calm=off');
 
 	const drawer = page.locator('[data-theme-drawer]');
 	const trigger = page.locator('[data-theme-dock-toggle]');
@@ -161,6 +156,7 @@ test('theme radiogroup arrow keys update selection, roving tabindex, and escape'
 	await expect(systemOption).toHaveAttribute('tabindex', '-1');
 	await expect(darkOption).toBeFocused();
 
+	// Wrap-around nav check: control order systemOption -> darkOption -> lightOption, so ArrowLeft from systemOption should wrap to lightOption; assertions verify aria-checked, tabindex, and focus.
 	await systemOption.focus();
 	await page.keyboard.press('ArrowLeft');
 	await expect(lightOption).toHaveAttribute('aria-checked', 'true');
@@ -177,9 +173,9 @@ test('theme radiogroup arrow keys update selection, roving tabindex, and escape'
 test('calm URL override toggles body calm-mode class', async ({ page }) => {
 	const body = page.locator('body');
 
-	await gotoReadyWithPath(page, '/?calm=on');
+	await gotoReady(page, '/?calm=on');
 	await expect(body).toHaveClass(/(^|\s)calm-mode(\s|$)/);
 
-	await gotoReadyWithPath(page, '/?calm=off');
+	await gotoReady(page, '/?calm=off');
 	await expect(body).not.toHaveClass(/(^|\s)calm-mode(\s|$)/);
 });

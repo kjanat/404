@@ -26,8 +26,8 @@ const canRunWebKit = process.platform !== 'linux'
 
 export default defineConfig({
 	testDir: './e2e',
-	fullyParallel: false,
-	workers: 1,
+	fullyParallel: true,
+	workers: process.env.CI ? 2 : undefined,
 	timeout: 30_000,
 	use: {
 		baseURL: PLAYWRIGHT_SERVER_URL.origin,
@@ -51,7 +51,7 @@ export default defineConfig({
 			use: {
 				...devices['Desktop Safari'],
 			},
-			testIgnore: canRunWebKit ? [] : ['**/*'],
+			...(canRunWebKit ? {} : { testIgnore: ['**/*'] }),
 		},
 	],
 	webServer: {

@@ -16,6 +16,10 @@ const accessibilityVariants: readonly AccessibilityVariant[] = [
 		path: '/?theme=light&calm=off',
 	},
 	{
+		id: 'dark-calm-off',
+		path: '/?theme=dark&calm=off',
+	},
+	{
 		id: 'dark-calm-on',
 		path: '/?theme=dark&calm=on',
 	},
