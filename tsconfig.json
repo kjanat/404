@@ -24,9 +24,10 @@
 		// Some stricter flags
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,
-		"noPropertyAccessFromIndexSignature": false
-		// // Custom conditions for module resolution
-		// "customConditions": ["bun"]
+		"noPropertyAccessFromIndexSignature": false,
+
+		// Ensure exports marked for bun are loaded, as we're developing with bun.
+		"customConditions": ["bun"]
 	},
 	"exclude": ["dist"]
 }
