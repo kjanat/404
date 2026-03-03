@@ -60,6 +60,7 @@ test('theme hotkey ignores repeat and contentEditable targets', async ({ page })
 	await expect(drawer).toBeHidden();
 
 	await page.evaluate(() => {
+		// Synthetic event needed: Playwright keyboard API cannot set repeat=true.
 		document.dispatchEvent(new KeyboardEvent('keydown', { key: 't', repeat: true, bubbles: true }));
 	});
 	await expect(drawer).toBeHidden();
