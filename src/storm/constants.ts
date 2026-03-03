@@ -115,3 +115,10 @@ export const REGION_DIM_BASELINE = 0.42;
  * Use when no explicit bolt count override is provided.
  */
 export const DEFAULT_BOLT_COUNT = 6;
+
+/**
+ * Hard upper bound for generated bolt elements.
+ *
+ * Use to guard against excessive DOM allocations from invalid overrides.
+ */
+export const MAX_BOLT_COUNT = 24;

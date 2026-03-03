@@ -11,6 +11,7 @@ import {
 	M_COMPONENT_CHANCE,
 	M_COMPONENT_DURATION,
 	M_COMPONENT_INTENSITY,
+	MAX_BOLT_COUNT,
 	PREFLASH_DURATION,
 	REGION_DIM_BASELINE,
 	STROKE_DECAY_TAU,
@@ -89,7 +90,9 @@ export class StormEngine {
 		const normalizedBoltCount = Number.isFinite(boltCount)
 			? Math.floor(boltCount)
 			: DEFAULT_BOLT_COUNT;
-		this.boltCount = normalizedBoltCount >= 1 ? normalizedBoltCount : DEFAULT_BOLT_COUNT;
+		this.boltCount = normalizedBoltCount >= 1 && normalizedBoltCount <= MAX_BOLT_COUNT
+			? normalizedBoltCount
+			: DEFAULT_BOLT_COUNT;
 	}
 
 	private createBolts(): void {

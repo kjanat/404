@@ -82,7 +82,13 @@ export function initializeThemeControls(): void {
 	}
 
 	const cleanup: (() => void)[] = [];
-	const options = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]'));
+	const validOptions = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]')).flatMap(
+		(optionButton) => {
+			const option = parseThemeOption(optionButton.dataset.themeOption);
+			return option === null ? [] : [{ optionButton, option }];
+		},
+	);
+	const optionButtons = validOptions.map(({ optionButton }) => optionButton);
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
 	const themeDockToggle = document.querySelector<HTMLButtonElement>('[data-theme-dock-toggle]');
 	const themeDrawer = document.querySelector<HTMLElement>('[data-theme-drawer]');
@@ -109,7 +115,7 @@ export function initializeThemeControls(): void {
 
 	const syncTheme = (animate: boolean): void => {
 		const resolvedTheme = resolveTheme(preference);
-		applyTheme(resolvedTheme, preference, options, animate);
+		applyTheme(resolvedTheme, preference, optionButtons, animate);
 	};
 
 	if (!themeOverride.hasParam) {
@@ -173,10 +179,7 @@ export function initializeThemeControls(): void {
 			document.removeEventListener('click', onDocumentClick);
 		});
 
-		for (const optionButton of options) {
-			const option = parseThemeOption(optionButton.dataset.themeOption);
-			if (option === null) continue;
-
+		for (const { optionButton, option } of validOptions) {
 			const onOptionClick = (): void => {
 				preference = option;
 				writeThemePreference(preference);
@@ -189,7 +192,7 @@ export function initializeThemeControls(): void {
 		}
 	}
 
-	if (!themeOverride.hasParam && switchRoot && options.length > 0) {
+	if (!themeOverride.hasParam && switchRoot && optionButtons.length > 0) {
 		const onSwitchRootKeydown = (event: KeyboardEvent): void => {
 			if (event.key === 'Escape') {
 				setThemeDrawerOpen(false);
@@ -211,10 +214,10 @@ export function initializeThemeControls(): void {
 			event.preventDefault();
 
 			let currentIndex = document.activeElement instanceof HTMLButtonElement
-				? options.indexOf(document.activeElement)
+				? optionButtons.indexOf(document.activeElement)
 				: -1;
 			if (currentIndex < 0) {
-				currentIndex = options.findIndex((optionButton) => optionButton.getAttribute('aria-checked') === 'true');
+				currentIndex = optionButtons.findIndex((optionButton) => optionButton.getAttribute('aria-checked') === 'true');
 			}
 			if (currentIndex < 0) {
 				currentIndex = 0;
@@ -223,11 +226,11 @@ export function initializeThemeControls(): void {
 			let nextIndex = currentIndex;
 
 			if (event.key === 'ArrowRight') {
-				nextIndex = (currentIndex + 1) % options.length;
+				nextIndex = (currentIndex + 1) % optionButtons.length;
 			}
 
 			if (event.key === 'ArrowLeft') {
-				nextIndex = (currentIndex + options.length - 1) % options.length;
+				nextIndex = (currentIndex + optionButtons.length - 1) % optionButtons.length;
 			}
 
 			if (event.key === 'Home') {
@@ -235,10 +238,10 @@ export function initializeThemeControls(): void {
 			}
 
 			if (event.key === 'End') {
-				nextIndex = options.length - 1;
+				nextIndex = optionButtons.length - 1;
 			}
 
-			const nextOption = options[nextIndex];
+			const nextOption = optionButtons[nextIndex];
 			if (!nextOption) return;
 
 			nextOption.focus();

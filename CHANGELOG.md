@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-03-03
+
 ### Added
 
 - Add `vite-robots-txt` as a production dependency and generate crawler directives for this 404-only site.
@@ -43,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switch e2e theme-control selectors from class names to `data-*` attribute selectors for resilience.
 - Enable `fullyParallel` Playwright execution with dynamic worker count (2 in CI, auto locally).
 - Use spread-based `testIgnore` override for WebKit skip instead of conditional empty array.
+- Cache `ldconfig -p` output once in Playwright config and match Linux sonames by exact token/prefix (`lib.so` / `lib.so.*`) instead of raw substring checks.
 
 ### Fixed
 
@@ -56,6 +59,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Guard bolt-shuffle loop against zero `boltCount` and scope `activeBoltCount` inside the guard.
 - Skip repeated `keydown` events and `contentEditable` elements in theme keyboard shortcut handler.
 - Validate and normalize `StormEngine` `boltCount` constructor argument, falling back to default for non-finite or sub-1 values.
+- Clamp `StormEngine` `boltCount` to a bounded `1..MAX_BOLT_COUNT` range and fall back to default when out of range.
+- Disable `.theme-trigger__icon` transition under reduced-motion for both expanded and collapsed states.
+- Filter theme option controls to valid parsed values before click handling and roving keyboard navigation.
 
 ## [2.0.5] - 2026-03-02
 
@@ -137,7 +143,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.0.5...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/kjanat/404/compare/v2.0.5...v2.1.0
 [2.0.5]: https://github.com/kjanat/404/compare/v2.0.4...v2.0.5
 [2.0.4]: https://github.com/kjanat/404/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/kjanat/404/compare/v2.0.2...v2.0.3

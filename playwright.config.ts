@@ -2,26 +2,46 @@ import { execSync } from 'node:child_process';
 import { defineConfig, devices } from 'playwright/test';
 
 const PLAYWRIGHT_SERVER_URL = new URL('http://127.0.0.1:4273');
+const dynamicLibraryCache = process.platform === 'linux'
+	? loadDynamicLibraryCache()
+	: '';
+const dynamicLibrarySonames = new Set(
+	dynamicLibraryCache
+		.split('\n')
+		.flatMap((line) => {
+			const soname = line.trim().split(/\s+/)[0];
+			return soname?.includes('.so') ? [soname] : [];
+		}),
+);
+
+function loadDynamicLibraryCache(): string {
+	try {
+		return execSync('ldconfig -p', {
+			encoding: 'utf8',
+			stdio: ['ignore', 'pipe', 'ignore'],
+		});
+	} catch {
+		return '';
+	}
+}
 
 function hasLinuxLibrary(libraryName: string): boolean {
 	if (process.platform !== 'linux') return true;
 
-	try {
-		const dynamicLibraryCache = execSync('ldconfig -p', {
-			encoding: 'utf8',
-			stdio: ['ignore', 'pipe', 'ignore'],
-		});
-		return dynamicLibraryCache.includes(libraryName);
-	} catch {
-		return false;
+	for (const soname of dynamicLibrarySonames) {
+		if (soname === libraryName || soname.startsWith(`${libraryName}.`)) {
+			return true;
+		}
 	}
+
+	return false;
 }
 
 const canRunWebKit = process.platform !== 'linux'
 	|| (
-		hasLinuxLibrary('libicu.so.74')
-		&& hasLinuxLibrary('libxml2.so.2')
-		&& hasLinuxLibrary('libflite.so.1')
+		hasLinuxLibrary('libicu.so')
+		&& hasLinuxLibrary('libxml2.so')
+		&& hasLinuxLibrary('libflite.so')
 	);
 
 export default defineConfig({

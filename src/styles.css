@@ -903,7 +903,7 @@ p {
 	.theme-trigger,
 	.theme-switch,
 	.theme-option,
-	.theme-trigger[aria-expanded="true"] .theme-trigger__icon {
+	.theme-trigger .theme-trigger__icon {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		transition: none !important;
 	}
