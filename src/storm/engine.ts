@@ -42,6 +42,9 @@ export class StormEngine {
 	private readonly boltCount: number;
 	private rafId = 0;
 	private running = false;
+	private lastTickTime = 0;
+	private slowFrames = 0;
+	private perfReduced = false;
 
 	private boltElements: HTMLSpanElement[] = [];
 	private container: HTMLElement | null = null;
@@ -225,6 +228,20 @@ export class StormEngine {
 
 	private tick = (now: number): void => {
 		if (!this.running) return;
+
+		if (!this.perfReduced && this.lastTickTime > 0) {
+			const dt = now - this.lastTickTime;
+			if (dt > 18) {
+				this.slowFrames++;
+			} else {
+				this.slowFrames = Math.max(0, this.slowFrames - 1);
+			}
+			if (this.slowFrames > 30) {
+				this.root.classList.add('perf-reduced');
+				this.perfReduced = true;
+			}
+		}
+		this.lastTickTime = now;
 
 		this.update(now);
 		this.commit();
