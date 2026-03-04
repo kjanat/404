@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-03-04
+
+### Added
+
+- Add performance-adaptive detection to `StormEngine`: monitor rAF frame timing and apply `perf-reduced` CSS class when frames consistently exceed 18 ms, stripping flash-driven `border-color`/`box-shadow`/`background-color` transitions from `.panel` to avoid WebKit compositing thrashing.
+
 ### Changed
 
 - Enable `customConditions: ["bun"]` in `tsconfig.json` so TypeScript resolves Bun-specific package exports during development.
@@ -154,7 +160,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.1.1...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/kjanat/404/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/kjanat/404/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/kjanat/404/compare/v2.0.5...v2.1.0
 [2.0.5]: https://github.com/kjanat/404/compare/v2.0.4...v2.0.5
