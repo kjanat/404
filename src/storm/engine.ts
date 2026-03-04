@@ -148,6 +148,9 @@ export class StormEngine {
 		this.icGlowEnd = this.nextICGlowTime + rand(IC_GLOW_DURATION);
 		this.icGlowPeak = rand(IC_GLOW_INTENSITY);
 		this.phase = FlashPhase.Quiet;
+		this.lastTickTime = 0;
+		this.slowFrames = 0;
+		this.perfReduced = false;
 		this.tick(performance.now());
 	}
 
@@ -236,7 +239,7 @@ export class StormEngine {
 			} else {
 				this.slowFrames = Math.max(0, this.slowFrames - 1);
 			}
-			if (this.slowFrames > 30) {
+			if (this.slowFrames >= 30) {
 				this.root.classList.add('perf-reduced');
 				this.perfReduced = true;
 			}
