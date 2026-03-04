@@ -235,10 +235,12 @@ export class StormEngine {
 
 		if (!this.perfReduced && this.lastTickTime > 0) {
 			const dt = now - this.lastTickTime;
-			if (dt > 18) {
+			if (dt > 200) {
+				// Ignore long gaps (backgrounded tab / throttled rAF)
+			} else if (dt > 18) {
 				this.slowFrames++;
 			} else {
-				this.slowFrames = Math.max(0, this.slowFrames - 1);
+				this.slowFrames = 0;
 			}
 			if (this.slowFrames >= 30) {
 				this.root.classList.add('perf-reduced');
