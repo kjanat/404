@@ -23,6 +23,7 @@
 		"lint": "bun lint:biome && bun lint:eslint",
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",
+		"preview": "vite build && vite preview",
 		"smoke": "bun scripts/smoke.ts",
 		"test:e2e": "playwright test",
 		"typecheck": "tsgo --noEmit"
