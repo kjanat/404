@@ -53,7 +53,7 @@ test.describe('Performance monitoring', () => {
 
 		// Check that .perf-reduced .panel has only transform transition
 		const panelTransition = await page.evaluate(() => {
-			const panel = document.querySelector('.panel') as HTMLElement;
+			const panel = document.querySelector<HTMLElement>('.panel');
 			if (!panel) return null;
 			return window.getComputedStyle(panel).transition;
 		});
@@ -66,13 +66,15 @@ test.describe('Performance monitoring', () => {
 		expect(panelTransition).not.toContain('background-color');
 	});
 
-	test('dev mode logging (manual verification)', async ({ page }) => {
-		// This test documents that dev logging exists but doesn't assert on it
-		// since console.info is only enabled in dev mode and we're testing the built version
+	test.skip('dev mode logging', async ({ page }) => {
+		// Skipped: console.info logging only works in dev mode (import.meta.env.DEV)
+		// Build output strips this via Vite, so we can't test it in e2e against production builds
+		//
+		// To manually verify:
+		// 1. Run `bun dev` to start dev server
+		// 2. Open browser DevTools console
+		// 3. Artificially slow frames (see test above for technique)
+		// 4. Observe: "[StormEngine] Performance reduced mode activated after N consecutive slow frames (>20ms)"
 		await gotoReady(page);
-
-		// Note: In dev mode, console should show:
-		// "[StormEngine] Performance reduced mode activated after N consecutive slow frames (>20ms)"
-		// This can be manually verified by running the dev server and triggering slow frames
 	});
 });
