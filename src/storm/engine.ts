@@ -151,6 +151,7 @@ export class StormEngine {
 		this.lastTickTime = 0;
 		this.slowFrames = 0;
 		this.perfReduced = false;
+		this.root.classList.remove('perf-reduced');
 		this.tick(performance.now());
 	}
 
