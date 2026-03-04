@@ -122,3 +122,24 @@ export const DEFAULT_BOLT_COUNT = 6;
  * Use to guard against excessive DOM allocations from invalid overrides.
  */
 export const MAX_BOLT_COUNT = 24;
+
+/**
+ * Frame time threshold in ms for slow-frame detection (~50fps).
+ *
+ * Use when classifying individual frames as slow during performance monitoring.
+ */
+export const SLOW_FRAME_TIME_MS = 20;
+
+/**
+ * Number of consecutive slow frames required to trigger reduced-performance mode.
+ *
+ * Use when determining whether to apply perf-reduced class to root element.
+ */
+export const SLOW_FRAME_THRESHOLD = 20;
+
+/**
+ * Frame time threshold in ms for ignoring backgrounded tab gaps.
+ *
+ * Use to filter out rAF callbacks delayed by tab backgrounding or main-thread pauses.
+ */
+export const BACKGROUND_TAB_GAP_MS = 200;

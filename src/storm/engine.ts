@@ -1,5 +1,6 @@
 import { generateBoltPath } from './bolt.ts';
 import {
+	BACKGROUND_TAB_GAP_MS,
 	CONTINUING_CURRENT,
 	DEFAULT_BOLT_COUNT,
 	IC_GLOW,
@@ -14,6 +15,8 @@ import {
 	MAX_BOLT_COUNT,
 	PREFLASH_DURATION,
 	REGION_DIM_BASELINE,
+	SLOW_FRAME_THRESHOLD,
+	SLOW_FRAME_TIME_MS,
 	STROKE_DECAY_TAU,
 	STROKES,
 	SUBSEQUENT_INTENSITY,
@@ -235,16 +238,21 @@ export class StormEngine {
 
 		if (!this.perfReduced && this.lastTickTime > 0) {
 			const dt = now - this.lastTickTime;
-			if (dt > 200) {
+			if (dt > BACKGROUND_TAB_GAP_MS) {
 				// Ignore long gaps (backgrounded tab / throttled rAF)
-			} else if (dt > 18) {
+			} else if (dt > SLOW_FRAME_TIME_MS) {
 				this.slowFrames++;
 			} else {
 				this.slowFrames = 0;
 			}
-			if (this.slowFrames >= 30) {
+			if (this.slowFrames >= SLOW_FRAME_THRESHOLD) {
 				this.root.classList.add('perf-reduced');
 				this.perfReduced = true;
+				if (import.meta.env.DEV) {
+					console.info(
+						`[StormEngine] Performance reduced mode activated after ${this.slowFrames} consecutive slow frames (>${SLOW_FRAME_TIME_MS}ms)`,
+					);
+				}
 			}
 		}
 		this.lastTickTime = now;
