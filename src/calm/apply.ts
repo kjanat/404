@@ -1,6 +1,6 @@
 import type { StormEngine } from '../storm/engine.ts';
 import { CALM_CLASS } from './constants.ts';
-import { shouldCalm } from './detect.ts';
+import { isNonChromiumWebKit, shouldCalm } from './detect.ts';
 
 /**
  * Apply calm mode class toggles and start/stop the storm engine.
@@ -14,6 +14,9 @@ export function applyCalmMode(storm: StormEngine): void {
 
 	if (calm) {
 		storm.stop();
+		if (import.meta.env.DEV && isNonChromiumWebKit()) {
+			console.info('[CalmMode] Storm disabled: WebKit browser detected (poor CSS custom property performance)');
+		}
 	} else {
 		storm.start();
 	}

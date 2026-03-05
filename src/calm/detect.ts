@@ -56,12 +56,49 @@ export function getAccessibilityCalm(): boolean {
 }
 
 /**
+ * Detect if the browser is WebKit (but not Chromium/Blink).
+ *
+ * WebKit has poor performance with high-frequency CSS custom property updates,
+ * causing excessive CPU usage with the storm animations. Chromium-based browsers
+ * (Chrome, Edge, Brave) handle this efficiently and should not be affected.
+ *
+ * @returns `true` for Safari, Epiphany, GNOME Web, and other pure WebKit browsers.
+ */
+export function isNonChromiumWebKit(): boolean {
+	if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+		return false;
+	}
+
+	const ua = navigator.userAgent;
+
+	// WebKit browsers include "AppleWebKit" in their UA
+	const hasAppleWebKit = /AppleWebKit/i.test(ua);
+	if (!hasAppleWebKit) return false;
+
+	// Chromium-based browsers include "Chrome" or "Chromium" in their UA
+	// Exclude them since they handle the animations efficiently
+	const isChromiumBased = /Chrome|Chromium|Edg/i.test(ua);
+	if (isChromiumBased) return false;
+
+	// Pure WebKit: Safari, Epiphany, GNOME Web, etc.
+	return true;
+}
+
+/**
  * Resolve effective calm mode state.
  *
  * URL override has precedence over accessibility-derived calm state.
+ * WebKit browsers (except Chromium-based) automatically enable calm mode
+ * due to poor performance with high-frequency CSS custom property updates.
  */
 export function shouldCalm(): boolean {
-	return getCalmOverride() ?? getAccessibilityCalm();
+	const override = getCalmOverride();
+	if (override !== null) return override;
+
+	// Auto-enable calm mode on WebKit to avoid performance issues
+	if (isNonChromiumWebKit()) return true;
+
+	return getAccessibilityCalm();
 }
 
 /**

@@ -393,6 +393,10 @@ body::after {
 	transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
 }
 
+.perf-reduced .panel {
+	transition: transform 220ms ease;
+}
+
 .panel:hover {
 	--panel-lift: -2px;
 }

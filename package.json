@@ -1,6 +1,6 @@
 {
 	"name": "@kjanat/404-page",
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"description": "Custom 404 error page for KajKowalski Edge.",
 	"homepage": "https://404.kjanat.com",
 	"repository": {
@@ -23,6 +23,7 @@
 		"lint": "bun lint:biome && bun lint:eslint",
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",
+		"preview": "vite build && vite preview",
 		"smoke": "bun scripts/smoke.ts",
 		"test:e2e": "playwright test",
 		"typecheck": "tsgo --noEmit"
@@ -45,6 +46,7 @@
 		"eslint": "^10.0.2",
 		"eslint-plugin-better-tailwindcss": "^4.3.1",
 		"globals": "^17.4.0",
+		"happy-dom": "^20.8.3",
 		"jiti": "^2.6.1",
 		"playwright": "^1.58.2",
 		"playwright-extra": "^4.3.6",

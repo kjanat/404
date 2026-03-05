@@ -1,5 +1,6 @@
 import { generateBoltPath } from './bolt.ts';
 import {
+	BACKGROUND_TAB_GAP_MS,
 	CONTINUING_CURRENT,
 	DEFAULT_BOLT_COUNT,
 	IC_GLOW,
@@ -14,6 +15,8 @@ import {
 	MAX_BOLT_COUNT,
 	PREFLASH_DURATION,
 	REGION_DIM_BASELINE,
+	SLOW_FRAME_THRESHOLD,
+	SLOW_FRAME_TIME_MS,
 	STROKE_DECAY_TAU,
 	STROKES,
 	SUBSEQUENT_INTENSITY,
@@ -42,6 +45,9 @@ export class StormEngine {
 	private readonly boltCount: number;
 	private rafId = 0;
 	private running = false;
+	private lastTickTime = 0;
+	private slowFrames = 0;
+	private perfReduced = false;
 
 	private boltElements: HTMLSpanElement[] = [];
 	private container: HTMLElement | null = null;
@@ -145,6 +151,10 @@ export class StormEngine {
 		this.icGlowEnd = this.nextICGlowTime + rand(IC_GLOW_DURATION);
 		this.icGlowPeak = rand(IC_GLOW_INTENSITY);
 		this.phase = FlashPhase.Quiet;
+		this.lastTickTime = 0;
+		this.slowFrames = 0;
+		this.perfReduced = false;
+		this.root.classList.remove('perf-reduced');
 		this.tick(performance.now());
 	}
 
@@ -225,6 +235,27 @@ export class StormEngine {
 
 	private tick = (now: number): void => {
 		if (!this.running) return;
+
+		if (!this.perfReduced && this.lastTickTime > 0) {
+			const dt = now - this.lastTickTime;
+			if (dt > BACKGROUND_TAB_GAP_MS) {
+				// Ignore long gaps (backgrounded tab / throttled rAF)
+			} else if (dt > SLOW_FRAME_TIME_MS) {
+				this.slowFrames++;
+			} else {
+				this.slowFrames = 0;
+			}
+			if (this.slowFrames >= SLOW_FRAME_THRESHOLD) {
+				this.root.classList.add('perf-reduced');
+				this.perfReduced = true;
+				if (import.meta.env.DEV) {
+					console.info(
+						`[StormEngine] Performance reduced mode activated after ${this.slowFrames} consecutive slow frames (>${SLOW_FRAME_TIME_MS}ms)`,
+					);
+				}
+			}
+		}
+		this.lastTickTime = now;
 
 		this.update(now);
 		this.commit();
