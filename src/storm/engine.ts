@@ -1,3 +1,4 @@
+import { isWebKit, WEBKIT_FRAME_INTERVAL_MS } from '#404/quality';
 import { generateBoltSegments } from '#404/storm/bolt';
 import {
 	CONTINUING_CURRENT,
@@ -18,7 +19,6 @@ import {
 	STROKES,
 	SUBSEQUENT_INTENSITY,
 } from '#404/storm/constants';
-import { isWebKit, WEBKIT_FRAME_INTERVAL_MS } from '#404/quality';
 import { StormRenderer } from '#404/storm/renderer';
 import { rand, randInt, randLogNormal } from '#404/storm/rng';
 import { type BoltSegment, FlashPhase, type FlashSequence, type StrokeEvent } from '#404/storm/types';
