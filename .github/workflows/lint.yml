@@ -15,3 +15,11 @@ jobs:
       - run: bun typecheck
       - run: bun lint
       - run: bun fmt:check --list-different
+      - run: bun run build
+      - name: Upload built index.html
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: index-html
+          path: index.html
+          if-no-files-found: error
+          retention-days: 2
