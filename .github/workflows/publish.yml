@@ -25,8 +25,8 @@ jobs:
         if: ${{ !cancelled() }}
         run: |
           $pkg = Get-Content package.json | ConvertFrom-Json
-          $version = $pkg.version; $name = $pkg.name
-          $url = @("https://npm.im/package", $name, "v", $version) -join "/"
-          "version=$version`nnpm_url=$url" | Tee-Object -LiteralPath $env:GITHUB_OUTPUT -Append -Encoding utf8
-      # bun publish lacks --provenance; use npm for signed provenance
+          @"
+          version=$($pkg.version)
+          npm_url=$("https://npm.im/package/{0}/v/{1}" -f $pkg.name, $pkg.version)
+          "@ | Tee-Object -FilePath $env:GITHUB_OUTPUT -Append
       - run: bunx npm@latest publish --provenance --access public
