@@ -18,6 +18,7 @@ import {
 	STROKES,
 	SUBSEQUENT_INTENSITY,
 } from '#404/storm/constants';
+import { isWebKit, WEBKIT_FRAME_INTERVAL_MS } from '#404/quality';
 import { StormRenderer } from '#404/storm/renderer';
 import { rand, randInt, randLogNormal } from '#404/storm/rng';
 import { type BoltSegment, FlashPhase, type FlashSequence, type StrokeEvent } from '#404/storm/types';
@@ -42,8 +43,10 @@ export class StormEngine {
 	private readonly root: HTMLElement;
 	private readonly boltCount: number;
 	private readonly renderer: StormRenderer | null;
+	private readonly frameInterval: number;
 	private rafId = 0;
 	private running = false;
+	private lastFrameTime = 0;
 
 	private flash = 0;
 	private regionDim = REGION_DIM_BASELINE;
@@ -94,6 +97,9 @@ export class StormEngine {
 		this.boltCount = normalizedBoltCount >= 1 && normalizedBoltCount <= MAX_BOLT_COUNT
 			? normalizedBoltCount
 			: DEFAULT_BOLT_COUNT;
+		// WebKit (Safari / WebKitGTK) struggles with the per-pixel shader cost,
+		// so cap its frame rate; other engines run unthrottled.
+		this.frameInterval = isWebKit() ? WEBKIT_FRAME_INTERVAL_MS : 0;
 		this.renderer = StormRenderer.create(root);
 	}
 
@@ -114,6 +120,7 @@ export class StormEngine {
 		this.icGlowPeak = rand(IC_GLOW_INTENSITY);
 		this.phase = FlashPhase.Quiet;
 		this.phaseStart = t;
+		this.lastFrameTime = 0;
 		this.tick(t);
 	}
 
@@ -176,10 +183,13 @@ export class StormEngine {
 	private tick = (now: number): void => {
 		if (!this.running) return;
 
+		this.rafId = requestAnimationFrame(this.tick);
+
+		if (now - this.lastFrameTime < this.frameInterval) return;
+		this.lastFrameTime = now;
+
 		this.update(now);
 		this.commit(now);
-
-		this.rafId = requestAnimationFrame(this.tick);
 	};
 
 	private update(now: number): void {

@@ -1,3 +1,4 @@
+import { isWebKit, WEBKIT_RENDER_SCALE } from '#404/quality';
 import fragmentShaderSource from '#404/storm/shaders/storm.frag.glsl?raw';
 import vertexShaderSource from '#404/storm/shaders/storm.vert.glsl?raw';
 import type { BoltSegment } from '#404/storm/types';
@@ -73,13 +74,28 @@ function compileShader(gl: WebGL2RenderingContext, type: number, source: string)
 }
 
 /**
+ * Inject `#define LOW_QUALITY 1` into shader source for WebKit builds.
+ *
+ * The GLSL `#version` directive must remain the first line, so the define is
+ * spliced in immediately after the first newline.
+ *
+ * @param source - Raw fragment shader source.
+ */
+function withLowQuality(source: string): string {
+	const newlineIndex = source.indexOf('\n');
+	if (newlineIndex === -1) return `#define LOW_QUALITY 1\n${source}`;
+	return `${source.slice(0, newlineIndex + 1)}#define LOW_QUALITY 1\n${source.slice(newlineIndex + 1)}`;
+}
+
+/**
  * Link the full-screen storm shader program.
  *
  * @param gl - WebGL2 context that will own the linked program.
  */
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
+	const fragmentSource = isWebKit() ? withLowQuality(fragmentShaderSource) : fragmentShaderSource;
 	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
 	const program = gl.createProgram();
 
 	gl.attachShader(program, vertexShader);
@@ -209,8 +225,12 @@ export class StormRenderer {
 		gl.uniform1f(uniforms.boltIntensity, state.boltIntensity);
 		gl.uniform1i(uniforms.theme, themeValue);
 		gl.uniform1i(uniforms.boltSegmentCount, segmentCount);
-		gl.uniform4fv(uniforms.boltSegments, this.segmentUniformData);
-		gl.uniform2fv(uniforms.boltData, this.segmentParamData);
+		// Skip the large uniform-array uploads during quiet frames (no lightning);
+		// the shader breaks out of the bolt loop immediately when the count is 0.
+		if (segmentCount > 0) {
+			gl.uniform4fv(uniforms.boltSegments, this.segmentUniformData, 0, segmentCount * 4);
+			gl.uniform2fv(uniforms.boltData, this.segmentParamData, 0, segmentCount * 2);
+		}
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 
 		this.canvas.dataset.stormTheme = state.theme;
@@ -260,7 +280,8 @@ export class StormRenderer {
 
 	/** Match the backing store to the canvas display size and DPR cap. */
 	private resize(): void {
-		const nextDpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
+		const cappedDpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
+		const nextDpr = isWebKit() ? cappedDpr * WEBKIT_RENDER_SCALE : cappedDpr;
 		const nextWidth = Math.max(1, Math.floor(this.canvas.clientWidth * nextDpr));
 		const nextHeight = Math.max(1, Math.floor(this.canvas.clientHeight * nextDpr));
 
@@ -281,9 +302,8 @@ export class StormRenderer {
 	 * @param segments - Generated bolt segments for the current flash.
 	 */
 	private writeBoltUniforms(segments: readonly BoltSegment[]): number {
-		this.segmentUniformData.fill(0);
-		this.segmentParamData.fill(0);
-
+		// Only the first `segmentCount` entries are uploaded and read by the
+		// shader, so stale trailing data does not need clearing.
 		const segmentCount = Math.min(segments.length, MAX_BOLT_SEGMENTS);
 		for (let i = 0; i < segmentCount; i++) {
 			const segment = segments[i];
