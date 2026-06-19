@@ -27,6 +27,8 @@
 		"dev": "vite",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
+		"fmt:check:list": "dprint check --list-different",
+		"fmt:ci": "run fmt --allow-no-files --diff --excludes .github",
 		"lint": "run -p lint:biome lint:eslint",
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",

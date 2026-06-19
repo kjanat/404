@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
+---
 name: Capture Summary
 description: Publish capture settings and artifact link to the job summary.
 
@@ -16,7 +18,7 @@ runs:
   using: composite
   steps:
     - name: Write capture summary
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       env:
         ARTIFACT_URL: ${{ inputs.artifact-url }}
         COLOR_SCHEME: ${{ inputs.color-scheme }}

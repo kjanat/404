@@ -1,5 +1,8 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
 name: Capture animation
 run-name: "Capture preview (${{ inputs.color_scheme }}, ${{ inputs.ext }}, ${{ inputs.width }}x${{ inputs.height }})"
+
 on:
   workflow_dispatch:
     inputs:
@@ -14,16 +17,15 @@ on:
       ext: { description: "Filetype to capture", required: false, default: webp, type: choice, options: [webp, gif, mp4] }
       color_scheme: { description: "Color scheme (both = dark+light in parallel)", required: false, default: both, type: choice, options: [both, dark, light] }
       create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
+
 jobs:
   resolve:
     runs-on: ubuntu-latest
-    outputs:
-      schemes: ${{ steps.schemes.outputs.json }}
+    outputs: { schemes: "${{ steps.schemes.outputs.json }}" }
     steps:
       - id: schemes
         shell: bash
-        env:
-          SCHEME: ${{ inputs.color_scheme }}
+        env: { SCHEME: "${{ inputs.color_scheme }}" }
         run: |
           case "$SCHEME" in
             both) echo 'json=["dark","light"]' ;;
@@ -35,10 +37,9 @@ jobs:
     name: "Capture ${{ matrix.color_scheme }}"
     runs-on: ubuntu-latest
     permissions: { contents: read }
-    strategy:
-      matrix: { color_scheme: "${{ fromJSON(needs.resolve.outputs.schemes) }}" }
+    strategy: { matrix: { color_scheme: "${{ fromJSON(needs.resolve.outputs.schemes) }}" } }
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with: { persist-credentials: false }
       - id: capture
         uses: ./.github/actions/capture
@@ -59,25 +60,18 @@ jobs:
     needs: capture
     name: Create preview pull request
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
+    permissions: { contents: write, pull-requests: write }
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with: { ref: master }
       - id: create_pr
         uses: ./.github/actions/capture/create-pr
-        with:
-          ext: "${{ inputs.ext }}"
-          color_scheme: "${{ inputs.color_scheme }}"
+        with: { ext: "${{ inputs.ext }}", color_scheme: "${{ inputs.color_scheme }}" }
       - name: PR summary
-        shell: bash
-        env:
-          PR_URL: ${{ steps.create_pr.outputs.pr-url }}
+        shell: pwsh
+        env: { PR_URL: "${{ steps.create_pr.outputs.pr-url }}" }
         run: |
-          {
-            echo "<h3>Preview pull request</h3>"
-            echo "<ul>"
-            echo "<li>URL: <a href=\"$PR_URL\">$PR_URL</a></li>"
-            echo "</ul>"
-          } >> "$GITHUB_STEP_SUMMARY"
+          @"
+          <h3>Preview pull request</h3>
+          <ul><li>URL: <a href="$env:PR_URL">$env:PR_URL</a></li></ul>
+          "@ | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8

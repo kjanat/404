@@ -1,24 +1,15 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
 name: Code Review
-on:
-  pull_request:
-    types: [opened, synchronize]
-
-permissions:
-  contents: read
-  pull-requests: write
-
-concurrency:
-  group: review-${{ github.event.pull_request.number }}
-  cancel-in-progress: true
+on: { pull_request: { types: [opened, synchronize] } }
+permissions: { contents: read, pull-requests: write }
+concurrency: { group: "review-${{ github.event.pull_request.number }}", cancel-in-progress: true }
 
 jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with: { persist-credentials: false }
-      - uses: kjanat/scheldbot@2b1f9860021737b74abd2480f8a9760fb031e882 # master
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          openai-api-key: ${{ secrets.OPENAI_API_KEY }}
-          intensity: "high"
+      - uses: kjanat/scheldbot@master
+        with: { github-token: "${{ github.token }}", openai-api-key: "${{ secrets.OPENAI_API_KEY }}", intensity: "high" }

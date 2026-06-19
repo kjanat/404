@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
+---
 name: Capture Animation
 description: Capture preview media and upload it as an artifact.
 
@@ -52,10 +54,8 @@ runs:
       run: '"${{ github.action_path }}/scripts/validate-inputs.sh"'
     - name: Setup JS toolchain
       uses: ./.github/actions/setup-node-bun
-      with:
-        install: "true"
-        frozen-lockfile: "true"
-    - uses: FedericoCarboni/setup-ffmpeg@36c6454b5a2348e7794ba2d82a21506605921e3d # v3
+      with: { install: "true", frozen-lockfile: "true" }
+    - uses: FedericoCarboni/setup-ffmpeg@v3
     - name: Install Playwright browser
       shell: bash
       run: bunx playwright install chromium
@@ -69,7 +69,7 @@ runs:
       shell: bash
       run: '"${{ github.action_path }}/scripts/generate-animation.sh"'
     - id: upload
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      uses: actions/upload-artifact@v7
       with:
         name: "preview-${{ inputs.color_scheme }}.${{ inputs.ext }}"
         path: "preview-${{ inputs.color_scheme }}.${{ inputs.ext }}"
