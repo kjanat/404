@@ -34,7 +34,7 @@ jobs:
           VERSION=$(jq -r .version package.json)
           NAME=$(jq -r .name package.json)
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "npm_url=https://www.npmjs.com/package/${NAME}/v/${VERSION}" |& tee -a "$GITHUB_OUTPUT"
+          echo "npm_url=https://npm.im/package/${NAME}/v/${VERSION}" |& tee -a "$GITHUB_OUTPUT"
       - run: bun bd
       # bun publish lacks --provenance; use npm for signed provenance
       - run: bunx npm@latest publish --provenance --access public
