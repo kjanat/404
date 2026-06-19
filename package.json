@@ -7,13 +7,18 @@
 	"license": "SEE LICENSE IN LICENSE",
 	"author": "Kaj Kowalski <info@kajkowalski.nl>",
 	"type": "module",
-	"files": [
-		"dist"
-	],
+	"main": "./index.html",
+	"files": ["/LICENSE", "/README.md", "./favicon.ico", "/index.html", "/package.json"],
 	"imports": {
 		"#404/panel/shaders/*": "./src/panel/shaders/*",
 		"#404/storm/shaders/*": "./src/storm/shaders/*",
 		"#404/*": "./src/*.ts"
+	},
+	"exports": {
+		".": "./index.html",
+		"./index.html": "./index.html",
+		"./favicon.ico": "./favicon.ico",
+		"./package.json": "./package.json"
 	},
 	"scripts": {
 		"bd": "bun --bun run build",
@@ -54,7 +59,8 @@
 		"tailwindcss": "^4.3.1",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.61.1",
-		"vite": "^8.0.16"
+		"vite": "^8.0.16",
+		"vite-plugin-singlefile": "^2.3.3"
 	},
 	"packageManager": "bun@1.3.14",
 	"volta": {

@@ -12,13 +12,13 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 chromium.use(StealthPlugin());
 
-const distHtml = resolve('dist/index.html');
+const distHtml = resolve('index.html');
 
 console.log('Building project...');
 execSync('bun run build', { stdio: 'inherit' });
 
 if (!existsSync(distHtml)) {
-	console.error('Build failed: dist/index.html not found');
+	console.error('Build failed: index.html not found');
 	process.exit(1);
 }
 

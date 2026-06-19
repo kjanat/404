@@ -194,9 +194,9 @@ const resolveTarget = async (browser: Browser): Promise<Page> => {
 		}
 	}
 
-	const htmlPath = resolve('dist/index.html');
+	const htmlPath = resolve('index.html');
 	if (!existsSync(htmlPath)) {
-		console.error('dist/index.html not found — run `bun run build` first.');
+		console.error('index.html not found — run `bun run build` first.');
 		process.exit(1);
 	}
 	const fallback = await browser.newPage({ viewport: { width: WIDTH, height: HEIGHT } });

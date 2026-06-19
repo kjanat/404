@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { preview } from 'vite';
 
-const DIST_HTML = resolve('dist/index.html');
+const DIST_HTML = resolve('index.html');
 const PREVIEW_HOST = '127.0.0.1';
 const PREVIEW_PORT = 4173;
 const TEST_HOST = 'smoke.example';
@@ -28,7 +28,7 @@ console.log('Building project...');
 execSync('bun run build', { stdio: 'inherit' });
 
 if (!existsSync(DIST_HTML)) {
-	throw new Error('Build failed: dist/index.html not found');
+	throw new Error('Build failed: index.html not found');
 }
 
 console.log('Starting preview server...');

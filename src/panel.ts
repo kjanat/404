@@ -27,8 +27,7 @@ const PANEL_PRESS_COOLDOWN_MS = 2400;
  * Use when toggling lock state in {@link initializePanelInteractivity}.
  */
 const PANEL_PRESS_LOCK_CLASS = 'panel-press-locked';
-const PANEL_GLINT_REST_X = 0.5;
-const PANEL_GLINT_REST_Y = 0.5;
+const PANEL_LIGHT_ACTIVE_CLASS = 'panel-light-active';
 
 /**
  * Media query representing user reduced-motion preference.
@@ -89,7 +88,7 @@ export function initializePanelInteractivity(): void {
 	const resetPanelStyle = (): void => {
 		panel.style.setProperty('--panel-tilt-x', '0');
 		panel.style.setProperty('--panel-tilt-y', '0');
-		panelLight?.setGlint(PANEL_GLINT_REST_X, PANEL_GLINT_REST_Y);
+		panel.classList.remove(PANEL_LIGHT_ACTIVE_CLASS);
 		clearPressDepth();
 	};
 
@@ -109,6 +108,7 @@ export function initializePanelInteractivity(): void {
 
 		panel.style.setProperty('--panel-tilt-x', tiltX.toFixed(2));
 		panel.style.setProperty('--panel-tilt-y', tiltY.toFixed(2));
+		panel.classList.add(PANEL_LIGHT_ACTIVE_CLASS);
 		panelLight?.setGlint(x, y);
 	});
 

@@ -198,8 +198,14 @@ body {
 	width: calc(100% + 4px);
 	height: calc(100% + 4px);
 	border-radius: inherit;
+	opacity: 0;
 	pointer-events: none;
 	z-index: 1;
+	transition: opacity 160ms ease;
+}
+
+.panel.panel-light-active .panel-light-canvas {
+	opacity: 1;
 }
 
 /* ── Gear trigger ────────────────────────────────── */

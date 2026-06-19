@@ -1,21 +1,17 @@
 {
 	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true,
-		"defaultBranch": "master"
-	},
-	"files": {
-		"includes": ["**", "!!**/dist", "!!**/node_modules"]
-	},
-	"formatter": {
-		"enabled": false,
-		"indentStyle": "tab"
-	},
+	"vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true, "defaultBranch": "master" },
+	"files": { "includes": ["**", "!!**/dist", "!!index.html", "!!**/node_modules"] },
+	"formatter": { "enabled": false, "indentStyle": "tab" },
 	"linter": {
 		"enabled": true,
-		"rules": { "recommended": true },
+		"rules": {
+			"a11y": { "recommended": true },
+			"performance": { "recommended": true },
+			"correctness": { "recommended": true },
+			"suspicious": { "recommended": true },
+			"style": { "recommended": true }
+		},
 		"domains": {
 			"project": "recommended",
 			"tailwind": "recommended",

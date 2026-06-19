@@ -172,13 +172,13 @@ function renderBlurb(
  * Populate host-dependent copy and title for the 404 page.
  *
  * Uses `?host=` override when present, else falls back to `window.location.hostname`.
+ * File/package previews have no hostname, so copy falls back to a generic host label.
  */
 export function initializePage(): void {
 	const rawHostParam = new URLSearchParams(window.location.search).get('host');
-	const host = rawHostParam && rawHostParam.trim().length > 0
-		? rawHostParam.trim()
-		: window.location.hostname;
-	if (!host) return;
+	const hostFromParam = rawHostParam?.trim() ?? '';
+	const actualHost = hostFromParam.length > 0 ? hostFromParam : window.location.hostname;
+	const copyHost = actualHost.length > 0 ? actualHost : 'this host';
 
 	const headlineTarget = document.querySelector<HTMLElement>('[data-headline]');
 	if (headlineTarget) {
@@ -189,13 +189,15 @@ export function initializePage(): void {
 	if (blurbTarget) {
 		const hostSpan = document.createElement('span');
 		hostSpan.className = 'font-bold break-all text-accent-2';
-		hostSpan.textContent = host;
+		hostSpan.textContent = copyHost;
 		renderBlurb(blurbTarget, parseTemplate(pickRandom(BLURBS)), hostSpan);
 	}
 
 	for (const target of document.querySelectorAll<HTMLElement>('[data-host]')) {
-		target.textContent = host;
+		target.textContent = copyHost;
 	}
 
-	document.title = `404 | ${host}`;
+	if (actualHost.length > 0) {
+		document.title = `404 | ${actualHost}`;
+	}
 }
