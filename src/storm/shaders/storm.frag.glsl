@@ -86,10 +86,16 @@ void main() {
 	float cellNoise = fbm(topUv * vec2(3.4, 2.2) + vec2(9.0, time * 0.03));
 	float stormCell = smoothstep(0.28, 0.95, cellNoise + cloudMass * 0.4);
 	float cloudCore = smoothstep(0.58, 0.96, cloudMass);
+	float cloudCoreDrift = smoothstep(
+		0.28,
+		0.82,
+		fbm(topUv * vec2(2.8, 1.15) + vec2(-time * 0.045, time * 0.012))
+	);
+	float cloudCoreShadow = cloudCore * mix(0.72, 1.22, cloudCoreDrift);
 	float dim = clamp(uRegionDim, 0.0, 1.0);
 
 	color = mix(color, cloudTint, cloudMass * (uTheme == 1 ? 0.22 : 0.54));
-	color = mix(color, cloudTint * 0.72, cloudCore * (uTheme == 1 ? 0.2 : 0.0));
+	color = mix(color, cloudTint * 0.66, cloudCoreShadow * (uTheme == 1 ? 0.24 : 0.0));
 	color += cloudHighlight * cloudMass * (1.0 - stormCell * 0.35) * (uTheme == 1 ? 0.0 : 0.08);
 	color *= 1.0 - dim * stormCell * (uTheme == 1 ? 0.42 : 0.48);
 
