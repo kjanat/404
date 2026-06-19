@@ -1,8 +1,9 @@
-node_modules/
-.capture-frames/
-.bench/
-dist
-tooltip-validation.png
 *.zip
+.bench/
 .capture-frames*/
+.capture-frames/
+/index.html
+dist
+node_modules/
 test-results/
+tooltip-validation.png

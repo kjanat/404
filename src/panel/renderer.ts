@@ -97,8 +97,8 @@ export class PanelLightRenderer {
 	private gl: WebGL2RenderingContext | null = null;
 	private program: WebGLProgram | null = null;
 	private uniforms: UniformLocations | null = null;
-	private glintX = 0.2;
-	private glintY = 0;
+	private glintX = 0.5;
+	private glintY = 0.5;
 	private width = 0;
 	private height = 0;
 	private dpr = 1;
