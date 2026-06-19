@@ -27,7 +27,7 @@ max_bytes="$(
 	exit 1
 }
 
-# Start a local preview server from the freshly built dist/ so captures
+# Start a local preview server from the freshly built root output so captures
 # always reflect the current commit (immune to CDN/edge-cache staleness).
 bunx vite preview --port 4174 &
 LOCAL_PID=$!

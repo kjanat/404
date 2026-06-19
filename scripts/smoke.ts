@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 import { chromium } from 'playwright';
 import { preview } from 'vite';
 
-const DIST_HTML = resolve('index.html');
+const BUILD_HTML = resolve('index.html');
 const PREVIEW_HOST = '127.0.0.1';
 const PREVIEW_PORT = 4173;
 const TEST_HOST = 'smoke.example';
@@ -27,7 +27,7 @@ function assert(condition: boolean, message: string): void {
 console.log('Building project...');
 execSync('bun run build', { stdio: 'inherit' });
 
-if (!existsSync(DIST_HTML)) {
+if (!existsSync(BUILD_HTML)) {
 	throw new Error('Build failed: index.html not found');
 }
 

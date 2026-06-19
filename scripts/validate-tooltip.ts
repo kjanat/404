@@ -12,12 +12,12 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 chromium.use(StealthPlugin());
 
-const distHtml = resolve('index.html');
+const buildHtml = resolve('index.html');
 
 console.log('Building project...');
 execSync('bun run build', { stdio: 'inherit' });
 
-if (!existsSync(distHtml)) {
+if (!existsSync(buildHtml)) {
 	console.error('Build failed: index.html not found');
 	process.exit(1);
 }
@@ -28,7 +28,7 @@ const browser = await chromium.launch({
 
 try {
 	const page = await browser.newPage({ viewport: { width: 1152, height: 648 } });
-	await page.goto(`file://${distHtml}`, { waitUntil: 'domcontentloaded' });
+	await page.goto(`file://${buildHtml}`, { waitUntil: 'domcontentloaded' });
 	await page.waitForTimeout(500);
 
 	// Hover over the "Edge" word to trigger the tooltip
