@@ -19,7 +19,7 @@ jobs:
     permissions: { pull-requests: write }
     steps:
       - name: Post or update pending status
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: { contents: read }
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/capture
         with:
           color_scheme: ${{ matrix.color_scheme }}
@@ -75,13 +75,13 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/download-artifact@v8
         with:
           pattern: "preview-*"
           merge-multiple: true
       - name: Push to preview branch and update comment
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
@@ -154,7 +154,7 @@ jobs:
       contents: write
     steps:
       - name: Delete preview branch
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { owner, repo } = context.repo;
