@@ -28,9 +28,9 @@ test('theme option click writes preference once', async ({ page }) => {
 		};
 
 		try {
-			const lightOption = document.querySelector<HTMLButtonElement>('[data-theme-option="light"]');
+			const lightOption = document.querySelector<HTMLInputElement>('[data-theme-option="light"]');
 			if (lightOption === null) {
-				throw new Error('Missing light theme option button');
+				throw new Error('Missing light theme option input');
 			}
 
 			lightOption.click();
@@ -43,9 +43,9 @@ test('theme option click writes preference once', async ({ page }) => {
 	expect(setCalls).toBe(1);
 	await expect(html).toHaveAttribute('data-theme', 'light');
 	await expect(html).toHaveAttribute('data-theme-preference', 'light');
-	await expect(lightOption).toHaveAttribute('aria-checked', 'true');
-	await expect(darkOption).toHaveAttribute('aria-checked', 'false');
-	await expect(systemOption).toHaveAttribute('aria-checked', 'false');
+	await expect(lightOption).toBeChecked();
+	await expect(darkOption).not.toBeChecked();
+	await expect(systemOption).not.toBeChecked();
 });
 
 test('theme hotkey ignores repeat and contentEditable targets', async ({ page }) => {
@@ -142,22 +142,22 @@ test('theme radiogroup arrow keys update selection, roving tabindex, and escape'
 	await page.keyboard.press('t');
 	await expect(drawer).toBeVisible();
 
-	await expect(systemOption).toHaveAttribute('aria-checked', 'true');
+	await expect(systemOption).toBeChecked();
 	await expect(systemOption).toHaveAttribute('tabindex', '0');
 
 	await systemOption.focus();
 	await page.keyboard.press('ArrowRight');
-	await expect(darkOption).toHaveAttribute('aria-checked', 'true');
-	await expect(systemOption).toHaveAttribute('aria-checked', 'false');
+	await expect(darkOption).toBeChecked();
+	await expect(systemOption).not.toBeChecked();
 	await expect(darkOption).toHaveAttribute('tabindex', '0');
 	await expect(systemOption).toHaveAttribute('tabindex', '-1');
 	await expect(darkOption).toBeFocused();
 
-	// Wrap-around nav check: control order systemOption -> darkOption -> lightOption, so ArrowLeft from systemOption should wrap to lightOption; assertions verify aria-checked, tabindex, and focus.
+	// Wrap-around nav check: control order systemOption -> darkOption -> lightOption, so ArrowLeft from systemOption should wrap to lightOption; assertions verify checked state, tabindex, and focus.
 	await systemOption.focus();
 	await page.keyboard.press('ArrowLeft');
-	await expect(lightOption).toHaveAttribute('aria-checked', 'true');
-	await expect(darkOption).toHaveAttribute('aria-checked', 'false');
+	await expect(lightOption).toBeChecked();
+	await expect(darkOption).not.toBeChecked();
 	await expect(lightOption).toHaveAttribute('tabindex', '0');
 	await expect(darkOption).toHaveAttribute('tabindex', '-1');
 	await expect(lightOption).toBeFocused();

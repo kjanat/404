@@ -504,6 +504,7 @@ body::after {
 	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 6px;
 	padding: 4px;
+	margin: 0;
 	width: 100%;
 	min-width: 0;
 	border: 1px solid var(--theme-switch-border);
@@ -514,6 +515,10 @@ body::after {
 }
 
 .theme-option {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	appearance: none;
 	border: 0;
 	border-radius: 999px;
@@ -530,12 +535,27 @@ body::after {
 	transition: transform 180ms ease, color 180ms ease, background 220ms ease, box-shadow 220ms ease;
 }
 
+.theme-option__input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.theme-option__label {
+	position: relative;
+	pointer-events: none;
+}
+
 .theme-option:hover {
 	color: var(--theme-text);
 	transform: translateY(-1px);
 }
 
-.theme-option[aria-checked="true"] {
+.theme-option:has(.theme-option__input:checked) {
 	color: var(--theme-switch-active-text);
 	background: var(--theme-switch-active-bg);
 	box-shadow: var(--theme-switch-active-shadow);
@@ -573,7 +593,7 @@ body.page-ready [data-reveal="4"] {
 }
 
 .theme-trigger:focus-visible,
-.theme-option:focus-visible,
+.theme-option:has(.theme-option__input:focus-visible),
 .edge-word:focus-visible {
 	outline: 2px solid var(--theme-focus-ring);
 	outline-offset: 3px;
@@ -618,6 +638,13 @@ body.page-ready [data-reveal="4"] {
 
 .edge-word {
 	position: relative;
+	display: inline;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	font: inherit;
 	cursor: help;
 	text-decoration: underline;
 	text-decoration-color: var(--theme-underline);

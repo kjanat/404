@@ -26,11 +26,13 @@
 					height="28"
 				>
 				<p class="kicker">
-					KajKowalski <span
+					KajKowalski <button
 						class="edge-word"
-						tabindex="0"
+						type="button"
 						data-tip="I'm edging so hard right now!"
-					>Edge</span>
+					>
+						Edge
+					</button>
 				</p>
 			</div>
 			<h1 data-reveal="2" data-headline>404 — This host is not configured</h1>
@@ -62,17 +64,39 @@
 			</button>
 			<div class="theme-drawer" id="theme-drawer" data-theme-drawer hidden>
 				<span class="theme-dock__label">Scene mode</span>
-				<div class="theme-switch" data-theme-switch role="radiogroup" aria-label="Theme mode">
-					<button class="theme-option" type="button" role="radio" data-theme-option="system" aria-checked="true">
-						auto
-					</button>
-					<button class="theme-option" type="button" role="radio" data-theme-option="dark" aria-checked="false">
-						dark
-					</button>
-					<button class="theme-option" type="button" role="radio" data-theme-option="light" aria-checked="false">
-						light
-					</button>
-				</div>
+				<fieldset class="theme-switch" data-theme-switch aria-label="Theme mode">
+					<label class="theme-option">
+						<input
+							class="theme-option__input"
+							type="radio"
+							name="theme-preference"
+							value="system"
+							data-theme-option="system"
+							checked
+						>
+						<span class="theme-option__label">auto</span>
+					</label>
+					<label class="theme-option">
+						<input
+							class="theme-option__input"
+							type="radio"
+							name="theme-preference"
+							value="dark"
+							data-theme-option="dark"
+						>
+						<span class="theme-option__label">dark</span>
+					</label>
+					<label class="theme-option">
+						<input
+							class="theme-option__input"
+							type="radio"
+							name="theme-preference"
+							value="light"
+							data-theme-option="light"
+						>
+						<span class="theme-option__label">light</span>
+					</label>
+				</fieldset>
 			</div>
 		</main>
 	</body>

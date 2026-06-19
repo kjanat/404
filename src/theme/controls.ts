@@ -21,35 +21,35 @@ let themeControlsInitialized = false;
 let disposeThemeControls: (() => void) | null = null;
 
 function updateThemeSwitch(
-	options: readonly HTMLButtonElement[],
+	options: readonly HTMLInputElement[],
 	preference: ThemePreference,
 	resolvedTheme: ThemeName,
 ): void {
-	for (const optionButton of options) {
-		const option = parseThemeOption(optionButton.dataset.themeOption);
+	for (const optionInput of options) {
+		const option = parseThemeOption(optionInput.dataset.themeOption);
 		if (option === null) continue;
 
 		const isSelected = option === preference;
-		optionButton.setAttribute('aria-checked', String(isSelected));
-		optionButton.tabIndex = isSelected ? 0 : -1;
+		optionInput.checked = isSelected;
+		optionInput.tabIndex = isSelected ? 0 : -1;
 
 		if (option === 'system') {
 			const autoLabel = `Auto (${resolvedTheme})`;
-			optionButton.setAttribute('aria-label', autoLabel);
-			optionButton.setAttribute('title', autoLabel);
+			optionInput.setAttribute('aria-label', autoLabel);
+			optionInput.setAttribute('title', autoLabel);
 			continue;
 		}
 
 		const themeLabel = `${option} theme`;
-		optionButton.setAttribute('aria-label', themeLabel);
-		optionButton.setAttribute('title', themeLabel);
+		optionInput.setAttribute('aria-label', themeLabel);
+		optionInput.setAttribute('title', themeLabel);
 	}
 }
 
 function applyTheme(
 	theme: ThemeName,
 	preference: ThemePreference,
-	options: readonly HTMLButtonElement[],
+	options: readonly HTMLInputElement[],
 	animate: boolean,
 ): void {
 	const commit = (): void => {
@@ -82,13 +82,13 @@ export function initializeThemeControls(): void {
 	}
 
 	const cleanup: (() => void)[] = [];
-	const validOptions = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-theme-option]')).flatMap(
-		(optionButton) => {
-			const option = parseThemeOption(optionButton.dataset.themeOption);
-			return option === null ? [] : [{ optionButton, option }];
+	const validOptions = Array.from(document.querySelectorAll<HTMLInputElement>('[data-theme-option]')).flatMap(
+		(optionInput) => {
+			const option = parseThemeOption(optionInput.dataset.themeOption);
+			return option === null ? [] : [{ optionInput, option }];
 		},
 	);
-	const optionButtons = validOptions.map(({ optionButton }) => optionButton);
+	const optionInputs = validOptions.map(({ optionInput }) => optionInput);
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
 	const themeDockToggle = document.querySelector<HTMLButtonElement>('[data-theme-dock-toggle]');
 	const themeDrawer = document.querySelector<HTMLElement>('[data-theme-drawer]');
@@ -115,7 +115,7 @@ export function initializeThemeControls(): void {
 
 	const syncTheme = (animate: boolean): void => {
 		const resolvedTheme = resolveTheme(preference);
-		applyTheme(resolvedTheme, preference, optionButtons, animate);
+		applyTheme(resolvedTheme, preference, optionInputs, animate);
 	};
 
 	if (!themeOverride.hasParam) {
@@ -151,7 +151,7 @@ export function initializeThemeControls(): void {
 				setThemeDrawerOpen(!isOpen);
 
 				if (!isOpen && themeDrawer) {
-					const checked = themeDrawer.querySelector<HTMLButtonElement>('[aria-checked="true"]');
+					const checked = themeDrawer.querySelector<HTMLInputElement>('[data-theme-option]:checked');
 					if (checked) checked.focus();
 				} else if (themeDockToggle) {
 					themeDockToggle.focus();
@@ -179,20 +179,20 @@ export function initializeThemeControls(): void {
 			document.removeEventListener('click', onDocumentClick);
 		});
 
-		for (const { optionButton, option } of validOptions) {
-			const onOptionClick = (): void => {
+		for (const { optionInput, option } of validOptions) {
+			const onOptionChange = (): void => {
 				preference = option;
 				writeThemePreference(preference);
 				syncTheme(true);
 			};
-			optionButton.addEventListener('click', onOptionClick);
+			optionInput.addEventListener('change', onOptionChange);
 			cleanup.push((): void => {
-				optionButton.removeEventListener('click', onOptionClick);
+				optionInput.removeEventListener('change', onOptionChange);
 			});
 		}
 	}
 
-	if (!themeOverride.hasParam && switchRoot && optionButtons.length > 0) {
+	if (!themeOverride.hasParam && switchRoot && optionInputs.length > 0) {
 		const onSwitchRootKeydown = (event: KeyboardEvent): void => {
 			if (event.key === 'Escape') {
 				setThemeDrawerOpen(false);
@@ -213,11 +213,11 @@ export function initializeThemeControls(): void {
 
 			event.preventDefault();
 
-			let currentIndex = document.activeElement instanceof HTMLButtonElement
-				? optionButtons.indexOf(document.activeElement)
+			let currentIndex = document.activeElement instanceof HTMLInputElement
+				? optionInputs.indexOf(document.activeElement)
 				: -1;
 			if (currentIndex < 0) {
-				currentIndex = optionButtons.findIndex((optionButton) => optionButton.getAttribute('aria-checked') === 'true');
+				currentIndex = optionInputs.findIndex((optionInput) => optionInput.checked);
 			}
 			if (currentIndex < 0) {
 				currentIndex = 0;
@@ -226,11 +226,11 @@ export function initializeThemeControls(): void {
 			let nextIndex = currentIndex;
 
 			if (event.key === 'ArrowRight') {
-				nextIndex = (currentIndex + 1) % optionButtons.length;
+				nextIndex = (currentIndex + 1) % optionInputs.length;
 			}
 
 			if (event.key === 'ArrowLeft') {
-				nextIndex = (currentIndex + optionButtons.length - 1) % optionButtons.length;
+				nextIndex = (currentIndex + optionInputs.length - 1) % optionInputs.length;
 			}
 
 			if (event.key === 'Home') {
@@ -238,10 +238,10 @@ export function initializeThemeControls(): void {
 			}
 
 			if (event.key === 'End') {
-				nextIndex = optionButtons.length - 1;
+				nextIndex = optionInputs.length - 1;
 			}
 
-			const nextOption = optionButtons[nextIndex];
+			const nextOption = optionInputs[nextIndex];
 			if (!nextOption) return;
 
 			nextOption.focus();
