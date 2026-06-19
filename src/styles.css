@@ -142,6 +142,18 @@ body {
 	font-family: var(--font-body);
 }
 
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
 .storm-canvas {
 	position: fixed;
 	inset: 0;
@@ -357,7 +369,21 @@ body {
 
 .theme-option__label {
 	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.36em;
 	pointer-events: none;
+}
+
+.theme-option__label::before {
+	content: "";
+	width: 0.46em;
+	height: 0.46em;
+	border-radius: 999px;
+	background: currentColor;
+	opacity: 0;
+	transform: scale(0.55);
+	transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .theme-option:hover {
@@ -368,8 +394,15 @@ body {
 .theme-option:has(.theme-option__input:checked) {
 	color: var(--theme-switch-active-text);
 	background: var(--theme-switch-active-bg);
-	box-shadow: var(--theme-switch-active-shadow);
+	box-shadow:
+		var(--theme-switch-active-shadow),
+		inset 0 0 0 1px color-mix(in oklch, currentColor 28%, transparent);
 	transform: translateY(-1px);
+}
+
+.theme-option:has(.theme-option__input:checked) .theme-option__label::before {
+	opacity: 1;
+	transform: scale(1);
 }
 
 .theme-option:active {
@@ -744,19 +777,4 @@ body.calm-mode.page-ready [data-reveal] {
 :root[data-theme-locked="true"] .theme-trigger,
 :root[data-theme-locked="true"] .theme-drawer {
 	display: none;
-}
-
-.theme-option__input:checked ~ .theme-option__label {
-	color: oklch(0.18 0.02 260);
-}
-
-.theme-option:has(.theme-option__input:checked) {
-	background: oklch(0.93 0.02 255);
-	border-radius: 999px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
-}
-
-.theme-option__input:focus-visible ~ .theme-option__label {
-	outline: 2px solid oklch(0.75 0.14 250);
-	outline-offset: 2px;
 }
