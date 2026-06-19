@@ -63,7 +63,8 @@ void main() {
 
 	vec3 skyTop = uTheme == 1 ? vec3(0.78, 0.85, 0.94) : vec3(0.025, 0.035, 0.08);
 	vec3 skyBottom = uTheme == 1 ? vec3(0.94, 0.96, 0.985) : vec3(0.08, 0.095, 0.16);
-	vec3 cloudTint = uTheme == 1 ? vec3(0.32, 0.39, 0.52) : vec3(0.42, 0.52, 0.72);
+	vec3 cloudTint = uTheme == 1 ? vec3(0.32, 0.39, 0.52) : vec3(0.56, 0.66, 0.9);
+	vec3 cloudHighlight = uTheme == 1 ? vec3(0.18, 0.24, 0.34) : vec3(0.62, 0.74, 1.0);
 	vec3 boltCore = uTheme == 1 ? vec3(0.08, 0.22, 0.58) : vec3(0.95, 0.98, 1.0);
 	vec3 boltGlow = uTheme == 1 ? vec3(0.16, 0.44, 0.82) : vec3(0.35, 0.68, 1.0);
 	vec3 auraA = uTheme == 1 ? vec3(0.12, 0.25, 0.46) : vec3(0.08, 0.23, 0.34);
@@ -84,10 +85,13 @@ void main() {
 	float cloudMass = smoothstep(0.38, 0.82, cloud * 0.72 + detail * 0.36 + shelf * 0.18);
 	float cellNoise = fbm(topUv * vec2(3.4, 2.2) + vec2(9.0, time * 0.03));
 	float stormCell = smoothstep(0.28, 0.95, cellNoise + cloudMass * 0.4);
+	float cloudCore = smoothstep(0.58, 0.96, cloudMass);
 	float dim = clamp(uRegionDim, 0.0, 1.0);
 
-	color = mix(color, cloudTint, cloudMass * (uTheme == 1 ? 0.22 : 0.34));
-	color *= 1.0 - dim * stormCell * (uTheme == 1 ? 0.42 : 0.62);
+	color = mix(color, cloudTint, cloudMass * (uTheme == 1 ? 0.22 : 0.54));
+	color = mix(color, cloudTint * 0.72, cloudCore * (uTheme == 1 ? 0.2 : 0.0));
+	color += cloudHighlight * cloudMass * (1.0 - stormCell * 0.35) * (uTheme == 1 ? 0.0 : 0.08);
+	color *= 1.0 - dim * stormCell * (uTheme == 1 ? 0.42 : 0.48);
 
 	float vignette = smoothstep(0.82, 0.18, distance(topUv, vec2(0.5, 0.5)));
 	color *= mix(0.72, 1.08, vignette);
