@@ -8,6 +8,36 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.2] - 2026-06-19
+
+### Added
+
+- Add WebKit-specific storm render-quality heuristics that reduce internal
+  canvas resolution and cap storm animation frame rate on Safari/WebKitGTK.
+- Upload the built root `index.html` from the lint workflow as a short-lived CI
+  artifact for easier release/debug inspection.
+
+### Changed
+
+- Reduce WebKit storm shader cost by compiling a lower-quality fragment shader
+  variant while keeping non-WebKit rendering at full quality.
+- Update GitHub Actions workflows and composite actions with schema headers,
+  newer action versions, runner-based install/build steps, and compact YAML
+  formatting.
+- Deploy GitHub Pages from the built root `index.html` and `favicon.ico`
+  artifact instead of the previous `dist/` directory.
+
+### Fixed
+
+- Replace the storm cloud float hash with an integer hash so mobile GPUs no
+  longer quantize procedural noise into visible cloud facets.
+- Pause the storm render loop while the page is hidden to reduce background CPU,
+  GPU, and battery use.
+- Skip large lightning uniform uploads during quiet frames and upload only the
+  active bolt segment slice during flashes.
+- Keep smoke and tooltip validation scripts aligned with the root build output
+  path.
+
 ## [2.2.1] - 2026-06-19
 
 ### Changed
@@ -261,7 +291,8 @@ and this project adheres to
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.2.2...HEAD
+[2.2.2]: https://github.com/kjanat/404/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/kjanat/404/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/kjanat/404/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/kjanat/404/compare/v2.1.0...v2.1.1
