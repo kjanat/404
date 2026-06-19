@@ -745,3 +745,18 @@ body.calm-mode.page-ready [data-reveal] {
 :root[data-theme-locked="true"] .theme-drawer {
 	display: none;
 }
+
+.theme-option__input:checked ~ .theme-option__label {
+	color: oklch(0.18 0.02 260);
+}
+
+.theme-option:has(.theme-option__input:checked) {
+	background: oklch(0.93 0.02 255);
+	border-radius: 999px;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+.theme-option__input:focus-visible ~ .theme-option__label {
+	outline: 2px solid oklch(0.75 0.14 250);
+	outline-offset: 2px;
+}
