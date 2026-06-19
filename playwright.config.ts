@@ -47,7 +47,7 @@ const canRunWebKit = process.platform !== 'linux'
 export default defineConfig({
 	testDir: './e2e',
 	fullyParallel: true,
-	workers: process.env.CI ? 2 : undefined,
+	workers: 2,
 	timeout: 30_000,
 	use: {
 		baseURL: PLAYWRIGHT_SERVER_URL.origin,

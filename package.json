@@ -1,6 +1,6 @@
 {
 	"name": "@kjanat/404-page",
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"description": "Custom 404 error page for KajKowalski Edge.",
 	"homepage": "https://404.kjanat.com",
 	"repository": {
@@ -13,6 +13,10 @@
 	"files": [
 		"dist"
 	],
+	"imports": {
+		"#404/storm/shaders/*": "./src/storm/shaders/*",
+		"#404/*": "./src/*.ts"
+	},
 	"scripts": {
 		"bd": "bun --bun run build",
 		"build": "vite build",
@@ -20,7 +24,7 @@
 		"dev": "vite",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
-		"lint": "bun lint:biome && bun lint:eslint",
+		"lint": "run -p lint:biome lint:eslint",
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",
 		"smoke": "bun scripts/smoke.ts",
@@ -49,6 +53,7 @@
 		"playwright": "^1.58.2",
 		"playwright-extra": "^4.3.6",
 		"puppeteer-extra-plugin-stealth": "^2.11.2",
+		"runner-run": "^0.13.1",
 		"tailwindcss": "^4.2.1",
 		"typescript": "^5.9.3",
 		"typescript-eslint": "^8.56.1",

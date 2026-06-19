@@ -10,7 +10,6 @@
 	--color-accent: oklch(0.766 0.147 237);
 	--color-accent-2: oklch(0.822 0.156 160);
 	--color-border: oklch(0.756 0.054 259 / 0.3);
-	/* Custom properties driven by JS: --flash, --region-dim */
 }
 
 :root {
@@ -66,8 +65,6 @@
 
 	--theme-panel-shadow: 0 24px 60px rgb(0 0 0 / 0.38), 0 0 0 1px rgb(255 255 255 / 0.04);
 	--theme-panel-shadow-calm: 0 18px 36px rgb(0 0 0 / 0.28);
-	--theme-panel-flash: oklch(0.882 0.075 233 / calc(var(--flash, 0) * 0.3));
-	--theme-panel-flash-border: oklch(0.882 0.075 233 / 0.6);
 	--theme-panel-glint: oklch(0.94 0.04 246 / 0.18);
 	--theme-panel-sheen-a: oklch(0.882 0.075 233 / 0.85);
 	--theme-panel-sheen-a-clear: oklch(0.882 0.075 233 / 0);
@@ -82,9 +79,6 @@
 	--theme-tip-border: oklch(0.756 0.054 259 / 0.45);
 	--theme-tip-shadow: 0 12px 26px rgb(0 0 0 / 0.35);
 	--theme-tip-glow: 0 14px 30px oklch(0.766 0.147 237 / 0.28);
-
-	--theme-title-glow-a: oklch(0.921 0.047 237 / var(--flash, 0));
-	--theme-title-glow-b: oklch(0.834 0.098 241 / calc(var(--flash, 0) * 0.5));
 
 	--theme-matte-edge: rgb(0 0 0 / 0.72);
 	--theme-vignette: rgb(0 0 0 / 0.36);
@@ -154,8 +148,6 @@
 
 	--theme-panel-shadow: 0 20px 50px rgb(0 0 0 / 0.12), 0 0 0 1px oklch(0.493 0.062 258 / 0.06);
 	--theme-panel-shadow-calm: 0 18px 36px rgb(0 0 0 / 0.06);
-	--theme-panel-flash: oklch(0.571 0.144 248 / calc(var(--flash, 0) * 0.18));
-	--theme-panel-flash-border: oklch(0.571 0.144 248 / 0.5);
 	--theme-panel-glint: rgb(255 255 255 / 0.4);
 	--theme-panel-sheen-a: oklch(0.571 0.144 248 / 0.35);
 	--theme-panel-sheen-a-clear: oklch(0.571 0.144 248 / 0);
@@ -170,9 +162,6 @@
 	--theme-tip-border: var(--color-border--light);
 	--theme-tip-shadow: 0 12px 26px rgb(0 0 0 / 0.1);
 	--theme-tip-glow: 0 14px 30px oklch(0.571 0.144 248 / 0.15);
-
-	--theme-title-glow-a: oklch(0.571 0.144 248 / var(--flash, 0));
-	--theme-title-glow-b: oklch(0.493 0.12 254 / calc(var(--flash, 0) * 0.4));
 
 	--theme-matte-edge: rgb(41 51 72 / 0.18);
 	--theme-vignette: rgb(35 45 65 / 0.09);
@@ -268,7 +257,7 @@ body::before {
 	),
 		var(--theme-flash-wash);
 	mix-blend-mode: var(--theme-flash-blend);
-	opacity: var(--flash, 0);
+	opacity: 0.08;
 	z-index: 0;
 }
 
@@ -322,51 +311,16 @@ body::after {
 	transform: rotate(180deg);
 }
 
-.storm-regions {
+.storm-canvas {
 	position: fixed;
-	inset: -14%;
-	pointer-events: none;
-	z-index: 1;
-	background: var(
-		--cloud-bg,
-		/* no-JS fallback */ radial-gradient(ellipse 45% 35% at 16% 22%, rgb(0 0 0 / 0.7), transparent 55%),
-		radial-gradient(ellipse 42% 32% at 82% 24%, rgb(0 0 0 / 0.65), transparent 55%),
-		radial-gradient(ellipse 48% 38% at 58% 78%, rgb(0 0 0 / 0.75), transparent 52%)
-	);
-	mix-blend-mode: multiply;
-	filter: url("#cloud-tex");
-	opacity: calc(
-		var(--region-dim, 0.5) * var(--theme-region-strength) + var(--flash, 0) * var(--theme-region-flash-boost, 0)
-	);
-}
-
-.storm-streaks {
-	position: fixed;
-	inset: -16%;
-	pointer-events: none;
-	z-index: 1;
-	mix-blend-mode: var(--theme-streak-blend);
-}
-
-.storm-streak {
-	position: absolute;
-	width: 14px;
-	height: 78vh;
-	opacity: 0;
-	filter: var(--theme-streak-shadow);
-}
-
-.storm-streak::before {
-	content: "";
-	position: absolute;
 	inset: 0;
-	background: linear-gradient(
-		to bottom,
-		var(--theme-streak-top) 0%,
-		var(--theme-streak-mid) 50%,
-		var(--theme-streak-bottom) 100%
-	);
-	clip-path: var(--bolt-clip);
+	display: block;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	z-index: 1;
+	opacity: 1;
+	transition: opacity 180ms ease;
 }
 
 .panel {
@@ -376,14 +330,7 @@ body::after {
 	border-radius: 20px;
 	background: var(--theme-card);
 	backdrop-filter: blur(6px);
-	box-shadow:
-		var(--theme-panel-shadow),
-		0 0 calc(var(--flash, 0) * 60px) var(--theme-panel-flash);
-	border-color: color-mix(
-		in oklch,
-		var(--theme-border) calc(100% - var(--flash, 0) * 100%),
-		var(--theme-panel-flash-border) calc(var(--flash, 0) * 100%)
-	);
+	box-shadow: var(--theme-panel-shadow);
 	position: relative;
 	isolation: isolate;
 	z-index: 2;
@@ -447,7 +394,7 @@ body::after {
 		var(--theme-panel-sheen-b-clear) 68%
 	);
 	mix-blend-mode: var(--theme-panel-sheen-blend);
-	opacity: var(--flash, 0);
+	opacity: 0.18;
 	z-index: 2;
 }
 
@@ -667,7 +614,6 @@ body.page-ready [data-reveal="4"] {
 	border-radius: 999px;
 	box-shadow: 0 0 0 1px var(--theme-icon-ring), var(--theme-icon-shadow);
 	user-select: none;
-	filter: brightness(calc(1 + var(--flash, 0) * 0.6));
 }
 
 .edge-word {
@@ -741,9 +687,6 @@ h1 {
 	font-family: var(--font-display);
 	letter-spacing: 0.02em;
 	overflow-wrap: anywhere;
-	text-shadow:
-		0 0 calc(var(--flash, 0) * 18px) var(--theme-title-glow-a),
-		0 0 calc(var(--flash, 0) * 40px) var(--theme-title-glow-b);
 }
 
 p {
@@ -925,18 +868,13 @@ p {
 		filter: none;
 	}
 
-	/*
-	 * Flash-driven elements: StormEngine is stopped via JS when reduced-motion
-	 * is detected, but we also hardcode neutral fallbacks here as defense-in-depth.
-	 */
-	.storm-streak {
+	.storm-canvas {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		opacity: 0 !important;
-	}
-
-	body::before {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		opacity: 0.06 !important;
+		visibility: hidden !important;
+		/* biome-ignore lint/complexity/noImportantStyles: a11y */
+		transition: none !important;
 	}
 
 	body::after {
@@ -944,9 +882,9 @@ p {
 		opacity: 0.15 !important;
 	}
 
-	.storm-regions {
+	body::before {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		opacity: 0.16 !important;
+		opacity: 0.06 !important;
 	}
 
 	.panel {
@@ -957,16 +895,6 @@ p {
 	.panel::after {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		opacity: 0 !important;
-	}
-
-	h1 {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		text-shadow: none !important;
-	}
-
-	.edge-icon {
-		/* biome-ignore lint/complexity/noImportantStyles: a11y */
-		filter: none !important;
 	}
 
 	::view-transition-old(root),
@@ -983,13 +911,13 @@ body.calm-mode .edge-word::after {
 	animation: none !important;
 }
 
-/*
- * Flash-driven elements: StormEngine.stop() is called in JS for calm-mode,
- * which resets all custom properties to neutral. These rules are defense-in-depth.
- */
-body.calm-mode .storm-streak {
+body.calm-mode .storm-canvas {
 	/* biome-ignore lint/complexity/noImportantStyles: a11y */
 	opacity: 0 !important;
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	visibility: hidden !important;
+	/* biome-ignore lint/complexity/noImportantStyles: a11y */
+	transition: none !important;
 }
 
 body.calm-mode::before {
@@ -1002,11 +930,6 @@ body.calm-mode::after {
 	opacity: 0.15 !important;
 }
 
-body.calm-mode .storm-regions {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	opacity: 0.16 !important;
-}
-
 body.calm-mode .panel {
 	border-color: color-mix(in oklch, var(--theme-border) 86%, transparent);
 	box-shadow: var(--theme-panel-shadow-calm);
@@ -1015,16 +938,6 @@ body.calm-mode .panel {
 body.calm-mode .panel::after {
 	/* biome-ignore lint/complexity/noImportantStyles: a11y */
 	opacity: 0 !important;
-}
-
-body.calm-mode h1 {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	text-shadow: none !important;
-}
-
-body.calm-mode .edge-icon {
-	/* biome-ignore lint/complexity/noImportantStyles: a11y */
-	filter: none !important;
 }
 
 body.calm-mode.page-ready .panel,

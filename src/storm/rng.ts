@@ -1,4 +1,4 @@
-import type { Range } from './types.ts';
+import type { Range } from '#404/storm/types';
 
 function resolveRange(minOrRange: number | Range, maybeMax: number | undefined): Range {
 	if (typeof minOrRange === 'number') {

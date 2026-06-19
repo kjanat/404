@@ -70,6 +70,5 @@
 /*
  * All flash-driven keyframes (lightning-flash, panel-flicker,
  * panel-afterglow, icon-blink, title-flicker, region-dim) have been removed.
- * They are now driven procedurally by StormEngine via CSS custom properties:
- *   --flash, --region-dim
+ * They are now driven by StormEngine through a WebGL canvas layer.
  */

@@ -1,6 +1,6 @@
-import type { StormEngine } from '../storm/engine.ts';
-import { CALM_CLASS } from './constants.ts';
-import { shouldCalm } from './detect.ts';
+import { CALM_CLASS } from '#404/calm/constants';
+import { shouldCalm } from '#404/calm/detect';
+import type { StormEngine } from '#404/storm/engine';
 
 /**
  * Apply calm mode class toggles and start/stop the storm engine.

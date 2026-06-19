@@ -102,7 +102,7 @@ test('theme controls are unlocked and trigger is visible without URL override', 
 	await expect(trigger).toBeVisible();
 });
 
-test('reduced-motion suppresses drawer animation and storm streak visibility', async ({ page }) => {
+test('reduced-motion suppresses drawer animation and storm canvas visibility', async ({ page }) => {
 	await page.emulateMedia({ reducedMotion: 'reduce' });
 	await gotoReady(page, '/?calm=off');
 
@@ -114,23 +114,20 @@ test('reduced-motion suppresses drawer animation and storm streak visibility', a
 	const drawerAnimationName = await drawer.evaluate((element) => getComputedStyle(element).animationName);
 	expect(drawerAnimationName).toBe('none');
 
-	const stormStreakOpacity = await page.evaluate(() => {
-		const streaksContainer = document.querySelector<HTMLElement>('.storm-streaks');
-		if (streaksContainer === null) {
-			throw new Error('Missing .storm-streaks container');
+	const stormCanvasState = await page.evaluate(() => {
+		const canvas = document.querySelector<HTMLElement>('.storm-canvas');
+		if (canvas === null) {
+			throw new Error('Missing .storm-canvas');
 		}
 
-		const streakProbe = document.createElement('span');
-		streakProbe.className = 'storm-streak';
-		streakProbe.style.opacity = '1';
-		streaksContainer.appendChild(streakProbe);
-
-		const computedOpacity = Number.parseFloat(getComputedStyle(streakProbe).opacity);
-		streakProbe.remove();
-		return computedOpacity;
+		const styles = getComputedStyle(canvas);
+		return {
+			opacity: Number.parseFloat(styles.opacity),
+			visibility: styles.visibility,
+		};
 	});
 
-	expect(stormStreakOpacity).toBe(0);
+	expect(stormCanvasState).toEqual({ opacity: 0, visibility: 'hidden' });
 });
 
 test('theme radiogroup arrow keys update selection, roving tabindex, and escape', async ({ page }) => {

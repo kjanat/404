@@ -1,4 +1,4 @@
-import { CALM_OFF_RE, CALM_ON_RE, CALM_PARAM, type CalmSignal, mediaQueryDefs } from './constants.ts';
+import { CALM_OFF_RE, CALM_ON_RE, CALM_PARAM, type CalmSignal, mediaQueryDefs } from '#404/calm/constants';
 
 let mediaQueries: Record<CalmSignal, MediaQueryList> | null = null;
 const noopCleanup = (): void => undefined;

@@ -93,7 +93,7 @@ const VIDEO_CRF = Number(args['video-crf']);
 const COLOR_SCHEME = args['color-scheme'] || '';
 const TMP = resolve(dirname(OUT), `.capture-frames-${Date.now()}`);
 const NAVIGATION_TIMEOUT_MS = 10_000;
-const FIRST_PAINT_SETTLE_MS = 300;
+const FIRST_PAINT_SETTLE_MS = 1_200;
 
 if (!isSupportedExtension(OUT_EXT)) {
 	console.error('Unsupported output format. Use .gif, .webp, or .mp4');
@@ -223,7 +223,8 @@ try {
 	try {
 		const page = await resolveTarget(browser);
 
-		// Let the first paint settle
+		await page.waitForFunction(() => document.body.classList.contains('page-ready'));
+		// Let reveal animations settle before the first captured frame.
 		await page.waitForTimeout(FIRST_PAINT_SETTLE_MS);
 
 		for (let i = 0; i < TOTAL_FRAMES; i++) {

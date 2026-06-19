@@ -83,7 +83,7 @@ export default defineConfig({
 	],
 	build: { target: 'esnext', sourcemap: false },
 	server: {
-		open: true,
+		open: false,
 		host: true,
 		allowedHosts: true,
 		strictPort: true,

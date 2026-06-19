@@ -1,4 +1,4 @@
-import { THEME_ATTR, THEME_LOCKED_ATTR, THEME_PREFERENCE_ATTR } from './constants.ts';
+import { THEME_ATTR, THEME_LOCKED_ATTR, THEME_PREFERENCE_ATTR } from '#404/theme/constants';
 import {
 	parseThemeOption,
 	readThemeOverride,
@@ -6,9 +6,9 @@ import {
 	resolveTheme,
 	systemThemeQuery,
 	writeThemePreference,
-} from './preference.ts';
-import type { ThemeName, ThemePreference } from './types.ts';
-import { hasViewTransitionApi } from './view-transition.ts';
+} from '#404/theme/preference';
+import type { ThemeName, ThemePreference } from '#404/theme/types';
+import { hasViewTransitionApi } from '#404/theme/view-transition';
 
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
