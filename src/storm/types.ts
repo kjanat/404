@@ -26,6 +26,22 @@ export interface StrokeEvent {
 	readonly decayTau: number;
 }
 
+/** One normalized lightning segment uploaded to the WebGL renderer. */
+export interface BoltSegment {
+	/** Segment start x in normalized top-left viewport space. */
+	readonly ax: number;
+	/** Segment start y in normalized top-left viewport space. */
+	readonly ay: number;
+	/** Segment end x in normalized top-left viewport space. */
+	readonly bx: number;
+	/** Segment end y in normalized top-left viewport space. */
+	readonly by: number;
+	/** Segment core width in CSS pixels. */
+	readonly width: number;
+	/** Segment relative brightness multiplier. */
+	readonly strength: number;
+}
+
 /** Numeric range used for bounded random sampling. */
 export interface Range {
 	/** Inclusive lower bound. */
@@ -38,8 +54,8 @@ export interface Range {
 export interface FlashSequence {
 	/** Ordered stroke list, first stroke typically brightest. */
 	readonly strokes: readonly StrokeEvent[];
-	/** Bolt element indexes activated for this flash. */
-	readonly boltIndices: readonly number[];
+	/** Generated WebGL line segments activated by this flash. */
+	readonly boltSegments: readonly BoltSegment[];
 	/** Preflash buildup duration in milliseconds. */
 	readonly preflashDuration: number;
 	/** Continuing-current tail duration in milliseconds. */

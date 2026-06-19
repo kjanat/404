@@ -49,7 +49,7 @@ function inlineScript(): Plugin {
 					const { outputText } = ts.transpileModule(source, {
 						compilerOptions: {
 							target: ts.ScriptTarget.ES2022,
-							module: ts.ModuleKind.None,
+							module: ts.ModuleKind.Preserve,
 							removeComments: false,
 						},
 					});
@@ -71,7 +71,10 @@ export default defineConfig({
 		}),
 		svgToIco({
 			input: 'src/icon.svg',
-			emit: { source: { name: 'favicon.svg' }, inject: true },
+			emit: [
+				{ format: 'ico', filename: 'favicon.ico', inject: false },
+				{ format: 'svg', filename: 'favicon.svg', inject: true },
+			],
 		}),
 		inlineScript(),
 		{
@@ -83,7 +86,7 @@ export default defineConfig({
 	],
 	build: { target: 'esnext', sourcemap: false },
 	server: {
-		open: true,
+		open: false,
 		host: true,
 		allowedHosts: true,
 		strictPort: true,

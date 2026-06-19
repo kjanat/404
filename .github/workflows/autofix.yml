@@ -11,9 +11,8 @@ jobs:
     name: Format and autofix
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: kjanat/install-shfmt@v1
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: ./.github/actions/setup-node-bun
         with: { install: "true", frozen-lockfile: "true" }
       - run: bun fmt --allow-no-files --diff --excludes ".github"
-      - uses: autofix-ci/action@v1
+      - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1

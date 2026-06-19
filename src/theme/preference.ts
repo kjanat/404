@@ -1,5 +1,5 @@
-import { THEME_PARAM_NAMES, THEME_STORAGE_KEY } from './constants.ts';
-import type { ThemeName, ThemePreference } from './types.ts';
+import { THEME_PARAM_NAMES, THEME_STORAGE_KEY } from '#404/theme/constants';
+import type { ThemeName, ThemePreference } from '#404/theme/types';
 
 /** `prefers-color-scheme` query used to resolve `system` preference. */
 export const systemThemeQuery = window.matchMedia('(prefers-color-scheme: light)');

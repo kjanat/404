@@ -1,4 +1,4 @@
-import type { Range } from './types.ts';
+import type { Range } from '#404/storm/types';
 
 function createRange(min: number, max: number): Range {
 	return Object.freeze({ min, max });

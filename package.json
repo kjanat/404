@@ -1,18 +1,20 @@
 {
 	"name": "@kjanat/404-page",
-	"version": "2.1.1",
+	"version": "2.2.0",
 	"description": "Custom 404 error page for KajKowalski Edge.",
 	"homepage": "https://404.kjanat.com",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/kjanat/404.git"
-	},
+	"repository": "kjanat/404",
 	"license": "SEE LICENSE IN LICENSE",
 	"author": "Kaj Kowalski <info@kajkowalski.nl>",
 	"type": "module",
 	"files": [
 		"dist"
 	],
+	"imports": {
+		"#404/panel/shaders/*": "./src/panel/shaders/*",
+		"#404/storm/shaders/*": "./src/storm/shaders/*",
+		"#404/*": "./src/*.ts"
+	},
 	"scripts": {
 		"bd": "bun --bun run build",
 		"build": "vite build",
@@ -20,7 +22,7 @@
 		"dev": "vite",
 		"fmt": "dprint fmt",
 		"fmt:check": "dprint check",
-		"lint": "bun lint:biome && bun lint:eslint",
+		"lint": "run -p lint:biome lint:eslint",
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",
 		"smoke": "bun scripts/smoke.ts",
@@ -29,40 +31,39 @@
 	},
 	"dependencies": {
 		"vite-robots-txt": "^1.0.0",
-		"vite-svg-to-ico": "^2.0.1"
+		"vite-svg-to-ico": "^3.1.5"
 	},
 	"devDependencies": {
-		"@actions/artifact": "^6.2.0",
+		"@actions/artifact": "^6.2.1",
 		"@actions/github-script": "github:actions/github-script",
-		"@axe-core/playwright": "^4.11.1",
-		"@biomejs/biome": "^2.4.5",
+		"@axe-core/playwright": "^4.11.3",
+		"@biomejs/biome": "^2.5.0",
 		"@eslint/js": "^10.0.1",
-		"@playwright/test": "^1.58.2",
-		"@tailwindcss/vite": "^4.2.1",
-		"@types/bun": "^1.3.10",
-		"@typescript/native-preview": "^7.0.0-dev.20260303.1",
-		"dprint": "^0.52.0",
-		"eslint": "^10.0.2",
-		"eslint-plugin-better-tailwindcss": "^4.3.1",
-		"globals": "^17.4.0",
-		"jiti": "^2.6.1",
-		"playwright": "^1.58.2",
+		"@playwright/test": "^1.61.0",
+		"@tailwindcss/vite": "^4.3.1",
+		"@types/bun": "^1.3.14",
+		"@typescript/native-preview": "^7.0.0-dev.20260619.1",
+		"dprint": "^0.54.0",
+		"eslint": "^10.5.0",
+		"eslint-plugin-better-tailwindcss": "^4.6.0",
+		"globals": "^17.6.0",
+		"jiti": "^2.7.0",
+		"playwright": "^1.61.0",
 		"playwright-extra": "^4.3.6",
 		"puppeteer-extra-plugin-stealth": "^2.11.2",
-		"tailwindcss": "^4.2.1",
-		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.56.1",
-		"vite": "npm:rolldown-vite@^7.3.1"
+		"runner-run": "^0.13.1",
+		"tailwindcss": "^4.3.1",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.61.1",
+		"vite": "^8.0.16"
 	},
-	"packageManager": "bun@1.3.10",
+	"packageManager": "bun@1.3.14",
 	"volta": {
-		"node": "25.7.0"
+		"node": "26.3.1",
+		"npm": "11.17.0"
 	},
 	"publishConfig": {
 		"access": "public",
 		"registry": "https://registry.npmjs.org/"
-	},
-	"catalog": {
-		"typescript": "^5.9.3"
 	}
 }

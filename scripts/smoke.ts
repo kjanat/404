@@ -60,24 +60,27 @@ try {
 		await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'no-preference' });
 		await page.goto(smokeUrl, { waitUntil: 'domcontentloaded' });
 		await page.waitForFunction(() => document.body.classList.contains('page-ready'));
-		await page.waitForSelector('.storm-streak', { state: 'attached' });
 		await page.waitForFunction(() => {
-			const cloudBackground = getComputedStyle(document.documentElement).getPropertyValue('--cloud-bg').trim();
-			return cloudBackground.length > 0;
+			const canvas = document.querySelector<HTMLCanvasElement>('.storm-canvas');
+			return canvas?.dataset.stormRenderer === 'webgl2'
+				&& canvas.dataset.stormActive === 'true'
+				&& canvas.width > 0
+				&& canvas.height > 0;
 		});
 
 		const state = await page.evaluate(() => {
-			const styles = getComputedStyle(document.documentElement);
 			const hostText = document.querySelector<HTMLElement>('[data-blurb] .font-bold')?.textContent ?? '';
+			const canvas = document.querySelector<HTMLCanvasElement>('.storm-canvas');
 
 			return {
 				title: document.title,
 				ready: document.body.classList.contains('page-ready'),
 				hostText,
 				hasThemeControls: document.querySelector('[data-theme-dock-toggle]') !== null,
-				boltCount: document.querySelectorAll('.storm-streak').length,
-				cloudBackground: styles.getPropertyValue('--cloud-bg').trim(),
-				flash: styles.getPropertyValue('--flash').trim(),
+				renderer: canvas?.dataset.stormRenderer ?? '',
+				rendererActive: canvas?.dataset.stormActive ?? '',
+				canvasWidth: canvas?.width ?? 0,
+				canvasHeight: canvas?.height ?? 0,
 			};
 		});
 
@@ -85,11 +88,9 @@ try {
 		assert(state.title === `404 | ${TEST_HOST}`, `Unexpected title: ${state.title}`);
 		assert(state.hostText === TEST_HOST, `Host text mismatch: ${state.hostText}`);
 		assert(state.hasThemeControls, 'Theme controls missing');
-		assert(state.boltCount > 0, 'Storm bolts not created');
-		assert(state.cloudBackground.length > 0, 'Cloud background CSS variable missing');
-
-		const flashValue = Number(state.flash);
-		assert(Number.isFinite(flashValue), `Flash CSS variable is not numeric: ${state.flash}`);
+		assert(state.renderer === 'webgl2', `Storm renderer did not initialize: ${state.renderer}`);
+		assert(state.rendererActive === 'true', 'Storm renderer is not active');
+		assert(state.canvasWidth > 0 && state.canvasHeight > 0, 'Storm canvas has no drawable size');
 
 		assert(pageErrors.length === 0, `Runtime errors detected:\n${pageErrors.join('\n')}`);
 		assert(consoleErrors.length === 0, `Console errors detected:\n${consoleErrors.join('\n')}`);

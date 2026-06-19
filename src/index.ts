@@ -1,10 +1,9 @@
-import { applyCalmMode } from './calm/apply.ts';
-import { subscribeCalmSignals } from './calm/detect.ts';
-import { initializePage } from './page-content.ts';
-import { initializePanelInteractivity } from './panel.ts';
-import { generateCloudBackground } from './storm/clouds.ts';
-import { StormEngine } from './storm/engine.ts';
-import { initializeThemeControls } from './theme/controls.ts';
+import { applyCalmMode } from '#404/calm/apply';
+import { subscribeCalmSignals } from '#404/calm/detect';
+import { initializePage } from '#404/page-content';
+import { initializePanelInteractivity } from '#404/panel';
+import { StormEngine } from '#404/storm/engine';
+import { initializeThemeControls } from '#404/theme/controls';
 
 /**
  * Body class toggled once initial layout and controls are wired.
@@ -20,7 +19,6 @@ function markPageReady(): void {
 }
 
 ((): void => {
-	document.documentElement.style.setProperty('--cloud-bg', generateCloudBackground());
 	initializeThemeControls();
 	initializePanelInteractivity();
 	markPageReady();

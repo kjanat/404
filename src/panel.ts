@@ -1,3 +1,5 @@
+import { PanelLightRenderer } from '#404/panel/renderer';
+
 /**
  * Time window for counting rapid panel presses before locking (ms).
  *
@@ -34,13 +36,14 @@ const PANEL_PRESS_LOCK_CLASS = 'panel-press-locked';
 const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 
 /**
- * Initialize pointer-driven panel tilt, glint, and press feedback.
+ * Initialize pointer-driven panel tilt, shader glint, and press feedback.
  *
  * Includes spam-press cooldown guard and automatic reset for reduced-motion.
  */
 export function initializePanelInteractivity(): void {
 	const panel = document.querySelector<HTMLElement>('.panel');
 	if (!panel) return;
+	const panelLight = PanelLightRenderer.create(panel);
 	let pressLockUntilMs = 0;
 	let pressSamples: number[] = [];
 	let pressLockTimerId: number | null = null;
@@ -84,8 +87,7 @@ export function initializePanelInteractivity(): void {
 	const resetPanelStyle = (): void => {
 		panel.style.setProperty('--panel-tilt-x', '0');
 		panel.style.setProperty('--panel-tilt-y', '0');
-		panel.style.setProperty('--panel-glint-x', '20%');
-		panel.style.setProperty('--panel-glint-y', '0%');
+		panelLight?.setGlint(0.2, 0);
 		clearPressDepth();
 	};
 
@@ -105,8 +107,7 @@ export function initializePanelInteractivity(): void {
 
 		panel.style.setProperty('--panel-tilt-x', tiltX.toFixed(2));
 		panel.style.setProperty('--panel-tilt-y', tiltY.toFixed(2));
-		panel.style.setProperty('--panel-glint-x', `${(x * 100).toFixed(1)}%`);
-		panel.style.setProperty('--panel-glint-y', `${(y * 100).toFixed(1)}%`);
+		panelLight?.setGlint(x, y);
 	});
 
 	panel.addEventListener('pointerleave', resetPanelStyle);
