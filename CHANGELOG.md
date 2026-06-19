@@ -8,6 +8,25 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-06-19
+
+### Changed
+
+- Publish the built single-file `index.html` at the package root with package
+  exports for `index.html`, `favicon.ico`, and `package.json`.
+- Improve dark-mode storm cloud contrast and add subtle moving shadow variation
+  to dense day-mode cloud cores.
+- Strengthen the selected scene-mode radio affordance with a non-color marker
+  and variable-based active styling.
+
+### Fixed
+
+- Keep randomized page copy working when the built `index.html` is opened from a
+  file or package preview without a hostname.
+- Hide the panel shader glint at rest and prevent it from visibly snapping to
+  center on pointer leave.
+- Add a programmatic legend for the scene-mode radio group.
+
 ## [2.2.0] - 2026-06-19
 
 ### Changed
@@ -242,7 +261,8 @@ and this project adheres to
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/kjanat/404/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/kjanat/404/compare/v2.1.1...v2.2.0
 [2.1.1]: https://github.com/kjanat/404/compare/v2.1.0...v2.1.1
 [2.1.0]: https://github.com/kjanat/404/compare/v2.0.5...v2.1.0
