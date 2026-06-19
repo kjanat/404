@@ -1,5 +1,6 @@
 #version 300 es
 precision highp float;
+precision highp int;
 
 const int MAX_BOLT_SEGMENTS = 72;
 
@@ -16,9 +17,11 @@ uniform vec2 uBoltData[MAX_BOLT_SEGMENTS];
 out vec4 outColor;
 
 float hash(vec2 p) {
-	p = fract(p * vec2(123.34, 456.21));
-	p += dot(p, p + 45.32);
-	return fract(p.x * p.y);
+	uvec2 q = uvec2(ivec2(floor(p)));
+	uint h = q.x * 374761393u + q.y * 668265263u;
+	h = (h ^ (h >> 13u)) * 1274126177u;
+	h ^= h >> 16u;
+	return float(h) * (1.0 / 4294967296.0);
 }
 
 float noise(vec2 p) {
