@@ -14,6 +14,7 @@
 		"dist"
 	],
 	"imports": {
+		"#404/panel/shaders/*": "./src/panel/shaders/*",
 		"#404/storm/shaders/*": "./src/storm/shaders/*",
 		"#404/*": "./src/*.ts"
 	},

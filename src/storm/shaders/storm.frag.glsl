@@ -66,9 +66,15 @@ void main() {
 	vec3 cloudTint = uTheme == 1 ? vec3(0.32, 0.39, 0.52) : vec3(0.42, 0.52, 0.72);
 	vec3 boltCore = uTheme == 1 ? vec3(0.08, 0.22, 0.58) : vec3(0.95, 0.98, 1.0);
 	vec3 boltGlow = uTheme == 1 ? vec3(0.16, 0.44, 0.82) : vec3(0.35, 0.68, 1.0);
+	vec3 auraA = uTheme == 1 ? vec3(0.12, 0.25, 0.46) : vec3(0.08, 0.23, 0.34);
+	vec3 auraB = uTheme == 1 ? vec3(0.12, 0.28, 0.22) : vec3(0.07, 0.25, 0.18);
 
 	float horizon = smoothstep(-0.15, 1.05, topUv.y);
 	vec3 color = mix(skyTop, skyBottom, horizon);
+	float auraLeft = smoothstep(0.62, 0.0, distance(topUv, vec2(0.12, 0.9)));
+	float auraRight = smoothstep(0.7, 0.0, distance(topUv, vec2(0.92, 0.2)));
+	color += auraA * auraLeft * (uTheme == 1 ? 0.13 : 0.22);
+	color += auraB * auraRight * (uTheme == 1 ? 0.11 : 0.16);
 
 	vec2 driftA = topUv * vec2(2.1, 1.45) + vec2(time * 0.032, -time * 0.018);
 	vec2 driftB = topUv * vec2(4.7, 2.9) + vec2(-time * 0.021, time * 0.024);
@@ -85,6 +91,11 @@ void main() {
 
 	float vignette = smoothstep(0.82, 0.18, distance(topUv, vec2(0.5, 0.5)));
 	color *= mix(0.72, 1.08, vignette);
+	float sideMatte = smoothstep(0.32, 0.0, min(topUv.x, 1.0 - topUv.x));
+	float topMatte = smoothstep(0.2, 0.0, 1.0 - topUv.y);
+	float bottomMatte = smoothstep(0.18, 0.0, topUv.y);
+	float edgeMatte = clamp(sideMatte * 0.34 + topMatte * 0.24 + bottomMatte * 0.18, 0.0, 0.55);
+	color *= 1.0 - edgeMatte * (uTheme == 1 ? 0.28 : 0.42);
 
 	float core = 0.0;
 	float glow = 0.0;
@@ -122,6 +133,5 @@ void main() {
 	float grain = hash(gl_FragCoord.xy + floor(uTime * 0.02)) - 0.5;
 	color += grain * (uTheme == 1 ? 0.012 : 0.018);
 
-	float alpha = uTheme == 1 ? 0.78 : 0.88;
-	outColor = vec4(clamp(color, 0.0, 1.0), alpha);
+	outColor = vec4(clamp(color, 0.0, 1.0), 1.0);
 }
