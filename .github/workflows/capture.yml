@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix: { color_scheme: "${{ fromJSON(needs.resolve.outputs.schemes) }}" }
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - id: capture
         uses: ./.github/actions/capture
         with:
@@ -62,7 +62,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with: { ref: master }
       - id: create_pr
         uses: ./.github/actions/capture/create-pr
