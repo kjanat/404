@@ -5,7 +5,6 @@ import tailwindcss from '@tailwindcss/vite';
 import ts from 'typescript';
 import type { Plugin, ViteDevServer } from 'vite';
 import { defineConfig } from 'vite';
-import robotsTxt from 'vite-robots-txt';
 import svgToIco from 'vite-svg-to-ico';
 
 interface BundleAssetLike {
@@ -188,10 +187,6 @@ export default defineConfig({
 	base: '/',
 	plugins: [
 		tailwindcss(),
-		robotsTxt({
-			preset: 'disallowAll',
-			meta: true,
-		}),
 		svgToIco({
 			input: 'src/icon.svg',
 			emit: [

@@ -30,7 +30,6 @@
 		"typecheck": "tsgo --noEmit"
 	},
 	"dependencies": {
-		"vite-robots-txt": "^1.0.0",
 		"vite-svg-to-ico": "^3.1.5"
 	},
 	"devDependencies": {
