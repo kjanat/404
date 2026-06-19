@@ -15,6 +15,25 @@ and this project adheres to
 - Replace the CSS/DOM storm animation stack with a raw WebGL2 canvas renderer
   using separate GLSL shader sources, removing per-frame CSS variable writes for
   flash and bolt effects.
+- Move the remaining ambient body cloud, vignette, matte, and panel light
+  decoration into WebGL-backed shader layers so CSS keeps only layout and UI
+  state.
+- Add panel-local WebGL shader rendering for pointer glint and static sheen
+  while keeping the panel DOM accessible.
+- Migrate runtime imports to `#404/*` and shader-specific `#404/*/shaders/*`
+  package import aliases.
+- Refactor theme controls from custom buttons to a native radio `fieldset` with
+  roving keyboard focus.
+- Update GitHub Actions and capture workflows, including newer checkout, Pages,
+  github-script, and download-artifact actions plus removal of the separate
+  shfmt installer.
+- Upgrade to Vite 8 and migrate `vite-svg-to-ico` to the v3 `emit` config so
+  `favicon.ico` is emitted without being injected into built HTML.
+- Update Playwright configuration and browser tooling for current Chromium and
+  Firefox coverage.
+- Update dprint and formatter configuration for the current toolchain.
+- Refresh dark and light lossless WebP previews with shader-rendered lightning
+  and restored grain.
 - Enable `customConditions: ["bun"]` in `tsconfig.json` so TypeScript resolves
   Bun-specific package exports during development.
 - Bump `@types/bun` and `@typescript/native-preview` dev dependencies.

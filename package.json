@@ -3,10 +3,7 @@
 	"version": "2.2.0",
 	"description": "Custom 404 error page for KajKowalski Edge.",
 	"homepage": "https://404.kjanat.com",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/kjanat/404.git"
-	},
+	"repository": "kjanat/404",
 	"license": "SEE LICENSE IN LICENSE",
 	"author": "Kaj Kowalski <info@kajkowalski.nl>",
 	"type": "module",
@@ -68,8 +65,5 @@
 	"publishConfig": {
 		"access": "public",
 		"registry": "https://registry.npmjs.org/"
-	},
-	"catalog": {
-		"typescript": "^5.9.3"
 	}
 }

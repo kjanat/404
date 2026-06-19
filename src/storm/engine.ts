@@ -104,8 +104,9 @@ export class StormEngine {
 	 */
 	start(): void {
 		if (this.running) return;
+		if (this.renderer === null) return;
 		this.running = true;
-		this.renderer?.start();
+		this.renderer.start();
 		const t = performance.now();
 		this.nextFlashTime = t + rand(800, 2200);
 		this.nextICGlowTime = t + rand(400, 1200);

@@ -28,6 +28,13 @@ interface UniformLocations {
 	readonly boltData: WebGLUniformLocation;
 }
 
+/**
+ * Resolve a required uniform location from the linked storm program.
+ *
+ * @param gl - WebGL2 context that owns the program.
+ * @param program - Linked shader program to inspect.
+ * @param name - Uniform name expected by the renderer.
+ */
 function getUniformLocation(
 	gl: WebGL2RenderingContext,
 	program: WebGLProgram,
@@ -40,6 +47,13 @@ function getUniformLocation(
 	return location;
 }
 
+/**
+ * Compile a storm shader and include the browser compile log in thrown errors.
+ *
+ * @param gl - WebGL2 context used for shader compilation.
+ * @param type - Shader stage constant, such as `gl.VERTEX_SHADER`.
+ * @param source - GLSL source imported from a raw shader file.
+ */
 function compileShader(gl: WebGL2RenderingContext, type: number, source: string): WebGLShader {
 	const shader = gl.createShader(type);
 	if (shader === null) {
@@ -58,6 +72,11 @@ function compileShader(gl: WebGL2RenderingContext, type: number, source: string)
 	return shader;
 }
 
+/**
+ * Link the full-screen storm shader program.
+ *
+ * @param gl - WebGL2 context that will own the linked program.
+ */
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
 	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
@@ -78,10 +97,16 @@ function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
 	return program;
 }
 
+/**
+ * Resolve the document theme into the compact renderer theme enum.
+ *
+ * @param root - Document root carrying the `data-theme` attribute.
+ */
 function resolveThemeName(root: HTMLElement): ThemeName {
 	return root.dataset.theme === 'light' ? 'light' : 'dark';
 }
 
+/** Return whether test builds should keep canvas pixels readable. */
 function shouldPreserveDrawingBuffer(): boolean {
 	return import.meta.env.DEV && new URLSearchParams(window.location.search).has('storm-test');
 }
@@ -106,6 +131,12 @@ export class StormRenderer {
 	private height = 0;
 	private dpr = 1;
 
+	/**
+	 * Create the renderer and initialize WebGL state for the storm canvas.
+	 *
+	 * @param root - Document root used to read theme state.
+	 * @param canvas - Full-screen storm canvas element.
+	 */
 	private constructor(root: HTMLElement, canvas: HTMLCanvasElement) {
 		this.root = root;
 		this.canvas = canvas;
@@ -185,6 +216,7 @@ export class StormRenderer {
 		this.canvas.dataset.stormTheme = state.theme;
 	}
 
+	/** Initialize WebGL resources and cache all required storm uniforms. */
 	private initialize(): void {
 		const gl = this.canvas.getContext('webgl2', {
 			alpha: true,
@@ -226,6 +258,7 @@ export class StormRenderer {
 		this.resize();
 	}
 
+	/** Match the backing store to the canvas display size and DPR cap. */
 	private resize(): void {
 		const nextDpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
 		const nextWidth = Math.max(1, Math.floor(this.canvas.clientWidth * nextDpr));
@@ -242,6 +275,11 @@ export class StormRenderer {
 		this.canvas.height = nextHeight;
 	}
 
+	/**
+	 * Upload active lightning segments into reusable uniform buffers.
+	 *
+	 * @param segments - Generated bolt segments for the current flash.
+	 */
 	private writeBoltUniforms(segments: readonly BoltSegment[]): number {
 		this.segmentUniformData.fill(0);
 		this.segmentParamData.fill(0);
@@ -263,6 +301,7 @@ export class StormRenderer {
 		return segmentCount;
 	}
 
+	/** Mark the renderer inactive after WebGL context loss. */
 	private readonly handleContextLost = (event: Event): void => {
 		event.preventDefault();
 		this.initialized = false;
@@ -273,6 +312,7 @@ export class StormRenderer {
 		this.canvas.dataset.stormActive = 'false';
 	};
 
+	/** Recreate GPU resources after the browser restores the storm context. */
 	private readonly handleContextRestored = (): void => {
 		try {
 			this.initialize();

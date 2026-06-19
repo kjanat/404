@@ -20,12 +20,20 @@ interface LegacyMediaQueryList {
 let themeControlsInitialized = false;
 let disposeThemeControls: (() => void) | null = null;
 
+/**
+ * Reflect the active preference into the radio group.
+ *
+ * @param options - Theme radio inputs that should mirror the preference.
+ * @param preference - Persisted or URL-derived theme preference.
+ * @param resolvedTheme - Concrete theme currently applied to the page.
+ */
 function updateThemeSwitch(
 	options: readonly HTMLInputElement[],
 	preference: ThemePreference,
 	resolvedTheme: ThemeName,
 ): void {
 	for (const optionInput of options) {
+		if (optionInput.type !== 'radio') continue;
 		const option = parseThemeOption(optionInput.dataset.themeOption);
 		if (option === null) continue;
 
@@ -46,6 +54,14 @@ function updateThemeSwitch(
 	}
 }
 
+/**
+ * Apply a theme immediately or through the View Transitions API.
+ *
+ * @param theme - Concrete light/dark theme to set on the root element.
+ * @param preference - User-facing preference represented by the controls.
+ * @param options - Theme radio inputs kept in sync with root attributes.
+ * @param animate - Whether a supported, motion-safe transition may be used.
+ */
 function applyTheme(
 	theme: ThemeName,
 	preference: ThemePreference,
@@ -84,10 +100,17 @@ export function initializeThemeControls(): void {
 	const cleanup: (() => void)[] = [];
 	const validOptions = Array.from(document.querySelectorAll<HTMLInputElement>('[data-theme-option]')).flatMap(
 		(optionInput) => {
+			if (optionInput.type !== 'radio') return [];
 			const option = parseThemeOption(optionInput.dataset.themeOption);
 			return option === null ? [] : [{ optionInput, option }];
 		},
 	);
+	if (import.meta.env.DEV && validOptions.length > 0) {
+		const firstName = validOptions[0]?.optionInput.name;
+		if (!validOptions.every(({ optionInput }) => optionInput.name === firstName)) {
+			console.warn('[theme] Radio inputs do not share the same name attribute');
+		}
+	}
 	const optionInputs = validOptions.map(({ optionInput }) => optionInput);
 	const switchRoot = document.querySelector<HTMLElement>('[data-theme-switch]');
 	const themeDockToggle = document.querySelector<HTMLButtonElement>('[data-theme-dock-toggle]');

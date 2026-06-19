@@ -10,6 +10,13 @@ interface UniformLocations {
 	readonly theme: WebGLUniformLocation;
 }
 
+/**
+ * Resolve a required uniform location from the linked panel program.
+ *
+ * @param gl - WebGL2 context that owns the program.
+ * @param program - Linked shader program to inspect.
+ * @param name - Uniform name expected by the renderer.
+ */
 function getUniformLocation(
 	gl: WebGL2RenderingContext,
 	program: WebGLProgram,
@@ -22,6 +29,13 @@ function getUniformLocation(
 	return location;
 }
 
+/**
+ * Compile a panel light shader and surface the browser's compile log on error.
+ *
+ * @param gl - WebGL2 context used for compilation.
+ * @param type - Shader stage constant, such as `gl.FRAGMENT_SHADER`.
+ * @param source - GLSL source imported from a raw shader file.
+ */
 function compileShader(gl: WebGL2RenderingContext, type: number, source: string): WebGLShader {
 	const shader = gl.createShader(type);
 	if (shader === null) {
@@ -40,6 +54,11 @@ function compileShader(gl: WebGL2RenderingContext, type: number, source: string)
 	return shader;
 }
 
+/**
+ * Link the full-screen panel light shader program.
+ *
+ * @param gl - WebGL2 context that will own the linked program.
+ */
 function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
 	const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
 	const fragmentShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
@@ -60,6 +79,7 @@ function createProgram(gl: WebGL2RenderingContext): WebGLProgram {
 	return program;
 }
 
+/** Return the numeric shader theme flag for the current document theme. */
 function resolveThemeValue(): number {
 	return document.documentElement.dataset.theme === 'light' ? 1 : 0;
 }
@@ -83,6 +103,12 @@ export class PanelLightRenderer {
 	private height = 0;
 	private dpr = 1;
 
+	/**
+	 * Create a panel light renderer around the panel's local canvas.
+	 *
+	 * @param panel - Panel element whose size and theme state drive rendering.
+	 * @param canvas - Child canvas used for the shader overlay.
+	 */
 	private constructor(panel: HTMLElement, canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
 		this.resizeObserver = new ResizeObserver(() => {
@@ -126,6 +152,7 @@ export class PanelLightRenderer {
 		this.render();
 	}
 
+	/** Initialize WebGL resources and cache required uniforms. */
 	private initialize(): void {
 		const gl = this.canvas.getContext('webgl2', {
 			alpha: true,
@@ -157,6 +184,7 @@ export class PanelLightRenderer {
 		this.resize();
 	}
 
+	/** Match the backing store to the canvas display size and DPR cap. */
 	private resize(): void {
 		const nextDpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO);
 		const nextWidth = Math.max(1, Math.floor(this.canvas.clientWidth * nextDpr));
@@ -173,6 +201,7 @@ export class PanelLightRenderer {
 		this.canvas.height = nextHeight;
 	}
 
+	/** Draw the latest panel light frame from cached glint and theme state. */
 	private render(): void {
 		const gl = this.gl;
 		const program = this.program;
@@ -190,6 +219,7 @@ export class PanelLightRenderer {
 		gl.drawArrays(gl.TRIANGLES, 0, 3);
 	}
 
+	/** Mark the renderer unavailable after a WebGL context loss event. */
 	private readonly handleContextLost = (event: Event): void => {
 		event.preventDefault();
 		this.gl = null;
@@ -198,6 +228,7 @@ export class PanelLightRenderer {
 		this.canvas.dataset.panelLightRenderer = 'lost';
 	};
 
+	/** Recreate GPU resources after the browser restores the panel context. */
 	private readonly handleContextRestored = (): void => {
 		try {
 			this.initialize();
