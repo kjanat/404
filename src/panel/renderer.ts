@@ -152,6 +152,17 @@ export class PanelLightRenderer {
 		this.render();
 	}
 
+	/** Release observer and event listener resources held by this renderer. */
+	destroy(): void {
+		this.resizeObserver.disconnect();
+		this.themeObserver.disconnect();
+		this.canvas.removeEventListener('webglcontextlost', this.handleContextLost);
+		this.canvas.removeEventListener('webglcontextrestored', this.handleContextRestored);
+		this.gl = null;
+		this.program = null;
+		this.uniforms = null;
+	}
+
 	/** Initialize WebGL resources and cache required uniforms. */
 	private initialize(): void {
 		const gl = this.canvas.getContext('webgl2', {

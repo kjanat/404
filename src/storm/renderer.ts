@@ -306,6 +306,7 @@ export class StormRenderer {
 		event.preventDefault();
 		this.initialized = false;
 		this.active = false;
+		this.gl = null;
 		this.program = null;
 		this.uniforms = null;
 		this.canvas.dataset.stormRenderer = 'lost';

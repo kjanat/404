@@ -22,10 +22,12 @@ jobs:
       url: ${{ steps.version.outputs.npm_url }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with: { persist-credentials: false }
       - uses: ./.github/actions/version-check
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with: { node-version: lts/*, registry-url: https://registry.npmjs.org }
+        with: { node-version: latest, registry-url: https://registry.npmjs.org, package-manager-cache: false }
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with: { no-cache: true }
       - run: bun install --frozen-lockfile
       - id: version
         run: |
@@ -35,6 +37,4 @@ jobs:
           echo "npm_url=https://www.npmjs.com/package/${NAME}/v/${VERSION}" |& tee -a "$GITHUB_OUTPUT"
       - run: bun bd
       # bun publish lacks --provenance; use npm for signed provenance
-      - run: npm i -g npm && npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: bunx npm@latest publish --provenance --access public
