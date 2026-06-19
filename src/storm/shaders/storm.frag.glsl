@@ -1,5 +1,6 @@
 #version 300 es
 precision highp float;
+precision highp int;
 
 const int MAX_BOLT_SEGMENTS = 72;
 
@@ -15,10 +16,19 @@ uniform vec2 uBoltData[MAX_BOLT_SEGMENTS];
 
 out vec4 outColor;
 
+// WebKit builds inject `#define LOW_QUALITY` to trim per-pixel cost.
+#ifdef LOW_QUALITY
+#define FBM_OCTAVES 3
+#else
+#define FBM_OCTAVES 5
+#endif
+
 float hash(vec2 p) {
-	p = fract(p * vec2(123.34, 456.21));
-	p += dot(p, p + 45.32);
-	return fract(p.x * p.y);
+	uvec2 q = uvec2(ivec2(floor(p)));
+	uint h = q.x * 374761393u + q.y * 668265263u;
+	h = (h ^ (h >> 13u)) * 1274126177u;
+	h ^= h >> 16u;
+	return float(h) * (1.0 / 4294967296.0);
 }
 
 float noise(vec2 p) {
@@ -39,7 +49,7 @@ float fbm(vec2 p) {
 	float amplitude = 0.5;
 	mat2 rotate = mat2(0.8, -0.6, 0.6, 0.8);
 
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < FBM_OCTAVES; i++) {
 		value += amplitude * noise(p);
 		p = rotate * p * 2.02 + 17.13;
 		amplitude *= 0.52;
@@ -86,12 +96,16 @@ void main() {
 	float cellNoise = fbm(topUv * vec2(3.4, 2.2) + vec2(9.0, time * 0.03));
 	float stormCell = smoothstep(0.28, 0.95, cellNoise + cloudMass * 0.4);
 	float cloudCore = smoothstep(0.58, 0.96, cloudMass);
+#ifdef LOW_QUALITY
+	float cloudCoreShadow = cloudCore;
+#else
 	float cloudCoreDrift = smoothstep(
 		0.28,
 		0.82,
 		fbm(topUv * vec2(2.8, 1.15) + vec2(-time * 0.045, time * 0.012))
 	);
 	float cloudCoreShadow = cloudCore * mix(0.72, 1.22, cloudCoreDrift);
+#endif
 	float dim = clamp(uRegionDim, 0.0, 1.0);
 
 	color = mix(color, cloudTint, cloudMass * (uTheme == 1 ? 0.22 : 0.54));

@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
+---
 name: Create Capture PR
 description: Commit preview artifacts and create a pull request.
 inputs:
@@ -16,9 +18,7 @@ runs:
   steps:
     - name: Validate inputs
       shell: bash
-      env:
-        INPUT_EXT: ${{ inputs.ext }}
-        INPUT_COLOR_SCHEME: ${{ inputs.color_scheme }}
+      env: { INPUT_EXT: "${{ inputs.ext }}", INPUT_COLOR_SCHEME: "${{ inputs.color_scheme }}" }
       run: |
         case "$INPUT_EXT" in
           webp|gif|mp4) ;;
@@ -34,14 +34,12 @@ runs:
             exit 1
             ;;
         esac
-    - uses: actions/download-artifact@v7
-      with:
-        pattern: "preview-*.${{ inputs.ext }}"
-        merge-multiple: true
+    - uses: actions/download-artifact@v8
+      with: { pattern: "preview-*.${{ inputs.ext }}", merge-multiple: true }
     - name: Commit, push and create PR
       id: create_pr
-      uses: actions/github-script@v8
+      uses: actions/github-script@v9
       with:
         script: |
-          const { default: run } = await import(`${process.env.GITHUB_WORKSPACE}/.github/actions/capture/create-capture-pr.mjs`)
+          const { default: run } = await import("${{ github.workspace }}/.github/actions/capture/create-capture-pr.mjs")
           await run({ github, context, core, exec })

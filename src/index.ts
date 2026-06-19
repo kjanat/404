@@ -29,5 +29,15 @@ function markPageReady(): void {
 		applyCalmMode(storm);
 	});
 
+	// Pause the render loop while the tab is hidden to save CPU/GPU and battery;
+	// resume through calm mode so it stays stopped when calm is active.
+	document.addEventListener('visibilitychange', () => {
+		if (document.hidden) {
+			storm.stop();
+		} else {
+			applyCalmMode(storm);
+		}
+	});
+
 	initializePage();
 })();

@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+---
 name: Lint
 run-name: "Lint \"${{ github.event.pull_request.title || github.event.head_commit.message }}\" by @${{ github.actor }}"
 on:
@@ -9,9 +11,10 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@v7
         with: { persist-credentials: false }
+      - uses: kjanat/runner@master
       - { uses: ./.github/actions/setup-node-bun, with: { install: "true", frozen-lockfile: "true" } }
-      - run: bun typecheck
-      - run: bun lint
-      - run: bun fmt:check --list-different
+      - run: run -s typecheck lint fmt:check:list build
+      - uses: actions/upload-artifact@v7
+        with: { name: index-html, path: index.html, if-no-files-found: error, retention-days: 2 }

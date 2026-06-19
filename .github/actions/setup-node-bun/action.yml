@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
+---
 name: Setup JS Toolchain
 description: Set up Bun and optionally install project dependencies.
 
@@ -14,16 +16,10 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup Bun
-      uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+    - uses: oven-sh/setup-bun@v2
+    - uses: kjanat/runner@master
     - name: Install dependencies
       if: ${{ inputs.install == 'true' }}
       shell: bash
-      env:
-        _FROZEN_LOCKFILE: ${{ inputs['frozen-lockfile'] }}
-      run: |
-        if [[ "$_FROZEN_LOCKFILE" == "true" ]]; then
-          bun i --frozen-lockfile
-        else
-          bun i
-        fi
+      env: { _FROZEN_LOCKFILE: "${{ inputs['frozen-lockfile'] }}" }
+      run: if [[ "$_FROZEN_LOCKFILE" == "true" ]]; then runner install --frozen; else runner install; fi

@@ -1,14 +1,12 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-action.json
+---
 name: Version-tag check
 description: Verify git tag matches package.json version
-
-inputs:
-  tag: { description: "Git tag (e.g. v2.0.0). Defaults to GITHUB_REF tag.", required: false }
-
+inputs: { tag: { description: "Git tag (e.g. v2.0.0). Defaults to GITHUB_REF tag.", required: false } }
 runs:
   using: composite
   steps:
     - name: Compare tag to package.json version
       shell: bash
-      env:
-        TAG_INPUT: ${{ inputs.tag }}
-      run: "${{ github.action_path }}/scripts/check-version.sh"
+      env: { TAG_INPUT: "${{ inputs.tag }}", GHAP: "${{ github.action_path }}" }
+      run: bash "${GHAP}/scripts/check-version.sh"
