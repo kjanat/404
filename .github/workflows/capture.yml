@@ -18,6 +18,8 @@ on:
       color_scheme: { description: "Color scheme (both = dark+light in parallel)", required: false, default: both, type: choice, options: [both, dark, light] }
       create_pr: { description: "Open a PR committing the screenshot", required: false, default: false, type: boolean }
 
+permissions: { contents: read }
+
 jobs:
   resolve:
     runs-on: ubuntu-latest
@@ -36,7 +38,6 @@ jobs:
     needs: resolve
     name: "Capture ${{ matrix.color_scheme }}"
     runs-on: ubuntu-latest
-    permissions: { contents: read }
     strategy: { matrix: { color_scheme: "${{ fromJSON(needs.resolve.outputs.schemes) }}" } }
     steps:
       - uses: actions/checkout@v7
