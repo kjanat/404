@@ -55,7 +55,7 @@ runs:
     - name: Setup JS toolchain
       uses: ./.github/actions/setup-node-bun
       with: { install: "true", frozen-lockfile: "true" }
-    - uses: FedericoCarboni/setup-ffmpeg@v3
+    - uses: FedericoCarboni/setup-ffmpeg@v2
     - name: Install Playwright browser
       shell: bash
       run: bunx playwright install chromium
