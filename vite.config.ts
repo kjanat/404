@@ -8,24 +8,9 @@ import { defineConfig } from 'vite';
 import { viteSingleFile } from 'vite-plugin-singlefile';
 import svgToIco from 'vite-svg-to-ico';
 
+import pkg from './package.json' with { type: 'json' };
+
 const SOURCE_ROOT = 'src';
-
-/** Read the `version` string from the package manifest, parsed at the boundary. */
-function readPackageVersion(): string {
-	const parsed: unknown = JSON.parse(
-		readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf-8'),
-	);
-	if (
-		typeof parsed === 'object' && parsed !== null && 'version' in parsed
-		&& typeof parsed.version === 'string'
-	) {
-		return parsed.version;
-	}
-	throw new Error('package.json is missing a string "version" field');
-}
-
-/** Build-time package version, read once from the package manifest. */
-const PKG_VERSION = readPackageVersion();
 
 /** Inject `<meta name="version">` into the head with the package.json version. */
 function versionMeta(): Plugin {
@@ -33,7 +18,7 @@ function versionMeta(): Plugin {
 		name: 'version-meta',
 		transformIndexHtml() {
 			return [
-				{ tag: 'meta', attrs: { name: 'version', content: PKG_VERSION }, injectTo: 'head' },
+				{ tag: 'meta', attrs: { name: 'version', content: pkg.version }, injectTo: 'head' },
 			];
 		},
 	};
