@@ -10,6 +10,35 @@ import svgToIco from 'vite-svg-to-ico';
 
 const SOURCE_ROOT = 'src';
 
+/** Read the `version` string from the package manifest, parsed at the boundary. */
+function readPackageVersion(): string {
+	const parsed: unknown = JSON.parse(
+		readFileSync(resolve(import.meta.dirname, 'package.json'), 'utf-8'),
+	);
+	if (
+		typeof parsed === 'object' && parsed !== null && 'version' in parsed
+		&& typeof parsed.version === 'string'
+	) {
+		return parsed.version;
+	}
+	throw new Error('package.json is missing a string "version" field');
+}
+
+/** Build-time package version, read once from the package manifest. */
+const PKG_VERSION = readPackageVersion();
+
+/** Inject `<meta name="version">` into the head with the package.json version. */
+function versionMeta(): Plugin {
+	return {
+		name: 'version-meta',
+		transformIndexHtml() {
+			return [
+				{ tag: 'meta', attrs: { name: 'version', content: PKG_VERSION }, injectTo: 'head' },
+			];
+		},
+	};
+}
+
 /**
  * Compile `<!-- @inline path/to/file.ts -->` markers into render-blocking
  * inline `<script>` blocks.  TypeScript is stripped via `ts.transpileModule`;
@@ -73,6 +102,7 @@ export default defineConfig({
 			emit: [{ format: 'ico', filename: 'favicon.ico', inject: false }],
 		}),
 		inlineScript(),
+		versionMeta(),
 		{
 			name: 'cf-async-disable',
 			transformIndexHtml(html) {
