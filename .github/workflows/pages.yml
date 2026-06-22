@@ -16,7 +16,7 @@ jobs:
         with: { install: "true", frozen-lockfile: "true" }
       - uses: actions/configure-pages@v6
       - run: bun bd
-      - run: mkdir -p pages-artifact && cp index.html favicon.ico pages-artifact/
+      - run: mkdir -p pages-artifact && cp index.html favicon.ico pages-artifact/ && cp index.html pages-artifact/404.html
       - uses: actions/upload-pages-artifact@v5
         with: { path: pages-artifact }
       - id: deployment
