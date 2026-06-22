@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.5] - 2026-06-22
+
 ### Fixed
 
 - Stop the highlighted hostname in the blurb from breaking mid-word (e.g. `kjan`
