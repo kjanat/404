@@ -8,6 +8,14 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Embed the package version as a `<meta name="version">` tag in the document
+  head at build time.
+- Serve the error page on the GitHub Pages site itself by emitting a `404.html`,
+  so unknown paths return the custom page with a `404` status instead of the
+  default Pages not-found page.
+
 ## [2.2.3] - 2026-06-22
 
 ### Added
