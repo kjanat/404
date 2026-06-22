@@ -63,6 +63,7 @@
 	--panel-tilt-x: 0;
 	--panel-tilt-y: 0;
 	--panel-press-depth: 0;
+	--panel-drag-y: 0px;
 }
 
 :root[data-theme="dark"] {
@@ -179,8 +180,18 @@ body {
 	z-index: 2;
 	transform: perspective(1200px) rotateX(calc(var(--panel-tilt-y, 0) * 1deg))
 		rotateY(calc(var(--panel-tilt-x, 0) * 1deg))
-		translateY(calc(var(--panel-lift, 0px) + var(--panel-press-depth, 0) * 2px));
+		translateY(calc(var(--panel-lift, 0px) + var(--panel-press-depth, 0) * 2px + var(--panel-drag-y, 0px)));
 	transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+}
+
+/* Pull-to-reload: follow the finger immediately while dragging, then let the
+   base transition settle the panel back when released. */
+.panel.panel-dragging {
+	transition: border-color 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+}
+
+.panel.panel-drag-armed {
+	border-color: color-mix(in oklch, var(--theme-accent) 60%, var(--theme-border));
 }
 
 .panel:hover {
@@ -575,6 +586,14 @@ p {
 	.panel {
 		backdrop-filter: none;
 		background: var(--theme-card-mobile);
+	}
+}
+
+/* On touch devices, let JS own vertical gestures over the panel so the
+   pull-to-reload drag isn't intercepted by native scroll/refresh. */
+@media (pointer: coarse) {
+	.panel {
+		touch-action: none;
 	}
 }
 

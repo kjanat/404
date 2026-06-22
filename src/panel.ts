@@ -1,3 +1,4 @@
+import { initializePanelDragReload } from '#404/panel/drag-reload';
 import { PanelLightRenderer } from '#404/panel/renderer';
 
 /**
@@ -44,6 +45,7 @@ const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 export function initializePanelInteractivity(): void {
 	const panel = document.querySelector<HTMLElement>('.panel');
 	if (!panel) return;
+	initializePanelDragReload(panel);
 	const panelLight = PanelLightRenderer.create(panel);
 	let pressLockUntilMs = 0;
 	let pressSamples: number[] = [];
