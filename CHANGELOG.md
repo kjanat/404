@@ -8,6 +8,15 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.2.3] - 2026-06-22
+
+### Added
+
+- Add a mobile pull-to-reload gesture: dragging the central panel downward past
+  a threshold reloads the page on release, with rubber-band resistance while
+  pulling and an accent border once the pull is far enough to trigger. Touch
+  input only, so desktop tilt and press interactions are unchanged.
+
 ## [2.2.2] - 2026-06-19
 
 ### Added
@@ -291,7 +300,8 @@ and this project adheres to
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.2.2...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.2.3...HEAD
+[2.2.3]: https://github.com/kjanat/404/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/kjanat/404/compare/v2.2.1...v2.2.2
 [2.2.1]: https://github.com/kjanat/404/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/kjanat/404/compare/v2.1.1...v2.2.0
