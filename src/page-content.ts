@@ -188,7 +188,7 @@ export function initializePage(): void {
 	const blurbTarget = document.querySelector<HTMLElement>('[data-blurb]');
 	if (blurbTarget) {
 		const hostSpan = document.createElement('span');
-		hostSpan.className = 'font-bold break-all text-accent-2';
+		hostSpan.className = 'font-bold text-accent-2';
 		hostSpan.textContent = copyHost;
 		renderBlurb(blurbTarget, parseTemplate(pickRandom(BLURBS)), hostSpan);
 	}

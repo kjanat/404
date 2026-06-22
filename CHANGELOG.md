@@ -8,6 +8,13 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Fixed
+
+- Stop the highlighted hostname in the blurb from breaking mid-word (e.g. `kjan`
+  / `at.com`). Dropped `word-break: break-all` on the host span so it now
+  inherits the paragraph's `overflow-wrap: anywhere`, wrapping the domain as a
+  unit and breaking only at separators when it cannot fit.
+
 ## [2.2.4] - 2026-06-22
 
 ### Added
