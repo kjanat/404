@@ -248,6 +248,7 @@ export class StormEngine {
 		this.currentFlash = null;
 		this.phase = FlashPhase.Quiet;
 		this.setTransmissionProgress(0);
+		this.setTransmissionFlash(0);
 		this.emitTransmission('start', message);
 		return true;
 	}
@@ -261,6 +262,11 @@ export class StormEngine {
 	/** Publish keying progress (`0`–`1`) for the panel border indicator. */
 	private setTransmissionProgress(value: number): void {
 		this.root.style.setProperty('--transmission-progress', value.toFixed(4));
+	}
+
+	/** Publish the live keyed brightness (`0`–`1`) so UI glow pulses with each bolt. */
+	private setTransmissionFlash(value: number): void {
+		this.root.style.setProperty('--transmission-flash', value.toFixed(3));
 	}
 
 	private generateFlash(): FlashSequence {
@@ -368,6 +374,8 @@ export class StormEngine {
 			this.activeBoltSegments = [];
 			this.regionDim = REGION_DIM_BASELINE;
 		}
+
+		this.setTransmissionFlash(this.flash);
 	}
 
 	private finishTransmission(now: number): void {
@@ -375,6 +383,7 @@ export class StormEngine {
 		// Settle the indicator at a full ring; the fade-out is driven by the
 		// removal of the storm-transmitting class, and the next run resets to 0.
 		this.setTransmissionProgress(1);
+		this.setTransmissionFlash(0);
 		this.transmissionSteps = null;
 		this.transmissionStepIndex = -1;
 		this.transmissionBolt = [];

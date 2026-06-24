@@ -65,6 +65,7 @@
 	--panel-press-depth: 0;
 	--panel-drag-y: 0px;
 	--transmission-progress: 0;
+	--transmission-flash: 0;
 }
 
 :root[data-theme="dark"] {
@@ -577,20 +578,24 @@ h1.headline-transmission {
 	transition: opacity 240ms ease;
 }
 
-/* Intensify mode: brightness, scale, and glow track keying progress (0–1). */
+/* Intensify mode: a tight bright core plus a soft halo that grows with keying
+   progress, and both pulse with --transmission-flash on every keyed bolt. */
 h1.headline-transmission.is-intensify {
 	color: var(--theme-accent-2);
 	opacity: calc(0.12 + var(--transmission-progress, 0) * 0.88);
 	transform: scale(calc(0.97 + var(--transmission-progress, 0) * 0.03));
-	text-shadow: 0 0 calc(var(--transmission-progress, 0) * 22px)
-		color-mix(in oklch, var(--theme-accent-2) 60%, transparent);
+	text-shadow:
+		0 0 calc(4px + var(--transmission-flash, 0) * 8px) color-mix(in oklch, var(--theme-accent-2) 85%, white),
+		0 0 calc(14px + var(--transmission-progress, 0) * 10px + var(--transmission-flash, 0) * 22px)
+		color-mix(in oklch, var(--theme-accent-2) 45%, transparent);
 }
 
-/* Sync mode: characters type out at full strength with a steady glow. */
+/* Sync mode: characters type out at full strength, glow pulses with each bolt. */
 h1.headline-transmission.is-sync {
 	color: var(--theme-accent-2);
 	opacity: 1;
-	text-shadow: 0 0 16px color-mix(in oklch, var(--theme-accent-2) 45%, transparent);
+	text-shadow: 0 0 calc(10px + var(--transmission-flash, 0) * 16px)
+		color-mix(in oklch, var(--theme-accent-2) 50%, transparent);
 }
 
 /* Subtle charged tint while the lightning is keying a transmission. */
@@ -598,20 +603,26 @@ body.storm-transmitting .panel {
 	border-color: color-mix(in oklch, var(--theme-accent-2) 45%, var(--theme-border));
 }
 
-/* Border progress ring: a conic gradient masked to the panel's edge, filling
-   clockwise as the morse transmission plays. Driven by --transmission-progress
-   (0–1) which the storm engine updates each frame. */
+/* Border charge ring: a conic gradient masked to the panel edge that fills
+   symmetrically from the top down both sides, meeting at the bottom at 100%.
+   Driven by --transmission-progress (0–1); its glow pulses with
+   --transmission-flash. z-index 2 keeps it below the brandline/headline
+   (z-index 3) so the Edge tooltip and content stay above it. */
 .panel::after {
 	content: "";
 	position: absolute;
 	inset: 0;
-	z-index: 4;
+	z-index: 2;
 	border-radius: inherit;
 	padding: 2px;
 	background: conic-gradient(
-		from -90deg,
-		var(--theme-accent-2) calc(var(--transmission-progress, 0) * 1turn),
-		transparent 0
+		from 0deg,
+		var(--theme-accent-2) 0deg,
+		var(--theme-accent-2) calc(var(--transmission-progress, 0) * 180deg),
+		transparent calc(var(--transmission-progress, 0) * 180deg),
+		transparent calc(360deg - var(--transmission-progress, 0) * 180deg),
+		var(--theme-accent-2) calc(360deg - var(--transmission-progress, 0) * 180deg),
+		var(--theme-accent-2) 360deg
 	);
 	-webkit-mask:
 		linear-gradient(#000 0 0) content-box,
@@ -621,13 +632,17 @@ body.storm-transmitting .panel {
 		linear-gradient(#000 0 0) content-box,
 		linear-gradient(#000 0 0);
 	mask-composite: exclude;
+	filter: drop-shadow(
+		0 0 calc(2px + var(--transmission-flash, 0) * 7px)
+		color-mix(in oklch, var(--theme-accent-2) 70%, transparent)
+	);
 	opacity: 0;
 	pointer-events: none;
 	transition: opacity 220ms ease;
 }
 
 body.storm-transmitting .panel::after {
-	opacity: 1;
+	opacity: calc(0.8 + var(--transmission-flash, 0) * 0.2);
 }
 
 p {
