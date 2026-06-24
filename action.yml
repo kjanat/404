@@ -1,0 +1,15 @@
+name: Download 404 page
+description: Get latest published 404 page from esm.sh, and put it wherever.
+inputs: { directory: { description: "directory to output the 404.html into", default: "." } }
+runs:
+  using: composite
+  steps:
+    - name: Download 404.html
+      shell: pwsh
+      env: { dir: "${{ inputs.directory }}" }
+      run: |
+        $directory = Join-Path $env:GITHUB_WORKSPACE $env:dir
+        $out       = Join-Path $directory '404.html'
+
+        New-Item $directory -ItemType Directory -Force | Out-Null
+        Invoke-RestMethod -Uri 'https://esm.sh/@kjanat/404-page/index.html' -OutFile $out
