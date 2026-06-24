@@ -1,5 +1,5 @@
 import { rand, randInt } from '#404/storm/rng';
-import type { BoltSegment, Range } from '#404/storm/types';
+import type { BoltSegment, MorseKind, Range } from '#404/storm/types';
 
 /**
  * Main spine segment count range used per generated bolt.
@@ -122,6 +122,80 @@ export function generateBoltSegments(boltCount: number): BoltSegment[] {
 		for (let i = 0; i < branches; i++) {
 			appendBranch(segments, spine, baseWidth, baseStrength);
 		}
+	}
+
+	return segments;
+}
+
+/**
+ * Build the jagged spine for a single keyed morse bolt.
+ *
+ * Dots trace a short, sharp, near-vertical channel; dashes lean horizontal and
+ * span more of the view so the keyed timing reads as a longer, sustained bolt.
+ *
+ * @param kind - Element class driving the channel shape.
+ */
+function generateMorseSpine(kind: MorseKind): BoltPoint[] {
+	if (kind === 'dot') {
+		const segments = randInt(6, 9);
+		const startX = rand(0.34, 0.66);
+		const startY = rand(-0.12, -0.02);
+		const endY = rand(0.86, 1.12);
+		const stepY = (endY - startY) / segments;
+		const points: BoltPoint[] = [{ x: startX, y: startY }];
+		let x = startX;
+
+		for (let i = 1; i <= segments; i++) {
+			x = clamp(x + rand(-0.05, 0.05), 0.16, 0.84);
+			points.push({ x, y: startY + stepY * i });
+		}
+
+		return points;
+	}
+
+	const segments = randInt(7, 11);
+	const direction = Math.random() < 0.5 ? 1 : -1;
+	const startX = direction > 0 ? rand(-0.08, 0.08) : rand(0.92, 1.08);
+	const endX = direction > 0 ? rand(0.92, 1.08) : rand(-0.08, 0.08);
+	const startY = rand(0.2, 0.4);
+	const stepX = (endX - startX) / segments;
+	const drift = rand(0.16, 0.36);
+	const points: BoltPoint[] = [{ x: startX, y: startY }];
+	let y = startY;
+
+	for (let i = 1; i <= segments; i++) {
+		y = clamp(y + drift / segments + rand(-0.05, 0.05), 0.08, 0.92);
+		points.push({ x: startX + stepX * i, y });
+	}
+
+	return points;
+}
+
+/**
+ * Generate the line segments for one keyed morse bolt.
+ *
+ * Dashes are wider, span horizontally, and grow a fork so they linger; dots are
+ * thin and crisp. Coordinates share the normalized top-left viewport space used
+ * by {@link generateBoltSegments}.
+ *
+ * @param kind - Element class to key.
+ */
+export function generateMorseBolt(kind: MorseKind): BoltSegment[] {
+	const segments: BoltSegment[] = [];
+	const spine = generateMorseSpine(kind);
+	const baseWidth = kind === 'dash' ? rand(2.3, 3.3) : rand(1.3, 1.9);
+	const baseStrength = kind === 'dash' ? rand(0.82, 0.96) : rand(0.92, 1);
+
+	for (let i = 0; i < spine.length - 1; i++) {
+		const from = spine[i];
+		const to = spine[i + 1];
+		if (from === undefined || to === undefined) continue;
+		const taper = 1 - i / spine.length;
+		segments.push(createSegment(from, to, baseWidth * (0.74 + taper * 0.36), baseStrength));
+	}
+
+	if (kind === 'dash') {
+		appendBranch(segments, spine, baseWidth, baseStrength);
 	}
 
 	return segments;

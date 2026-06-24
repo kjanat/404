@@ -110,6 +110,21 @@ export const IC_GLOW_DURATION = createRange(80, 250);
 export const REGION_DIM_BASELINE = 0.42;
 
 /**
+ * Peak flash intensity of a keyed morse dot.
+ *
+ * Use when shaping the sharp dot envelope during a transmission.
+ */
+export const MORSE_DOT_PEAK = 0.95;
+
+/**
+ * Peak flash intensity of a keyed morse dash.
+ *
+ * Slightly dimmer than a dot but sustained, so the longer element reads as a
+ * lingering bolt rather than a brighter one.
+ */
+export const MORSE_DASH_PEAK = 0.78;
+
+/**
  * Default number of generated bolt elements.
  *
  * Use when no explicit bolt count override is provided.

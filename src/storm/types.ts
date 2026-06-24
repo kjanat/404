@@ -42,6 +42,24 @@ export interface BoltSegment {
 	readonly strength: number;
 }
 
+/** Keyed morse element class used during a transmission. */
+export type MorseKind = 'dot' | 'dash';
+
+/**
+ * One timed step of a morse transmission timeline.
+ *
+ * `on` steps key a bolt of the given {@link MorseKind}; `off` steps are the
+ * silent gaps between elements, letters, and words.
+ */
+export interface TransmissionStep {
+	/** Whether a bolt is keyed (`true`) or this is a silent gap (`false`). */
+	readonly on: boolean;
+	/** Element class for keyed steps; `null` for gaps. */
+	readonly kind: MorseKind | null;
+	/** Step duration in milliseconds. */
+	readonly durationMs: number;
+}
+
 /** Numeric range used for bounded random sampling. */
 export interface Range {
 	/** Inclusive lower bound. */
