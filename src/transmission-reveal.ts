@@ -24,23 +24,48 @@ const MODE_CLASS: Readonly<Record<RevealMode, string>> = {
 };
 
 /**
+ * Cross-fade duration for swapping copy in and out of the headline (ms).
+ *
+ * Keep in sync with the `opacity` transition on `.headline-transmission`.
+ */
+const FADE_MS = 240;
+
+/**
  * How long the fully revealed message lingers after keying completes before the
- * original headline is restored (ms).
+ * original headline fades back in (ms).
  */
 const SETTLE_MS = 1100;
 
 let savedHeadline: string | null = null;
 let currentMessage = '';
-let restoreTimerId: number | null = null;
-let syncTimerIds: number[] = [];
+let timerIds: number[] = [];
 
 function getHeadline(): HTMLElement | null {
 	return document.querySelector<HTMLElement>('[data-headline]');
 }
 
-function clearSyncTimers(): void {
-	for (const id of syncTimerIds) window.clearTimeout(id);
-	syncTimerIds = [];
+function getPanel(): HTMLElement | null {
+	return document.querySelector<HTMLElement>('.panel');
+}
+
+/** Pin the panel's current height so the swapped copy can't resize the box. */
+function freezePanelHeight(): void {
+	const panel = getPanel();
+	if (panel) panel.style.minHeight = `${panel.offsetHeight}px`;
+}
+
+/** Release the pinned panel height. */
+function releasePanelHeight(): void {
+	getPanel()?.style.removeProperty('min-height');
+}
+
+function clearTimers(): void {
+	for (const id of timerIds) window.clearTimeout(id);
+	timerIds = [];
+}
+
+function after(ms: number, run: () => void): void {
+	timerIds.push(window.setTimeout(run, ms));
 }
 
 function modeClasses(): string[] {
@@ -50,9 +75,10 @@ function modeClasses(): string[] {
 /**
  * Begin revealing a decoded transmission message in the headline.
  *
- * Captures the live headline copy on the first call of a run so overlapping
- * transmissions always restore the real text. The visual treatment follows
- * {@link REVEAL_MODE}.
+ * The current headline fades out, the copy is swapped at the trough of the fade,
+ * then the active {@link REVEAL_MODE} fades the decoded message in. The live
+ * headline text is captured once per run so overlapping transmissions always
+ * restore the real copy.
  *
  * @param message - Decoded plain-text message being keyed.
  * @param durationMs - Total keying duration, used to pace the `sync` reveal.
@@ -61,66 +87,81 @@ export function startHeadlineReveal(message: string, durationMs: number): void {
 	const headline = getHeadline();
 	if (!headline) return;
 
-	if (restoreTimerId !== null) {
-		// Already mid-reveal: keep the captured headline and just retarget it.
-		window.clearTimeout(restoreTimerId);
-		restoreTimerId = null;
-	} else {
+	if (savedHeadline === null) {
 		savedHeadline = headline.textContent;
+		// Lock the box at its pre-reveal size before any copy swap reflows it.
+		freezePanelHeight();
 	}
-	clearSyncTimers();
-
+	clearTimers();
 	currentMessage = message;
-	headline.classList.add(REVEAL_CLASS, MODE_CLASS[REVEAL_MODE]);
 
-	if (REVEAL_MODE === 'sync') {
-		const chars = Array.from(message);
-		headline.textContent = '';
-		chars.forEach((_, index) => {
-			const at = (durationMs * (index + 1)) / chars.length;
-			syncTimerIds.push(
-				window.setTimeout(() => {
+	// Fade the current headline out (copy + colour untouched) so the swap lands
+	// while it is invisible.
+	headline.classList.add(REVEAL_CLASS);
+	headline.style.opacity = '0';
+
+	after(FADE_MS, () => {
+		headline.classList.add(MODE_CLASS[REVEAL_MODE]);
+
+		if (REVEAL_MODE === 'sync') {
+			const chars = Array.from(message);
+			headline.textContent = '';
+			chars.forEach((_, index) => {
+				const at = Math.max(0, (durationMs * (index + 1)) / chars.length - FADE_MS);
+				after(at, () => {
 					headline.textContent = message.slice(0, index + 1);
-				}, at),
-			);
-		});
-	} else {
-		headline.textContent = message;
-	}
+				});
+			});
+		} else {
+			headline.textContent = message;
+		}
+
+		// Hand opacity back to the mode rule, which fades the message in.
+		headline.style.removeProperty('opacity');
+	});
 }
 
 /**
  * End a headline reveal.
  *
- * On natural completion the full message is pinned for a short settle before the
- * original headline returns; an interrupted run restores immediately.
+ * On natural completion the full message is pinned, held briefly, then
+ * cross-faded back to the original headline. An interrupted run restores at once.
  *
- * @param immediate - Restore the original headline at once (transmission aborted).
+ * @param immediate - Restore the original headline without a fade (transmission aborted).
  */
 export function endHeadlineReveal(immediate: boolean): void {
 	const headline = getHeadline();
 	if (!headline) return;
 
-	clearSyncTimers();
-	if (restoreTimerId !== null) {
-		window.clearTimeout(restoreTimerId);
-		restoreTimerId = null;
-	}
-
-	const restore = (): void => {
-		headline.textContent = savedHeadline;
-		savedHeadline = null;
-		headline.classList.remove(REVEAL_CLASS, ...modeClasses());
-		restoreTimerId = null;
-	};
+	clearTimers();
 
 	if (immediate) {
-		restore();
+		headline.textContent = savedHeadline;
+		headline.classList.remove(REVEAL_CLASS, ...modeClasses());
+		headline.style.removeProperty('opacity');
+		releasePanelHeight();
+		savedHeadline = null;
 		return;
 	}
 
-	// Pin the complete message (covers a sync run whose last tick was cancelled),
-	// hold briefly, then restore the original copy.
+	// Pin the complete message (covers a sync run whose last tick was cancelled).
+	headline.classList.add(REVEAL_CLASS, MODE_CLASS[REVEAL_MODE]);
 	headline.textContent = currentMessage;
-	restoreTimerId = window.setTimeout(restore, SETTLE_MS);
+	headline.style.removeProperty('opacity');
+
+	after(SETTLE_MS, () => {
+		headline.style.opacity = '0'; // fade the message out
+		after(FADE_MS, () => {
+			headline.textContent = savedHeadline;
+			headline.classList.remove(...modeClasses());
+			void headline.offsetWidth; // commit the swap at opacity 0 before fading in
+			headline.style.opacity = '1'; // fade the original headline back in
+			after(FADE_MS, () => {
+				headline.classList.remove(REVEAL_CLASS);
+				headline.style.removeProperty('opacity');
+				releasePanelHeight();
+				savedHeadline = null;
+			});
+		});
+	});
 }

@@ -571,13 +571,16 @@ h1 {
 	overflow-wrap: anywhere;
 }
 
+/* Base: only the cross-fade transition; colour lives on the mode classes so the
+   fade-out of the original headline doesn't recolour it mid-swap. */
 h1.headline-transmission {
-	color: var(--theme-accent-2);
+	transition: opacity 240ms ease;
 }
 
 /* Intensify mode: brightness, scale, and glow track keying progress (0–1). */
 h1.headline-transmission.is-intensify {
-	opacity: calc(0.15 + var(--transmission-progress, 0) * 0.85);
+	color: var(--theme-accent-2);
+	opacity: calc(0.12 + var(--transmission-progress, 0) * 0.88);
 	transform: scale(calc(0.97 + var(--transmission-progress, 0) * 0.03));
 	text-shadow: 0 0 calc(var(--transmission-progress, 0) * 22px)
 		color-mix(in oklch, var(--theme-accent-2) 60%, transparent);
@@ -585,6 +588,8 @@ h1.headline-transmission.is-intensify {
 
 /* Sync mode: characters type out at full strength with a steady glow. */
 h1.headline-transmission.is-sync {
+	color: var(--theme-accent-2);
+	opacity: 1;
 	text-shadow: 0 0 16px color-mix(in oklch, var(--theme-accent-2) 45%, transparent);
 }
 
