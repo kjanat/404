@@ -245,6 +245,7 @@ export class StormEngine {
 		this.transmissionMessage = message;
 		this.currentFlash = null;
 		this.phase = FlashPhase.Quiet;
+		this.setTransmissionProgress(0);
 		this.emitTransmission('start', message);
 		return true;
 	}
@@ -253,6 +254,11 @@ export class StormEngine {
 		this.root.dataset.transmission = phase === 'start' ? 'active' : 'idle';
 		const detail: TransmissionEventDetail = { phase, message };
 		document.dispatchEvent(new CustomEvent<TransmissionEventDetail>(TRANSMISSION_EVENT, { detail }));
+	}
+
+	/** Publish keying progress (`0`–`1`) for the panel border indicator. */
+	private setTransmissionProgress(value: number): void {
+		this.root.style.setProperty('--transmission-progress', value.toFixed(4));
 	}
 
 	private generateFlash(): FlashSequence {
@@ -325,6 +331,8 @@ export class StormEngine {
 			return;
 		}
 
+		this.setTransmissionProgress(elapsed / this.transmissionTotal);
+
 		let stepStart = 0;
 		let index = 0;
 		for (; index < steps.length; index++) {
@@ -362,6 +370,9 @@ export class StormEngine {
 
 	private finishTransmission(now: number): void {
 		const message = this.transmissionMessage;
+		// Settle the indicator at a full ring; the fade-out is driven by the
+		// removal of the storm-transmitting class, and the next run resets to 0.
+		this.setTransmissionProgress(1);
 		this.transmissionSteps = null;
 		this.transmissionStepIndex = -1;
 		this.transmissionBolt = [];
