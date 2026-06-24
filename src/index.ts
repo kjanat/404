@@ -37,7 +37,9 @@ function markPageReady(): void {
 	document.addEventListener(TRANSMISSION_EVENT, (event) => {
 		const { phase, message } = (event as CustomEvent<TransmissionEventDetail>).detail;
 		document.body.classList.toggle(TRANSMITTING_CLASS, phase === 'start');
-		if (phase === 'end') revealTransmissionMessage(message);
+		// An interrupted transmission ends with an empty message; only the natural
+		// completion carries text to reveal in the headline.
+		if (phase === 'end' && message.length > 0) revealTransmissionMessage(message);
 	});
 
 	applyCalmMode(storm);

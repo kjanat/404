@@ -204,10 +204,15 @@ export class StormEngine {
 		this.boltIntensity = 0;
 		this.activeBoltSegments = [];
 		this.currentFlash = null;
+		const wasTransmitting = this.transmissionSteps !== null;
 		this.transmissionSteps = null;
 		this.transmissionStepIndex = -1;
 		this.transmissionBolt = [];
 		this.renderer?.stop();
+		// A transmission interrupted by stop (tab hidden, reduced-motion) must
+		// still tear down its UI feedback; the empty message skips the headline
+		// reveal so an abort never leaks the decoded text.
+		if (wasTransmitting) this.emitTransmission('end', '');
 	}
 
 	/** Whether a morse transmission is currently being keyed. */
