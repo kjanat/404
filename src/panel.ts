@@ -31,6 +31,20 @@ const PANEL_PRESS_LOCK_CLASS = 'panel-press-locked';
 const PANEL_LIGHT_ACTIVE_CLASS = 'panel-light-active';
 
 /**
+ * Hold duration that triggers the long-press transmission gesture (ms).
+ *
+ * Use when arming the long-press timer in {@link initializePanelInteractivity}.
+ */
+const PANEL_LONG_PRESS_MS = 1300;
+
+/**
+ * Pointer travel that cancels an in-progress long press (px).
+ *
+ * Keeps a deliberate hold distinct from a drag or tilt sweep.
+ */
+const PANEL_LONG_PRESS_MOVE_TOLERANCE_PX = 12;
+
+/**
  * Media query representing user reduced-motion preference.
  *
  * Use when gating motion-heavy interactions in {@link initializePanelInteractivity}.
@@ -41,8 +55,11 @@ const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
  * Initialize pointer-driven panel tilt, shader glint, and press feedback.
  *
  * Includes spam-press cooldown guard and automatic reset for reduced-motion.
+ *
+ * @param onLongPress - Invoked once when the panel is held still past
+ * {@link PANEL_LONG_PRESS_MS}; omit to disable the long-press gesture.
  */
-export function initializePanelInteractivity(): void {
+export function initializePanelInteractivity(onLongPress?: () => void): void {
 	const panel = document.querySelector<HTMLElement>('.panel');
 	if (!panel) return;
 	initializePanelDragReload(panel);
@@ -138,10 +155,54 @@ export function initializePanelInteractivity(): void {
 	panel.addEventListener('pointerup', clearPressDepth);
 	panel.addEventListener('pointercancel', clearPressDepth);
 
+	// Long-press transmission gesture: a still hold past the threshold keys the
+	// hidden morse sequence. Movement, release, or a spam lock cancels it.
+	let longPressTimerId: number | null = null;
+	let longPressPointerId: number | null = null;
+	let longPressStartX = 0;
+	let longPressStartY = 0;
+
+	const cancelLongPress = (): void => {
+		if (longPressTimerId !== null) {
+			window.clearTimeout(longPressTimerId);
+			longPressTimerId = null;
+		}
+		longPressPointerId = null;
+	};
+
+	if (onLongPress) {
+		panel.addEventListener('pointerdown', (event) => {
+			if (reduceMotionQuery.matches) return;
+			cancelLongPress();
+			if (window.performance.now() < pressLockUntilMs) return;
+
+			longPressPointerId = event.pointerId;
+			longPressStartX = event.clientX;
+			longPressStartY = event.clientY;
+			longPressTimerId = window.setTimeout(() => {
+				longPressTimerId = null;
+				longPressPointerId = null;
+				onLongPress();
+			}, PANEL_LONG_PRESS_MS);
+		});
+
+		panel.addEventListener('pointermove', (event) => {
+			if (longPressPointerId === null || event.pointerId !== longPressPointerId) return;
+			const dx = event.clientX - longPressStartX;
+			const dy = event.clientY - longPressStartY;
+			if (dx * dx + dy * dy > PANEL_LONG_PRESS_MOVE_TOLERANCE_PX ** 2) cancelLongPress();
+		});
+
+		panel.addEventListener('pointerup', cancelLongPress);
+		panel.addEventListener('pointercancel', cancelLongPress);
+		panel.addEventListener('pointerleave', cancelLongPress);
+	}
+
 	if (typeof reduceMotionQuery.addEventListener === 'function') {
 		reduceMotionQuery.addEventListener('change', () => {
 			if (reduceMotionQuery.matches) {
 				unlockPanelPress();
+				cancelLongPress();
 				pressSamples = [];
 				resetPanelStyle();
 			}

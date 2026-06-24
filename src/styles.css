@@ -570,6 +570,17 @@ h1 {
 	overflow-wrap: anywhere;
 }
 
+h1.headline-transmission {
+	color: var(--theme-accent-2);
+	text-shadow: 0 0 18px color-mix(in oklch, var(--theme-accent-2) 60%, transparent);
+	animation: transmission-reveal 2.8s ease both;
+}
+
+/* Subtle charged tint while the lightning is keying a transmission. */
+body.storm-transmitting .panel {
+	border-color: color-mix(in oklch, var(--theme-accent-2) 45%, var(--theme-border));
+}
+
 p {
 	margin: 14px 0 0;
 	color: var(--theme-muted);

@@ -33,6 +33,7 @@
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",
 		"smoke": "bun scripts/smoke.ts",
+		"test": "bun test src",
 		"test:e2e": "playwright test",
 		"typecheck": "tsgo --noEmit"
 	},
