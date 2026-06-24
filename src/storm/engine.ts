@@ -212,9 +212,13 @@ export class StormEngine {
 		this.transmissionBolt = [];
 		this.renderer?.stop();
 		// A transmission interrupted by stop (tab hidden, reduced-motion) must
-		// still tear down its UI feedback; the empty message skips the headline
-		// reveal so an abort never leaks the decoded text.
-		if (wasTransmitting) this.emitTransmission('end', '');
+		// still tear down its UI feedback; clear the page-level vars and emit an
+		// 'end' with an empty message so the abort skips the headline reveal.
+		if (wasTransmitting) {
+			this.setTransmissionProgress(0);
+			this.setTransmissionFlash(0);
+			this.emitTransmission('end', '');
+		}
 	}
 
 	/** Whether a morse transmission is currently being keyed. */
