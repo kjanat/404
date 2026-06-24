@@ -33,6 +33,13 @@ Custom 404 error page for [KajKowalski Edge](https://404.kjanat.com).
 - run: curl -fsSLo dist/404.html https://esm.sh/@kjanat/404-page/index.html
 ```
 
+or use the composite action (writes `404.html` into `directory`):
+
+```yaml
+- uses: kjanat/404@master
+  with: { directory: dist/site }
+```
+
 </details>
 
 <!-- markdownlint-disable-file no-inline-html -->
