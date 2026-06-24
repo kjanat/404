@@ -37,31 +37,6 @@
 	}
 }
 
-@keyframes transmission-reveal {
-	0% {
-		opacity: 0;
-		letter-spacing: 0.3em;
-		filter: blur(3px);
-	}
-
-	14% {
-		opacity: 1;
-		filter: blur(0);
-	}
-
-	82% {
-		opacity: 1;
-		letter-spacing: 0.06em;
-		filter: blur(0);
-	}
-
-	100% {
-		opacity: 0;
-		letter-spacing: 0.02em;
-		filter: blur(2px);
-	}
-}
-
 /*
  * All flash-driven keyframes (lightning-flash, panel-flicker,
  * panel-afterglow, icon-blink, title-flicker, region-dim) have been removed.

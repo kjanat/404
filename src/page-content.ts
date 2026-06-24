@@ -64,56 +64,6 @@ const BLURBS: readonly [string, ...string[]] = [
 	'{host} has all the charisma of a 404 page. Oh wait \u2014 that\u2019s exactly what this is.',
 ];
 
-/**
- * CSS class applied to the headline while a decoded transmission is shown.
- *
- * Use when toggling the reveal state in {@link revealTransmissionMessage}.
- */
-const TRANSMISSION_REVEAL_CLASS = 'headline-transmission';
-
-/**
- * How long the decoded transmission lingers in the headline before restoring
- * the original copy (ms).
- */
-const TRANSMISSION_REVEAL_MS = 2800;
-
-let transmissionRestoreTimerId: number | null = null;
-let savedHeadline: string | null = null;
-
-/**
- * Briefly flash a decoded transmission message into the headline, then restore.
- *
- * Idempotent across overlapping calls: the real headline copy is captured once
- * at the start of a reveal so repeated transmissions always restore it.
- *
- * @param message - Decoded plain-text message to reveal.
- */
-export function revealTransmissionMessage(message: string): void {
-	const headline = document.querySelector<HTMLElement>('[data-headline]');
-	if (!headline) return;
-
-	if (transmissionRestoreTimerId !== null) {
-		// Already mid-reveal: keep the captured headline and just extend it.
-		window.clearTimeout(transmissionRestoreTimerId);
-	} else {
-		savedHeadline = headline.textContent;
-	}
-
-	headline.textContent = message;
-	// Restart the reveal animation even if a prior reveal left the class applied:
-	// re-adding a present class is a no-op, so drop it and force a reflow first.
-	headline.classList.remove(TRANSMISSION_REVEAL_CLASS);
-	void headline.offsetWidth;
-	headline.classList.add(TRANSMISSION_REVEAL_CLASS);
-
-	transmissionRestoreTimerId = window.setTimeout(() => {
-		headline.textContent = savedHeadline;
-		savedHeadline = null;
-		headline.classList.remove(TRANSMISSION_REVEAL_CLASS);
-		transmissionRestoreTimerId = null;
-	}, TRANSMISSION_REVEAL_MS);
-}
-
 /** Pick a random item from a non-empty readonly tuple. */
 function pickRandom<T>(arr: readonly [T, ...T[]]): T {
 	const value = arr[Math.floor(Math.random() * arr.length)];

@@ -573,8 +573,19 @@ h1 {
 
 h1.headline-transmission {
 	color: var(--theme-accent-2);
-	text-shadow: 0 0 18px color-mix(in oklch, var(--theme-accent-2) 60%, transparent);
-	animation: transmission-reveal 2.8s ease both;
+}
+
+/* Intensify mode: brightness, scale, and glow track keying progress (0–1). */
+h1.headline-transmission.is-intensify {
+	opacity: calc(0.15 + var(--transmission-progress, 0) * 0.85);
+	transform: scale(calc(0.97 + var(--transmission-progress, 0) * 0.03));
+	text-shadow: 0 0 calc(var(--transmission-progress, 0) * 22px)
+		color-mix(in oklch, var(--theme-accent-2) 60%, transparent);
+}
+
+/* Sync mode: characters type out at full strength with a steady glow. */
+h1.headline-transmission.is-sync {
+	text-shadow: 0 0 16px color-mix(in oklch, var(--theme-accent-2) 45%, transparent);
 }
 
 /* Subtle charged tint while the lightning is keying a transmission. */

@@ -18,10 +18,11 @@ and this project adheres to
   Dots are short, sharp, near-vertical return-stroke-style bolts; dashes are
   wider, horizontal, sustained channels with a flickering plateau and a fork.
   The panel border fills clockwise as a progress ring while the message plays,
-  and when the sequence finishes the decoded message flashes briefly in the
-  headline before the normal storm resumes. The message lives in a single
-  tunable constant (`TRANSMISSION_MESSAGE`). No-op under calm mode / reduced
-  motion and while the tab is hidden, consistent with the rest of the storm.
+  and the decoded message fades into the headline, intensifying as the keying
+  progresses (a swappable letter-by-letter reveal mode is also included). The
+  message lives in a single tunable constant (`TRANSMISSION_MESSAGE`). No-op
+  under calm mode / reduced motion and while the tab is hidden, consistent with
+  the rest of the storm.
 
 ## [2.2.5] - 2026-06-22
 

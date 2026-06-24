@@ -46,6 +46,8 @@ export interface TransmissionEventDetail {
 	readonly phase: 'start' | 'end';
 	/** Plain-text message being keyed. */
 	readonly message: string;
+	/** Total keying duration in ms, for time-synced reveals. */
+	readonly durationMs: number;
 }
 
 type RuntimePhase =
@@ -252,7 +254,7 @@ export class StormEngine {
 
 	private emitTransmission(phase: 'start' | 'end', message: string): void {
 		this.root.dataset.transmission = phase === 'start' ? 'active' : 'idle';
-		const detail: TransmissionEventDetail = { phase, message };
+		const detail: TransmissionEventDetail = { phase, message, durationMs: this.transmissionTotal };
 		document.dispatchEvent(new CustomEvent<TransmissionEventDetail>(TRANSMISSION_EVENT, { detail }));
 	}
 
