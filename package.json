@@ -1,6 +1,6 @@
 {
 	"name": "@kjanat/404-page",
-	"version": "2.2.5",
+	"version": "2.3.0",
 	"description": "Custom 404 error page for KajKowalski Edge.",
 	"homepage": "https://404.kjanat.com",
 	"repository": "kjanat/404",
@@ -33,6 +33,7 @@
 		"lint:biome": "biome lint",
 		"lint:eslint": "eslint",
 		"smoke": "bun scripts/smoke.ts",
+		"test": "bun test src",
 		"test:e2e": "playwright test",
 		"typecheck": "tsgo --noEmit"
 	},

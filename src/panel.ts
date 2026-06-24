@@ -41,8 +41,11 @@ const reduceMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
  * Initialize pointer-driven panel tilt, shader glint, and press feedback.
  *
  * Includes spam-press cooldown guard and automatic reset for reduced-motion.
+ *
+ * @param onSpamLock - Invoked once each time a rapid press burst trips the spam
+ * lock (the moment the panel stops depressing); omit to disable the hook.
  */
-export function initializePanelInteractivity(): void {
+export function initializePanelInteractivity(onSpamLock?: () => void): void {
 	const panel = document.querySelector<HTMLElement>('.panel');
 	if (!panel) return;
 	initializePanelDragReload(panel);
@@ -84,6 +87,10 @@ export function initializePanelInteractivity(): void {
 			pressSamples = [];
 			clearPressDepth();
 			lockPanelPress(nowMs);
+			// The spam lock doubles as the secret transmission trigger: keep
+			// mashing the panel until it stops depressing and the storm starts
+			// keying morse.
+			onSpamLock?.();
 		}
 	};
 

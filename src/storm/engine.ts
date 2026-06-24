@@ -1,5 +1,5 @@
 import { isWebKit, WEBKIT_FRAME_INTERVAL_MS } from '#404/quality';
-import { generateBoltSegments } from '#404/storm/bolt';
+import { generateBoltSegments, generateMorseBolt } from '#404/storm/bolt';
 import {
 	CONTINUING_CURRENT,
 	DEFAULT_BOLT_COUNT,
@@ -13,15 +13,42 @@ import {
 	M_COMPONENT_DURATION,
 	M_COMPONENT_INTENSITY,
 	MAX_BOLT_COUNT,
+	MORSE_DASH_PEAK,
+	MORSE_DOT_PEAK,
 	PREFLASH_DURATION,
 	REGION_DIM_BASELINE,
 	STROKE_DECAY_TAU,
 	STROKES,
 	SUBSEQUENT_INTENSITY,
 } from '#404/storm/constants';
+import { buildTransmissionTimeline, TRANSMISSION_MESSAGE, transmissionDuration } from '#404/storm/morse';
 import { StormRenderer } from '#404/storm/renderer';
 import { rand, randInt, randLogNormal } from '#404/storm/rng';
-import { type BoltSegment, FlashPhase, type FlashSequence, type StrokeEvent } from '#404/storm/types';
+import {
+	type BoltSegment,
+	FlashPhase,
+	type FlashSequence,
+	type MorseKind,
+	type StrokeEvent,
+	type TransmissionStep,
+} from '#404/storm/types';
+
+/**
+ * Event dispatched on `document` when a morse transmission starts and ends.
+ *
+ * Use when listening for transmission lifecycle to drive UI feedback.
+ */
+export const TRANSMISSION_EVENT = 'storm:transmission';
+
+/** Detail payload carried by {@link TRANSMISSION_EVENT}. */
+export interface TransmissionEventDetail {
+	/** Lifecycle phase of the transmission. */
+	readonly phase: 'start' | 'end';
+	/** Plain-text message being keyed. */
+	readonly message: string;
+	/** Total keying duration in ms, for time-synced reveals. */
+	readonly durationMs: number;
+}
 
 type RuntimePhase =
 	| FlashPhase.Quiet
@@ -32,6 +59,38 @@ type RuntimePhase =
 	| FlashPhase.ContinuingCurrent;
 
 type PhaseStrategy = (now: number, elapsed: number) => void;
+
+/**
+ * Shape the brightness envelope of a single keyed morse element.
+ *
+ * Dots snap to a sharp peak then fall away; dashes ramp up, hold a flickering
+ * plateau, then taper, so the longer element reads as a sustained bolt.
+ *
+ * @param kind - Element class being keyed.
+ * @param progress - Normalized position within the element, in `[0, 1)`.
+ * @param now - Current timestamp, used for the dash plateau flicker.
+ */
+function morseEnvelope(kind: MorseKind, progress: number, now: number): number {
+	if (kind === 'dot') {
+		const attack = 0.16;
+		if (progress < attack) return progress / attack;
+		return Math.exp(-(progress - attack) * 3.2);
+	}
+
+	const attack = 0.1;
+	const release = 0.82;
+	let base: number;
+	if (progress < attack) {
+		base = progress / attack;
+	} else if (progress < release) {
+		base = 1 - 0.12 * ((progress - attack) / (release - attack));
+	} else {
+		base = (1 - (progress - release) / (1 - release)) * 0.88;
+	}
+
+	const flicker = 0.05 * Math.sin(now * 0.05);
+	return Math.max(0, base + flicker);
+}
 
 /**
  * Procedural lightning runtime.
@@ -61,6 +120,13 @@ export class StormEngine {
 	private nextICGlowTime = 0;
 	private icGlowEnd = 0;
 	private icGlowPeak = 0;
+
+	private transmissionSteps: readonly TransmissionStep[] | null = null;
+	private transmissionStart = 0;
+	private transmissionTotal = 0;
+	private transmissionStepIndex = -1;
+	private transmissionBolt: readonly BoltSegment[] = [];
+	private transmissionMessage = '';
 
 	private readonly phaseStrategies: Record<RuntimePhase, PhaseStrategy> = {
 		[FlashPhase.Quiet]: (now) => {
@@ -140,7 +206,76 @@ export class StormEngine {
 		this.boltIntensity = 0;
 		this.activeBoltSegments = [];
 		this.currentFlash = null;
+		const wasTransmitting = this.transmissionSteps !== null;
+		this.transmissionSteps = null;
+		this.transmissionStepIndex = -1;
+		this.transmissionBolt = [];
 		this.renderer?.stop();
+		// A transmission interrupted by stop (tab hidden, reduced-motion) must
+		// still tear down its UI feedback; clear the page-level vars and emit an
+		// 'end' with an empty message so the abort skips the headline reveal.
+		if (wasTransmitting) {
+			this.setTransmissionProgress(0);
+			this.setTransmissionFlash(0);
+			this.emitTransmission('end', '');
+		}
+	}
+
+	/** Whether a morse transmission is currently being keyed. */
+	get transmitting(): boolean {
+		return this.transmissionSteps !== null;
+	}
+
+	/**
+	 * Begin keying a morse transmission through the lightning.
+	 *
+	 * Overrides the random flash scheduler with a deterministic dot/dash
+	 * timeline until it completes, then resumes the normal storm. No-op when the
+	 * engine is stopped (including calm mode) or a transmission is already
+	 * running.
+	 *
+	 * @param message - Text to key; defaults to {@link TRANSMISSION_MESSAGE}.
+	 * @returns `true` when a transmission started, otherwise `false`.
+	 */
+	beginTransmission(message: string = TRANSMISSION_MESSAGE): boolean {
+		if (!this.running || this.transmissionSteps !== null) return false;
+
+		const steps = buildTransmissionTimeline(message);
+		if (steps.length === 0) return false;
+
+		this.transmissionSteps = steps;
+		this.transmissionTotal = transmissionDuration(steps);
+		this.transmissionStart = performance.now();
+		this.transmissionStepIndex = -1;
+		this.transmissionBolt = [];
+		this.transmissionMessage = message;
+		this.currentFlash = null;
+		this.phase = FlashPhase.Quiet;
+		this.setTransmissionProgress(0);
+		this.setTransmissionFlash(0);
+		this.emitTransmission('start', message);
+		return true;
+	}
+
+	private emitTransmission(phase: 'start' | 'end', message: string): void {
+		this.root.dataset.transmission = phase === 'start' ? 'active' : 'idle';
+		const detail: TransmissionEventDetail = { phase, message, durationMs: this.transmissionTotal };
+		document.dispatchEvent(new CustomEvent<TransmissionEventDetail>(TRANSMISSION_EVENT, { detail }));
+	}
+
+	/**
+	 * Publish keying progress (`0`–`1`) for the panel border indicator.
+	 *
+	 * Written to the document root (not the engine root) because the panel and
+	 * headline that consume it are page-level, independent of the engine root.
+	 */
+	private setTransmissionProgress(value: number): void {
+		document.documentElement.style.setProperty('--transmission-progress', value.toFixed(4));
+	}
+
+	/** Publish the live keyed brightness (`0`–`1`) so UI glow pulses with each bolt. */
+	private setTransmissionFlash(value: number): void {
+		document.documentElement.style.setProperty('--transmission-flash', value.toFixed(3));
 	}
 
 	private generateFlash(): FlashSequence {
@@ -193,9 +328,85 @@ export class StormEngine {
 	};
 
 	private update(now: number): void {
+		if (this.transmissionSteps !== null) {
+			this.runTransmission(now);
+			return;
+		}
+
 		const elapsed = now - this.phaseStart;
 		const strategy = this.phaseStrategies[this.phase];
 		strategy(now, elapsed);
+	}
+
+	private runTransmission(now: number): void {
+		const steps = this.transmissionSteps;
+		if (steps === null) return;
+
+		const elapsed = now - this.transmissionStart;
+		if (elapsed >= this.transmissionTotal) {
+			this.finishTransmission(now);
+			return;
+		}
+
+		this.setTransmissionProgress(elapsed / this.transmissionTotal);
+
+		let stepStart = 0;
+		let index = 0;
+		for (; index < steps.length; index++) {
+			const step = steps[index];
+			if (step === undefined) break;
+			if (elapsed < stepStart + step.durationMs) break;
+			stepStart += step.durationMs;
+		}
+
+		const step = steps[index];
+		if (step === undefined) {
+			this.finishTransmission(now);
+			return;
+		}
+
+		if (index !== this.transmissionStepIndex) {
+			this.transmissionStepIndex = index;
+			this.transmissionBolt = step.on && step.kind !== null ? generateMorseBolt(step.kind) : [];
+		}
+
+		if (step.on && step.kind !== null) {
+			const progress = (elapsed - stepStart) / step.durationMs;
+			const peak = step.kind === 'dash' ? MORSE_DASH_PEAK : MORSE_DOT_PEAK;
+			this.flash = peak * morseEnvelope(step.kind, progress, now);
+			this.boltIntensity = this.flash;
+			this.activeBoltSegments = this.transmissionBolt;
+			this.regionDim = Math.max(0.05, REGION_DIM_BASELINE - this.flash * 0.6);
+		} else {
+			this.flash = 0;
+			this.boltIntensity = 0;
+			this.activeBoltSegments = [];
+			this.regionDim = REGION_DIM_BASELINE;
+		}
+
+		this.setTransmissionFlash(this.flash);
+	}
+
+	private finishTransmission(now: number): void {
+		const message = this.transmissionMessage;
+		// Settle the indicator at a full ring; the fade-out is driven by the
+		// removal of the storm-transmitting class, and the next run resets to 0.
+		this.setTransmissionProgress(1);
+		this.setTransmissionFlash(0);
+		this.transmissionSteps = null;
+		this.transmissionStepIndex = -1;
+		this.transmissionBolt = [];
+		this.flash = 0;
+		this.boltIntensity = 0;
+		this.activeBoltSegments = [];
+		this.regionDim = REGION_DIM_BASELINE;
+		this.phase = FlashPhase.Quiet;
+		this.phaseStart = now;
+		this.nextFlashTime = now + rand(900, 2000);
+		this.nextICGlowTime = now + rand(400, 1200);
+		this.icGlowEnd = this.nextICGlowTime + rand(IC_GLOW_DURATION);
+		this.icGlowPeak = rand(IC_GLOW_INTENSITY);
+		this.emitTransmission('end', message);
 	}
 
 	private runQuietPhase(now: number): void {

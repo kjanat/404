@@ -8,6 +8,22 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-06-24
+
+### Added
+
+- Add a hidden morse "transmission" easter egg: rapidly tap the central panel
+  until the press-spam lock engages (the panel stops depressing) and the
+  lightning stops its random flashing to key a secret message in morse code.
+  Dots are short, sharp, near-vertical return-stroke-style bolts; dashes are
+  wider, horizontal, sustained channels with a flickering plateau and a fork.
+  The panel border fills clockwise as a progress ring while the message plays,
+  and the decoded message fades into the headline, intensifying as the keying
+  progresses (a swappable letter-by-letter reveal mode is also included). The
+  message lives in a single tunable constant (`TRANSMISSION_MESSAGE`). No-op
+  under calm mode / reduced motion and while the tab is hidden, consistent with
+  the rest of the storm.
+
 ## [2.2.5] - 2026-06-22
 
 ### Fixed
