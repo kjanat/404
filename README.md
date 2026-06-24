@@ -27,5 +27,13 @@ Custom 404 error page for [KajKowalski Edge](https://404.kjanat.com).
 > bolts over a dark atmospheric background, and automatically activates a calm
 > mode for users who prefer reduced motion.
 
+<details><summary>add 404 page to a github pages deployment</summary>
+
+```yaml
+- run: curl -fsSLo dist/404.html https://esm.sh/@kjanat/404-page/index.html
+```
+
+</details>
+
 <!-- markdownlint-disable-file no-inline-html -->
 <!-- rumdl-disable-file no-inline-html -->
