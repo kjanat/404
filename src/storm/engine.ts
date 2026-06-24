@@ -259,14 +259,19 @@ export class StormEngine {
 		document.dispatchEvent(new CustomEvent<TransmissionEventDetail>(TRANSMISSION_EVENT, { detail }));
 	}
 
-	/** Publish keying progress (`0`–`1`) for the panel border indicator. */
+	/**
+	 * Publish keying progress (`0`–`1`) for the panel border indicator.
+	 *
+	 * Written to the document root (not the engine root) because the panel and
+	 * headline that consume it are page-level, independent of the engine root.
+	 */
 	private setTransmissionProgress(value: number): void {
-		this.root.style.setProperty('--transmission-progress', value.toFixed(4));
+		document.documentElement.style.setProperty('--transmission-progress', value.toFixed(4));
 	}
 
 	/** Publish the live keyed brightness (`0`–`1`) so UI glow pulses with each bolt. */
 	private setTransmissionFlash(value: number): void {
-		this.root.style.setProperty('--transmission-flash', value.toFixed(3));
+		document.documentElement.style.setProperty('--transmission-flash', value.toFixed(3));
 	}
 
 	private generateFlash(): FlashSequence {
