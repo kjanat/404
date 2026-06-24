@@ -8,6 +8,19 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-06-24
+
+### Added
+
+- Add a hidden morse "transmission" easter egg: hold the central panel still for
+  ~1.3s to make the lightning stop its random flashing and key a secret message
+  in morse code. Dots are short, sharp, near-vertical return-stroke-style bolts;
+  dashes are wider, horizontal, sustained channels with a flickering plateau and
+  a fork. When the sequence finishes, the decoded message flashes briefly in the
+  headline before the normal storm resumes. The message lives in a single
+  tunable constant (`TRANSMISSION_MESSAGE`). No-op under calm mode / reduced
+  motion and while the tab is hidden, consistent with the rest of the storm.
+
 ## [2.2.5] - 2026-06-22
 
 ### Fixed

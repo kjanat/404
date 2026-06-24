@@ -100,6 +100,10 @@ export function revealTransmissionMessage(message: string): void {
 	}
 
 	headline.textContent = message;
+	// Restart the reveal animation even if a prior reveal left the class applied:
+	// re-adding a present class is a no-op, so drop it and force a reflow first.
+	headline.classList.remove(TRANSMISSION_REVEAL_CLASS);
+	void headline.offsetWidth;
 	headline.classList.add(TRANSMISSION_REVEAL_CLASS);
 
 	transmissionRestoreTimerId = window.setTimeout(() => {

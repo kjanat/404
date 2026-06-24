@@ -41,6 +41,32 @@ function createSegment(from: BoltPoint, to: BoltPoint, width: number, strength: 
 	};
 }
 
+/**
+ * Append tapered line segments tracing a bolt spine into `segments`.
+ *
+ * Shared by the random storm bolts and the keyed morse bolts so the spine width
+ * taper stays identical across both.
+ *
+ * @param segments - Target array that receives the generated segments.
+ * @param spine - Ordered spine points to connect.
+ * @param baseWidth - Core width before taper, in CSS pixels.
+ * @param baseStrength - Relative brightness multiplier for the channel.
+ */
+function appendSpineSegments(
+	segments: BoltSegment[],
+	spine: readonly BoltPoint[],
+	baseWidth: number,
+	baseStrength: number,
+): void {
+	for (let i = 0; i < spine.length - 1; i++) {
+		const from = spine[i];
+		const to = spine[i + 1];
+		if (from === undefined || to === undefined) continue;
+		const taper = 1 - i / spine.length;
+		segments.push(createSegment(from, to, baseWidth * (0.74 + taper * 0.36), baseStrength));
+	}
+}
+
 function generateMainBolt(): BoltPoint[] {
 	const segments = randInt(BOLT_SEGMENTS);
 	const startX = rand(0.12, 0.88);
@@ -110,13 +136,7 @@ export function generateBoltSegments(boltCount: number): BoltSegment[] {
 		const baseWidth = rand(1.35, 2.3);
 		const baseStrength = rand(0.78, 1);
 
-		for (let i = 0; i < spine.length - 1; i++) {
-			const from = spine[i];
-			const to = spine[i + 1];
-			if (from === undefined || to === undefined) continue;
-			const taper = 1 - i / spine.length;
-			segments.push(createSegment(from, to, baseWidth * (0.74 + taper * 0.36), baseStrength));
-		}
+		appendSpineSegments(segments, spine, baseWidth, baseStrength);
 
 		const branches = randInt(BOLT_BRANCHES);
 		for (let i = 0; i < branches; i++) {
@@ -186,13 +206,7 @@ export function generateMorseBolt(kind: MorseKind): BoltSegment[] {
 	const baseWidth = kind === 'dash' ? rand(2.3, 3.3) : rand(1.3, 1.9);
 	const baseStrength = kind === 'dash' ? rand(0.82, 0.96) : rand(0.92, 1);
 
-	for (let i = 0; i < spine.length - 1; i++) {
-		const from = spine[i];
-		const to = spine[i + 1];
-		if (from === undefined || to === undefined) continue;
-		const taper = 1 - i / spine.length;
-		segments.push(createSegment(from, to, baseWidth * (0.74 + taper * 0.36), baseStrength));
-	}
+	appendSpineSegments(segments, spine, baseWidth, baseStrength);
 
 	if (kind === 'dash') {
 		appendBranch(segments, spine, baseWidth, baseStrength);

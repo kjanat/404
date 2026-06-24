@@ -130,14 +130,21 @@ export function buildTransmissionTimeline(
 	unitMs: number = MORSE_UNIT_MS,
 ): TransmissionStep[] {
 	const steps: TransmissionStep[] = [];
-	const words = text.toUpperCase().trim().split(/\s+/).filter(Boolean);
+	// Encode and drop empty words up front so a word made only of unsupported
+	// characters (e.g. the `©` in `A © B`) never injects a spurious word gap.
+	const encodedWords = text
+		.toUpperCase()
+		.trim()
+		.split(/\s+/)
+		.map((word) =>
+			Array.from(word)
+				.map((char) => MORSE_MAP[char])
+				.filter((pattern): pattern is string => pattern !== undefined && pattern !== '/')
+		)
+		.filter((patterns) => patterns.length > 0);
 
-	words.forEach((word, wordIndex) => {
+	encodedWords.forEach((patterns, wordIndex) => {
 		if (wordIndex > 0) steps.push(gap(WORD_GAP_UNITS, unitMs));
-
-		const patterns = Array.from(word)
-			.map((char) => MORSE_MAP[char])
-			.filter((pattern): pattern is string => pattern !== undefined && pattern !== '/');
 
 		patterns.forEach((pattern, letterIndex) => {
 			if (letterIndex > 0) steps.push(gap(LETTER_GAP_UNITS, unitMs));

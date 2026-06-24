@@ -72,6 +72,16 @@ describe('buildTransmissionTimeline', () => {
 	test('produces an empty timeline for blank input', () => {
 		expect(buildTransmissionTimeline('   ')).toEqual([]);
 	});
+
+	test('drops an unsupported-only word without injecting an extra word gap', () => {
+		// `©` encodes to nothing, so `A © B` must time-out identically to `A B`
+		// (a single inter-word gap), not a doubled or leading gap.
+		expect(buildTransmissionTimeline('A © B', 100)).toEqual(buildTransmissionTimeline('A B', 100));
+		const wordGaps = buildTransmissionTimeline('A © B', 100).filter(
+			(step) => !step.on && step.durationMs === 700,
+		);
+		expect(wordGaps).toHaveLength(1);
+	});
 });
 
 describe('transmissionDuration', () => {
