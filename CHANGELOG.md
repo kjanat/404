@@ -8,6 +8,18 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-06-25
+
+### Fixed
+
+- Aspect-correct the procedural cloud noise in the storm shader so clouds no
+  longer render as vertically stretched "sausages" on portrait viewports. The
+  cloud noise fields now sample an aspect-corrected UV (matching the existing
+  lightning handling); screen-space effects (horizon, vignette, edge matte,
+  aura) keep using raw viewport UVs. Adds a Playwright regression test that
+  asserts cloud anisotropy stays orientation-invariant across portrait and
+  landscape.
+
 ## [2.3.0] - 2026-06-24
 
 ### Added
@@ -335,7 +347,10 @@ and this project adheres to
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.2.4...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.3.1...HEAD
+[2.3.1]: https://github.com/kjanat/404/compare/v2.3.0...v2.3.1
+[2.3.0]: https://github.com/kjanat/404/compare/v2.2.5...v2.3.0
+[2.2.5]: https://github.com/kjanat/404/compare/v2.2.4...v2.2.5
 [2.2.4]: https://github.com/kjanat/404/compare/v2.2.3...v2.2.4
 [2.2.3]: https://github.com/kjanat/404/compare/v2.2.2...v2.2.3
 [2.2.2]: https://github.com/kjanat/404/compare/v2.2.1...v2.2.2

@@ -69,6 +69,9 @@ void main() {
 	vec2 uv = gl_FragCoord.xy / max(uResolution, vec2(1.0));
 	vec2 topUv = vec2(uv.x, 1.0 - uv.y);
 	float aspect = uResolution.x / max(uResolution.y, 1.0);
+	// Aspect-correct only the procedural cloud noise so blobs stay round on
+	// portrait viewports. topUv is kept for screen-space effects below.
+	vec2 cloudUv = vec2((topUv.x - 0.5) * aspect + 0.5, topUv.y);
 	float time = uTime * 0.001;
 
 	vec3 skyTop = uTheme == 1 ? vec3(0.78, 0.85, 0.94) : vec3(0.025, 0.035, 0.08);
@@ -87,13 +90,13 @@ void main() {
 	color += auraA * auraLeft * (uTheme == 1 ? 0.13 : 0.22);
 	color += auraB * auraRight * (uTheme == 1 ? 0.11 : 0.16);
 
-	vec2 driftA = topUv * vec2(2.1, 1.45) + vec2(time * 0.032, -time * 0.018);
-	vec2 driftB = topUv * vec2(4.7, 2.9) + vec2(-time * 0.021, time * 0.024);
+	vec2 driftA = cloudUv * vec2(2.1, 1.45) + vec2(time * 0.032, -time * 0.018);
+	vec2 driftB = cloudUv * vec2(4.7, 2.9) + vec2(-time * 0.021, time * 0.024);
 	float cloud = fbm(driftA);
 	float detail = fbm(driftB);
 	float shelf = smoothstep(0.18, 0.9, topUv.y);
 	float cloudMass = smoothstep(0.38, 0.82, cloud * 0.72 + detail * 0.36 + shelf * 0.18);
-	float cellNoise = fbm(topUv * vec2(3.4, 2.2) + vec2(9.0, time * 0.03));
+	float cellNoise = fbm(cloudUv * vec2(3.4, 2.2) + vec2(9.0, time * 0.03));
 	float stormCell = smoothstep(0.28, 0.95, cellNoise + cloudMass * 0.4);
 	float cloudCore = smoothstep(0.58, 0.96, cloudMass);
 #ifdef LOW_QUALITY
@@ -102,7 +105,7 @@ void main() {
 	float cloudCoreDrift = smoothstep(
 		0.28,
 		0.82,
-		fbm(topUv * vec2(2.8, 1.15) + vec2(-time * 0.045, time * 0.012))
+		fbm(cloudUv * vec2(2.8, 1.15) + vec2(-time * 0.045, time * 0.012))
 	);
 	float cloudCoreShadow = cloudCore * mix(0.72, 1.22, cloudCoreDrift);
 #endif
