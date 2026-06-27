@@ -17,6 +17,14 @@
 /** Query-string key forcing a specific {@link PageMode} (`domain` | `path`). */
 const MODE_PARAM = 'mode';
 
+/**
+ * `<meta name>` carrying a deploy-time forced {@link PageMode}.
+ *
+ * A served `404.html` can't append its own `?mode=`, so the Pages composite
+ * action bakes this marker into the document instead. See {@link readBakedMode}.
+ */
+const MODE_META_NAME = '404-mode';
+
 /** Query-string key overriding the displayed host (preview/build use). */
 const HOST_PARAM = 'host';
 
@@ -55,6 +63,16 @@ export interface LocationSignals {
 	readonly pathname: string;
 	readonly search: string;
 	readonly referrer: string;
+}
+
+/** Non-location inputs that bias resolution (e.g. a deploy-time marker). */
+export interface ContextOverrides {
+	/**
+	 * Mode baked into the document at deploy time (Pages action), used when no
+	 * `?mode=` query is present. Lower priority than the query, higher than
+	 * auto-detection.
+	 */
+	readonly bakedMode?: PageMode | null;
 }
 
 /** Normalize a pathname to a single leading slash and no duplicate slashes. */
@@ -114,11 +132,21 @@ function isGithubPagesHost(hostname: string): boolean {
 	return /\.github\.io$/i.test(hostname);
 }
 
+/** Coerce an arbitrary string to a {@link PageMode}, or `null` when unrecognized. */
+function asPageMode(value: string | null | undefined): PageMode | null {
+	const raw = value?.trim().toLowerCase();
+	return raw === 'domain' || raw === 'path' ? raw : null;
+}
+
 /** Read an explicit `?mode=` override, or `null` when unset/invalid. */
 function readModeOverride(params: URLSearchParams): PageMode | null {
-	const raw = params.get(MODE_PARAM)?.trim().toLowerCase();
-	if (raw === 'domain' || raw === 'path') return raw;
-	return null;
+	return asPageMode(params.get(MODE_PARAM));
+}
+
+/** Read the deploy-time `<meta name="404-mode">` marker, or `null` when absent/invalid. */
+function readBakedMode(): PageMode | null {
+	if (typeof document === 'undefined') return null;
+	return asPageMode(document.querySelector(`meta[name="${MODE_META_NAME}"]`)?.getAttribute('content'));
 }
 
 /**
@@ -180,7 +208,7 @@ function buildEscapeTargets(signals: LocationSignals, displayPath: string): Esca
  * and the build, and `?mode=` forces a scenario; otherwise the mode is detected
  * from the live signals. Use {@link readPageContext} to pull from the browser.
  */
-export function resolvePageContext(signals: LocationSignals): PageContext {
+export function resolvePageContext(signals: LocationSignals, overrides: ContextOverrides = {}): PageContext {
 	const params = new URLSearchParams(signals.search);
 
 	const hostOverride = params.get(HOST_PARAM)?.trim() ?? '';
@@ -189,7 +217,7 @@ export function resolvePageContext(signals: LocationSignals): PageContext {
 	const pathOverride = params.get(PATH_PARAM)?.trim() ?? '';
 	const displayPath = normalizePath(pathOverride.length > 0 ? pathOverride : signals.pathname);
 
-	const mode = readModeOverride(params) ?? detectMode(signals, displayPath);
+	const mode = readModeOverride(params) ?? overrides.bakedMode ?? detectMode(signals, displayPath);
 
 	const path = hasMeaningfulPath(displayPath) ? displayPath : '';
 	const escapeTargets = mode === 'path' ? buildEscapeTargets(signals, displayPath) : [];
@@ -208,5 +236,5 @@ export function readPageContext(): PageContext {
 		pathname: window.location.pathname,
 		search: window.location.search,
 		referrer: typeof document === 'undefined' ? '' : document.referrer,
-	});
+	}, { bakedMode: readBakedMode() });
 }

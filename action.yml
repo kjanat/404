@@ -1,15 +1,37 @@
 name: Download 404 page
 description: Get latest published 404 page from esm.sh, and put it wherever.
-inputs: { directory: { description: "directory to output the 404.html into", default: "." } }
+inputs:
+  directory:
+    description: directory to output the 404.html into
+    default: "."
+  mode:
+    description: >-
+      Force the page voice: "path" (a 404 here means the site is alive but this
+      URL is missing — correct for Pages, including custom domains), "domain"
+      (the whole host is unconfigured), or "auto" (detect at runtime).
+    default: path
 runs:
   using: composite
   steps:
     - name: Download 404.html
       shell: pwsh
-      env: { dir: "${{ inputs.directory }}" }
+      env: { dir: "${{ inputs.directory }}", mode: "${{ inputs.mode }}" }
       run: |
         $directory = Join-Path $env:GITHUB_WORKSPACE $env:dir
         $out       = Join-Path $directory '404.html'
 
         New-Item $directory -ItemType Directory -Force | Out-Null
         Invoke-RestMethod -Uri 'https://esm.sh/@kjanat/404-page/index.html' -OutFile $out
+
+        # A served 404.html can't append its own ?mode=, so bake the marker the
+        # runtime reads (<meta name="404-mode">) straight into the document.
+        $mode = $env:mode.Trim().ToLower()
+        if ($mode -in @('path', 'domain')) {
+          $html = (Get-Content $out -Raw) -replace '<meta name="404-mode"[^>]*>', ''
+          $meta = '<meta name="404-mode" content="' + $mode + '">'
+          $html = $html -replace '(?i)</head>', ($meta + '</head>')
+          Set-Content -Path $out -Value $html -NoNewline
+        }
+        elseif ($mode -ne 'auto') {
+          Write-Error "Invalid mode '$mode': expected 'path', 'domain', or 'auto'."
+        }

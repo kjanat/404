@@ -82,6 +82,30 @@ describe('overrides', () => {
 	});
 });
 
+describe('baked deploy-time mode', () => {
+	test('bakedMode forces path mode at the root when no query is present', () => {
+		const ctx = resolvePageContext(signals({ hostname: 'example.com', pathname: '/' }), { bakedMode: 'path' });
+		expect(ctx.mode).toBe('path');
+	});
+
+	test('an explicit ?mode= query outranks bakedMode', () => {
+		const ctx = resolvePageContext(
+			signals({ hostname: 'example.com', pathname: '/x/y', search: '?mode=domain' }),
+			{ bakedMode: 'path' },
+		);
+		expect(ctx.mode).toBe('domain');
+	});
+
+	test('bakedMode outranks auto-detection', () => {
+		// Deep path on a same-host referrer would auto-detect path; bakedMode pins domain.
+		const ctx = resolvePageContext(
+			signals({ hostname: 'example.com', pathname: '/x/y', referrer: 'https://example.com/' }),
+			{ bakedMode: 'domain' },
+		);
+		expect(ctx.mode).toBe('domain');
+	});
+});
+
 describe('display values', () => {
 	test('host falls back to the real hostname', () => {
 		expect(resolve({ hostname: 'example.com' }).host).toBe('example.com');
