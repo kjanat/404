@@ -657,6 +657,71 @@ p {
 	color: var(--theme-accent-2);
 }
 
+.text-accent {
+	color: var(--theme-accent);
+}
+
+/* ── Escape hatches (path-dead mode) ─────────────── */
+
+.escape-hatches {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 8px 12px;
+	margin-top: 18px;
+}
+
+.escape-hatches[hidden] {
+	display: none;
+}
+
+.escape-hatches__lead {
+	font-family: var(--font-display);
+	font-size: 0.62rem;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: color-mix(in oklch, var(--theme-muted) 86%, var(--theme-text) 14%);
+}
+
+.escape-hatches__links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.escape-hatch {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4em;
+	padding: 6px 12px;
+	border: 1px solid var(--theme-border);
+	border-radius: 999px;
+	background: color-mix(in oklch, var(--theme-switch-bg) 60%, transparent);
+	color: var(--theme-text);
+	font-size: 0.84rem;
+	font-weight: 600;
+	line-height: 1.1;
+	text-decoration: none;
+	transition: transform 180ms ease, border-color 180ms ease, background 200ms ease, color 180ms ease;
+}
+
+.escape-hatch::before {
+	content: "\2197"; /* north-east arrow */
+	color: var(--theme-accent);
+	font-weight: 700;
+}
+
+.escape-hatch:hover {
+	transform: translateY(-1px);
+	border-color: color-mix(in oklch, var(--theme-accent) 55%, var(--theme-border));
+	background: color-mix(in oklch, var(--theme-accent) 12%, var(--theme-switch-bg));
+}
+
+.escape-hatch:focus-visible {
+	outline: 2px solid var(--theme-focus-ring);
+	outline-offset: 3px;
+}
+
 @media (max-width: 768px) {
 	.panel {
 		backdrop-filter: none;
@@ -793,6 +858,7 @@ p {
 	.theme-trigger,
 	.theme-switch,
 	.theme-option,
+	.escape-hatch,
 	.theme-trigger .theme-trigger__icon {
 		/* biome-ignore lint/complexity/noImportantStyles: a11y */
 		transition: none !important;

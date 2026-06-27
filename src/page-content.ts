@@ -1,3 +1,5 @@
+import { type EscapeTarget, readPageContext } from '#404/page-context';
+
 const HEADLINES: readonly [string, ...string[]] = [
 	'404 \u2014 Huh?',
 	'404 \u2014 Who are you?',
@@ -64,6 +66,47 @@ const BLURBS: readonly [string, ...string[]] = [
 	'{host} has all the charisma of a 404 page. Oh wait \u2014 that\u2019s exactly what this is.',
 ];
 
+/**
+ * Headlines for the path-dead scenario: the site works, this one URL does not.
+ *
+ * Use when the resolved page mode is `path` (see {@link initializePage}).
+ */
+const PATH_HEADLINES: readonly [string, ...string[]] = [
+	'404 \u2014 Wrong turn.',
+	'404 \u2014 Dead link, live site.',
+	'404 \u2014 This page wandered off.',
+	'404 \u2014 Close, but no page.',
+	'404 \u2014 That link lied to you.',
+	'404 \u2014 The site\u2019s fine. This page isn\u2019t.',
+	'404 \u2014 You took a wrong turn.',
+	'404 \u2014 Lost the thread.',
+	'404 \u2014 Almost. Not quite.',
+	'404 \u2014 This page packed up and left.',
+	'404 \u2014 Nope, not this one.',
+	'404 \u2014 The page, not the place.',
+];
+
+/**
+ * Blurbs for the path-dead scenario; reference both the living `{host}` and the
+ * missing `{path}` so it reads as "wrong turn," not "dead domain."
+ *
+ * Use when the resolved page mode is `path` (see {@link initializePage}).
+ */
+const PATH_BLURBS: readonly [string, ...string[]] = [
+	'Good news: {host} is alive and well. Less good: there\u2019s nothing at {path}. You\u2019re one wrong link away from where you meant to be.',
+	'{host} works fine \u2014 it just doesn\u2019t have a {path}. Wrong turn, not a dead end. Try one of the doors below.',
+	'The site loaded. {path} did not. Somebody\u2019s link needs a typo-ectomy, but the rest of {host} is open for business.',
+	'Nothing lives at {path}, yet the rest of {host} is perfectly fine. You took a wrong turn somewhere \u2014 here\u2019s the way back.',
+	'Plot twist: {host} exists, this page doesn\u2019t. {path} is a dead link on a very-much-alive site. Climb back up and try again.',
+	'You found {host}. You did not find {path}. The good part of the site is just a click away.',
+	'Whoever sent you to {path} owes you an apology \u2014 it isn\u2019t a real page. The working part of {host} is one click away.',
+	'{path} is missing in action, but {host} itself is up and running. Don\u2019t leave; just back up a level.',
+	'This isn\u2019t the whole domain throwing in the towel \u2014 only {path} is gone. {host} is still very much open. Pick a door below.',
+	'404 means \u201cnot found,\u201d not \u201cnever existed.\u201d {host} is fine; {path} just isn\u2019t a thing. Let\u2019s get you back on track.',
+	'The map says {path}. The territory disagrees. {host} is still here, though \u2014 follow one of these links home.',
+	'{path} took the day off. {host} did not. Try the homepage, or step back up the path.',
+];
+
 /** Pick a random item from a non-empty readonly tuple. */
 function pickRandom<T>(arr: readonly [T, ...T[]]): T {
 	const value = arr[Math.floor(Math.random() * arr.length)];
@@ -75,16 +118,20 @@ function pickRandom<T>(arr: readonly [T, ...T[]]): T {
 
 /* Blurb template parsing */
 
+/** Substitutable placeholder names recognized inside blurb templates. */
+type PlaceholderName = 'host' | 'path';
+
 interface TextPart {
 	readonly kind: 'text';
 	readonly value: string;
 }
 
-interface HostPart {
-	readonly kind: 'host';
+interface PlaceholderPart {
+	readonly kind: 'placeholder';
+	readonly name: PlaceholderName;
 }
 
-type InlinePart = TextPart | HostPart;
+type InlinePart = TextPart | PlaceholderPart;
 
 interface CodePart {
 	readonly kind: 'code';
@@ -93,15 +140,22 @@ interface CodePart {
 
 type TemplatePart = InlinePart | CodePart;
 
-/** Split a raw string on `{host}` into typed inline parts. */
+/** Matches `{host}` / `{path}` placeholders; capture group 1 is the name. */
+const PLACEHOLDER_RE = /\{(host|path)\}/g;
+
+/** Split a raw string on `{host}` / `{path}` into typed inline parts. */
 function parseInline(text: string): readonly InlinePart[] {
 	const result: InlinePart[] = [];
-	const segments = text.split('{host}');
-	for (let i = 0; i < segments.length; i++) {
-		if (i > 0) result.push({ kind: 'host' });
-		const seg = segments[i];
-		if (seg) result.push({ kind: 'text', value: seg });
+	let lastIndex = 0;
+	for (const match of text.matchAll(PLACEHOLDER_RE)) {
+		const name = match[1];
+		if (name !== 'host' && name !== 'path') continue;
+		const index = match.index;
+		if (index > lastIndex) result.push({ kind: 'text', value: text.slice(lastIndex, index) });
+		result.push({ kind: 'placeholder', name });
+		lastIndex = index + match[0].length;
 	}
+	if (lastIndex < text.length) result.push({ kind: 'text', value: text.slice(lastIndex) });
 	return result;
 }
 
@@ -139,28 +193,28 @@ function appendTextWithBreaks(parent: HTMLElement, text: string): void {
 /**
  * Render a parsed blurb into the DOM.
  *
- * Substitutes `hostSpan` clones for every `{host}` placeholder and wraps
- * backtick spans in `<code>` elements. Newlines outside code spans become
- * `<br>` elements.
+ * Substitutes a clone of the matching `placeholders` span for every `{host}` /
+ * `{path}` placeholder and wraps backtick spans in `<code>` elements. Newlines
+ * outside code spans become `<br>` elements.
  */
 function renderBlurb(
 	target: HTMLElement,
 	parts: readonly TemplatePart[],
-	hostSpan: HTMLSpanElement,
+	placeholders: Readonly<Record<PlaceholderName, HTMLSpanElement>>,
 ): void {
 	target.textContent = '';
 	for (const part of parts) {
 		if (part.kind === 'text') {
 			appendTextWithBreaks(target, part.value);
-		} else if (part.kind === 'host') {
-			target.appendChild(hostSpan.cloneNode(true));
+		} else if (part.kind === 'placeholder') {
+			target.appendChild(placeholders[part.name].cloneNode(true));
 		} else {
 			const code = document.createElement('code');
 			for (const inner of part.inner) {
 				if (inner.kind === 'text') {
 					code.appendChild(document.createTextNode(inner.value));
 				} else {
-					code.appendChild(hostSpan.cloneNode(true));
+					code.appendChild(placeholders[inner.name].cloneNode(true));
 				}
 			}
 			target.appendChild(code);
@@ -169,35 +223,78 @@ function renderBlurb(
 }
 
 /**
- * Populate host-dependent copy and title for the 404 page.
+ * Populate the escape-link row with climb-up destinations, or keep it hidden.
  *
- * Uses `?host=` override when present, else falls back to `window.location.hostname`.
- * File/package previews have no hostname, so copy falls back to a generic host label.
+ * Only the path-dead scenario yields targets; an empty list leaves the row
+ * hidden so the domain-dead page never offers links into a dead domain.
+ */
+function renderEscapeTargets(targets: readonly EscapeTarget[]): void {
+	const container = document.querySelector<HTMLElement>('[data-escape-hatches]');
+	if (!container) return;
+
+	const list = container.querySelector<HTMLElement>('[data-escape-links]');
+	if (!list) return;
+
+	list.textContent = '';
+	if (targets.length === 0) {
+		container.hidden = true;
+		return;
+	}
+
+	for (const target of targets) {
+		const link = document.createElement('a');
+		link.className = 'escape-hatch';
+		link.href = target.href;
+		link.title = target.href;
+		link.textContent = target.label;
+		list.appendChild(link);
+	}
+	container.hidden = false;
+}
+
+/** Build an accent-coloured inline span carrying substituted copy. */
+function makeAccentSpan(className: string, text: string): HTMLSpanElement {
+	const span = document.createElement('span');
+	span.className = className;
+	span.textContent = text;
+	return span;
+}
+
+/**
+ * Populate host/path-dependent copy, escape links, and title for the 404 page.
+ *
+ * The scenario (dead domain vs dead path) is resolved by {@link readPageContext}
+ * — it honours `?host=`/`?path=`/`?mode=` overrides and otherwise detects from
+ * the live location. Path mode swaps in the "wrong turn" copy pool and reveals
+ * climb-up links; domain mode keeps the original "nobody home" voice.
  */
 export function initializePage(): void {
-	const rawHostParam = new URLSearchParams(window.location.search).get('host');
-	const hostFromParam = rawHostParam?.trim() ?? '';
-	const actualHost = hostFromParam.length > 0 ? hostFromParam : window.location.hostname;
-	const copyHost = actualHost.length > 0 ? actualHost : 'this host';
+	const context = readPageContext();
+	const isPathMode = context.mode === 'path';
+	const copyHost = context.host.length > 0 ? context.host : 'this host';
+	const copyPath = context.path.length > 0 ? context.path : 'this page';
 
 	const headlineTarget = document.querySelector<HTMLElement>('[data-headline]');
 	if (headlineTarget) {
-		headlineTarget.textContent = pickRandom(HEADLINES);
+		headlineTarget.textContent = pickRandom(isPathMode ? PATH_HEADLINES : HEADLINES);
 	}
 
 	const blurbTarget = document.querySelector<HTMLElement>('[data-blurb]');
 	if (blurbTarget) {
-		const hostSpan = document.createElement('span');
-		hostSpan.className = 'font-bold text-accent-2';
-		hostSpan.textContent = copyHost;
-		renderBlurb(blurbTarget, parseTemplate(pickRandom(BLURBS)), hostSpan);
+		const placeholders = {
+			host: makeAccentSpan('font-bold text-accent-2', copyHost),
+			path: makeAccentSpan('font-bold text-accent', copyPath),
+		} as const;
+		renderBlurb(blurbTarget, parseTemplate(pickRandom(isPathMode ? PATH_BLURBS : BLURBS)), placeholders);
 	}
 
 	for (const target of document.querySelectorAll<HTMLElement>('[data-host]')) {
 		target.textContent = copyHost;
 	}
 
-	if (actualHost.length > 0) {
-		document.title = `404 | ${actualHost}`;
+	renderEscapeTargets(context.escapeTargets);
+
+	if (context.host.length > 0) {
+		document.title = `404 | ${context.host}`;
 	}
 }
