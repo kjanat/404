@@ -40,6 +40,22 @@ or use the composite action (writes `404.html` into `directory`):
   with: { directory: dist/site }
 ```
 
+The action bakes in `mode: path` by default, so the page reads as "this link is
+broken, the site is fine" with climb-up links — the right voice for Pages, where
+a 404 means the path is missing, not the whole host. Set `mode: domain` for an
+unconfigured-host page, or `mode: auto` to detect at runtime instead.
+
+```yaml
+- uses: kjanat/404@master
+  with: { directory: dist/site, mode: auto }
+```
+
+Note that `mode: auto` is weaker than the default on Pages: runtime detection
+only upgrades to the path voice when it can prove the site is live — a same-host
+referrer or a `*.github.io` host. A direct hit on a **custom** Pages domain (or
+traffic arriving from another site) falls back to domain voice, which is why
+`path` is baked in by default.
+
 </details>
 
 <!-- markdownlint-disable-file no-inline-html -->

@@ -8,6 +8,20 @@ and this project adheres to
 
 ## [Unreleased]
 
+### Added
+
+- Make the 404 page path-aware: distinguish a dead *path* (a live site missing
+  one URL — a GitHub Pages project, or a stale link clicked on a working domain)
+  from a dead *domain* (an unconfigured host). Path mode swaps in "wrong turn,
+  the site is fine" copy that names both the host and the missing path, and
+  reveals climb-up escape links (parent directory, project root on Pages, and
+  the site root). The mode is resolved from a same-host referrer or a
+  `*.github.io` host, with `?mode=` / `?host=` / `?path=` query overrides and a
+  deploy-time `<meta name="404-mode">` marker taking precedence. The composite
+  action gained a `mode` input (default `path`) that bakes this marker into the
+  deployed `404.html`, so Pages sites — including custom domains — get the
+  correct voice.
+
 ## [2.3.1] - 2026-06-25
 
 ### Fixed
