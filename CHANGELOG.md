@@ -8,6 +8,8 @@ and this project adheres to
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-06-29
+
 ### Added
 
 - Make the 404 page path-aware: distinguish a dead *path* (a live site missing
@@ -361,7 +363,8 @@ and this project adheres to
 
 - Initial public release of the 404 page package.
 
-[Unreleased]: https://github.com/kjanat/404/compare/v2.3.1...HEAD
+[Unreleased]: https://github.com/kjanat/404/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/kjanat/404/compare/v2.3.1...v2.4.0
 [2.3.1]: https://github.com/kjanat/404/compare/v2.3.0...v2.3.1
 [2.3.0]: https://github.com/kjanat/404/compare/v2.2.5...v2.3.0
 [2.2.5]: https://github.com/kjanat/404/compare/v2.2.4...v2.2.5
