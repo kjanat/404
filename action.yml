@@ -23,15 +23,18 @@ runs:
         New-Item $directory -ItemType Directory -Force | Out-Null
         Invoke-RestMethod -Uri 'https://esm.sh/@kjanat/404-page/index.html' -OutFile $out
 
-        # A served 404.html can't append its own ?mode=, so bake the marker the
-        # runtime reads (<meta name="404-mode">) straight into the document.
+        # Validate up front so a typo fails the step instead of silently doing nothing.
         $mode = $env:mode.Trim().ToLower()
-        if ($mode -in @('path', 'domain')) {
-          $html = (Get-Content $out -Raw) -replace '<meta name="404-mode"[^>]*>', ''
-          $meta = '<meta name="404-mode" content="' + $mode + '">'
-          $html = $html -replace '(?i)</head>', ($meta + '</head>')
-          Set-Content -Path $out -Value $html -NoNewline
-        }
-        elseif ($mode -ne 'auto') {
+        if ($mode -notin @('path', 'domain', 'auto')) {
           Write-Error "Invalid mode '$mode': expected 'path', 'domain', or 'auto'."
         }
+
+        # A served 404.html can't append its own ?mode=, so the runtime reads a
+        # baked <meta name="404-mode">. Always strip any stale marker first, then
+        # re-add it only for a forced mode — 'auto' leaves the page to detect.
+        $html = (Get-Content $out -Raw) -replace '<meta name="404-mode"[^>]*>', ''
+        if ($mode -in @('path', 'domain')) {
+          $meta = '<meta name="404-mode" content="' + $mode + '">'
+          $html = $html -replace '(?i)</head>', ($meta + '</head>')
+        }
+        Set-Content -Path $out -Value $html -NoNewline

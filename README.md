@@ -50,6 +50,12 @@ unconfigured-host page, or `mode: auto` to detect at runtime instead.
   with: { directory: dist/site, mode: auto }
 ```
 
+Note that `mode: auto` is weaker than the default on Pages: runtime detection
+only upgrades to the path voice when it can prove the site is live — a same-host
+referrer or a `*.github.io` host. A direct hit on a **custom** Pages domain (or
+traffic arriving from another site) falls back to domain voice, which is why
+`path` is baked in by default.
+
 </details>
 
 <!-- markdownlint-disable-file no-inline-html -->

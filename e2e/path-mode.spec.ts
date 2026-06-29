@@ -10,6 +10,11 @@ test('domain mode keeps the escape-hatch row hidden', async ({ page }) => {
 	await expect(page.locator('[data-escape-hatches]')).toBeHidden();
 });
 
+test('forced domain mode hides the escape-hatch row even on a deep path', async ({ page }) => {
+	await gotoReady(page, '/?mode=domain&host=example.com&path=/docs/old/page');
+	await expect(page.locator('[data-escape-hatches]')).toBeHidden();
+});
+
 test('forced path mode reveals climb-up links for a deep path', async ({ page }) => {
 	await gotoReady(page, '/?mode=path&host=example.com&path=/docs/old/page');
 
